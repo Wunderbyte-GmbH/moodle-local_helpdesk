@@ -105,8 +105,6 @@ function local_helpdesk_pluginfile($course, $cm, $context, $filearea, $args, $fo
     }
 
     // Instead of requiring course login we check if the current user is support user of this discussion!
-    // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-    /* require_course_login($course, true, $cm); */
     if (
         !\local_helpdesk\lib::is_second_level($USER->id)
         && !\local_helpdesk\lib::is_first_level($USER->id, $course->id)
@@ -143,26 +141,9 @@ function local_helpdesk_pluginfile($course, $cm, $context, $filearea, $args, $fo
 
     // We skip this check, we already checked, that we belong to the supportteam and have access.
     // Make sure groups allow this user to see this file.
-    // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-    /*
-    if ($discussion->groupid > 0) {
-        $groupmode = \groups_get_activity_groupmode($cm, $course);
-        if ($groupmode == SEPARATEGROUPS) {
-            if (!\groups_is_member($discussion->groupid) and !has_capability('moodle/site:accessallgroups', $context)) {
-                return false;
-            }
-        }
-    }
-    */
 
     // We skip this check, we already checked, that we belong to the supportteam and have access.
     // Make sure we're allowed to see it...
-    // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-    /*
-    if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
-        return false;
-    }
-    */
 
     // Finally send the file.
     send_stored_file($file, 0, 0, true, $options); // Download MUST be forced - security!

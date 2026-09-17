@@ -26,15 +26,11 @@
 $string['accountmanager'] = 'Your Account managers';
 $string['accountmanagers'] = 'Account managers';
 $string['accountmanagertitle'] = 'Account manager';
-$string['allowguesttickets'] = 'Allow tickets from guest user.';
-$string['allowguesttickets:description'] = 'Guest can post one ticket and gets updates via mail.';
 $string['archive'] = 'Archive';
 $string['assigned'] = 'Assigned';
 $string['auto2ndlvl'] = 'Auto forward 2nd';
 $string['auto2ndlvl:description'] = 'Automatically forward all tickets to 2nd level support';
 $string['autoassign'] = 'Assignable automatically';
-$string['autoassign:description'] = 'Whether an escalation may hand a request to this person without anybody choosing them. Turn it off for specialists who should only ever be assigned by hand.';
-$string['autocreate_usergroup'] = 'Automatically create a private group for user';
 $string['back'] = 'back';
 $string['be_more_accurate'] = 'Please be more accurate when describing your problem!';
 $string['cachedef_spamprotect'] = 'Counts the tickets filed by a person or from an address';
@@ -44,7 +40,6 @@ $string['changes_saved_fail'] = 'Changes could not be saved.';
 $string['changes_saved_successfully'] = 'Changes saved successfully.';
 $string['changestatus'] = 'Change status';
 $string['contactphone'] = 'Telephone';
-$string['contactphone_missing'] = 'Please enter your telephone number';
 $string['continue'] = 'continue';
 $string['coursecategorydeletion'] = 'You are trying to remove a category, that contains supportforums. Please ensure, that you disable the support forums first!';
 $string['coursesupporters'] = 'First level support';
@@ -56,7 +51,6 @@ $string['coursesupporters:nosupportforum'] = 'This course holds no support forum
 $string['create_issue'] = 'Contact support';
 $string['create_issue_error_description'] = 'Your issue could not be stored!';
 $string['create_issue_error_title'] = 'Error';
-$string['create_issue_mail_success_description'] = 'Your issue has been stored. We will help you as soon as possible!';
 $string['create_issue_success_close'] = 'close';
 $string['create_issue_success_description'] = 'Your issue has been stored. We will help you as soon as possible!';
 $string['create_issue_success_description_mail'] = 'Your issue has been sent by mail. We will help you as soon as possible!';
@@ -93,8 +87,6 @@ $string['faqread:description'] = 'I confirm, that I have read the <a href="{$a}"
 $string['firstlvlgroupmode'] = '1st level support group modus';
 $string['firstlvlgroupmode:description'] = 'Enables group mode so that non teachers (other roles) get connected based on a customfield and can answer in the courseforum (make sure to give the role "canforward2ndlevel" right. Also enable group mode in course and set forum to seperate groups.';
 $string['furtherquestions'] = 'As you have posted a support request as guest user, you can not reply or post further comments for that issue. If you want to have further support please register on {$a->sitename}.';
-$string['goto_targetforum'] = 'Supportforum';
-$string['goto_tutorials'] = 'Documents & Tutorials';
 $string['guestmail'] = 'Your e-mail';
 $string['guestmodeenabled'] = 'Guestmode active';
 $string['guestmodeenabled:description'] = 'Guests can now also post supporttickets. These tickets get answered by mail';
@@ -118,15 +110,6 @@ $string['issue_assign'] = 'Assign issue';
 $string['issue_assign_me'] = 'Assign to me';
 $string['issue_assign_nextlevel'] = 'Forward to the platform-support team';
 $string['issue_assign_nextlevel:error'] = 'Sorry, this issue could not be forwarded to the platform support team';
-$string['issue_assign_nextlevel:msgtosupporter'] = '<p>You have been assigned a new support request. The following message has NOT been sent to the user who made the support request
-because the plugin setting "Send support user assignments to the user" is disabled:</p>
-<p>We are happy to inform you that your support request has been assigned to the {$a->sitename} support team!</p>
-
-<p>You will receive an answer to your question shortly. Please understand that some issues take longer to resolve and it might take a few days before we can provide you with a solution.</p>
-<p>You are receiving this email because you asked the support team for help via a support request. You can find all your request under {$a->supportforumname} on {$a->sitename}.</p>
-<p>We wish you a great learning experience!</p>
-
-<p>Your {$a->sitename} team</p>';
 $string['issue_assign_nextlevel:post'] = '<p>We are happy to inform you that your support request has been assigned to the {$a->sitename} support team!</p>
 
 <p>You will receive an answer to your question shortly. Please understand that some issues take longer to resolve and it might take a few days before we can provide you with a solution.</p>
@@ -169,11 +152,7 @@ $string['issues:assigned:none'] = 'Currently you do not have any issue subscript
 $string['issues:closed'] = 'Closed issues';
 $string['issues:current'] = 'My issues';
 $string['issues:current:none'] = 'Seems you deserve a break - no issue left for you!';
-$string['issues:openall'] = '{$a} total open';
-$string['issues:openmine'] = '{$a} for me';
-$string['issues:opennosupporter'] = '{$a} unassigned';
 $string['issues:other'] = 'Other issues';
-$string['issues:other:none'] = 'Great, there seem to be no more problems on that planet!';
 $string['issues:show'] = 'Show Helpdesk issues';
 $string['label:2ndlevel'] = 'Platform support team';
 $string['level'] = 'Level';
@@ -201,12 +180,8 @@ $string['migrate:uninstall'] = 'Uninstall local_edusupport';
 $string['migrate:uninstallhint'] = 'As long as local_edusupport is installed it shows its own help button next to the one of Helpdesk. Uninstall it as soon as you have checked the migrated data. Uninstalling also removes its tables, which until then serve as a backup.';
 $string['migrate:what'] = 'Data';
 $string['missing_permission'] = 'Missing required permission';
-$string['missing_targetforum'] = 'Missing target forum, must be configured!';
-$string['missing_targetforum_exists'] = 'The configured target forum does not exist. Wrong configuration!';
 $string['no_such_issue'] = 'This is not an open issue! You can navigate to the <a href="{$a->todiscussionurl}"><u>discussion page</u></a> or go <a href="{$a->toissuesurl}"><u>back to the issues overview</u></a>.';
 $string['none'] = 'none chosen';
-$string['notasigned'] = 'No support user has been assigned yet';
-$string['only_you'] = 'Only you and our team';
 $string['overview'] = 'All support users';
 $string['overview:description'] = 'Everybody who supports something on this platform: first level is assigned per course, second level is the platform wide team.';
 $string['phonefield'] = 'disable phone field';
@@ -255,14 +230,11 @@ $string['privacy:metadata:helpdesk:supportlevel'] = 'The label chosen for the su
 $string['privacy:metadata:helpdesk:timecreated'] = 'When the issue was created';
 $string['privacy:metadata:helpdesk:timemodified'] = 'When the issue was last changed';
 $string['privacy:metadata:helpdesk:userid'] = 'The person';
-$string['relativeurlsupportarea'] = 'Relative URL to Supportarea';
 $string['rolename'] = 'rolename';
 $string['rolename:description'] = 'rolename for the supporters (e.g. teacher instead of editingtecher or customrole)';
 $string['scope'] = 'Supports';
 $string['scope:platform'] = 'The whole platform';
 $string['screenshot'] = 'Post screenshot';
-$string['screenshot:description'] = 'A screenshot may help to solve the problem.';
-$string['screenshot:generateinfo'] = 'To generate the screenshot the form will be hidden, and reappears afterwards.';
 $string['screenshot:invalid'] = 'The screenshot is not a picture that can be attached (PNG, JPEG, GIF or WebP).';
 $string['screenshot:toobig'] = 'The screenshot is too big. At most {$a} can be attached.';
 $string['screenshot:upload:failed'] = 'Preparation of file failed!';
@@ -308,13 +280,11 @@ $string['status:ongoing'] = 'Ongoing';
 $string['subject'] = 'Subject';
 $string['subject_missing'] = 'Missing subject';
 $string['subject_prefix'] = 'Support request with following topic: ';
-$string['support_area'] = 'Helpdesk & Tutorials';
 $string['supportadded'] = "Supportuser added";
 $string['supportchanged'] = "Supportuser changed";
 $string['supportcourse'] = 'Supportcourse';
 $string['supportdeleted'] = "Supportuser deleted";
 $string['supporters'] = 'Supporters';
-$string['supporters:choose'] = 'Choose supporters';
 $string['supportforum:central:disable'] = 'disable';
 $string['supportforum:central:enable'] = 'enable';
 $string['supportforum:choose'] = 'Choose forums for Helpdesk';
@@ -334,4 +304,3 @@ $string['userlinks'] = 'enable userlinks';
 $string['userlinks:description'] = 'show userlinks in issues list';
 $string['webhost'] = 'Host';
 $string['weburl'] = 'URL';
-$string['your_issues'] = 'Your issues';

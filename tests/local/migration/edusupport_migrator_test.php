@@ -100,7 +100,7 @@ final class edusupport_migrator_test extends advanced_testcase {
         // The ids start high, so that a copy that does not keep them is noticed.
         $DB->insert_record_raw('local_edusupport', (object) [
             'id' => 41, 'categoryid' => $course->category, 'courseid' => $course->id, 'forumid' => $this->forum->id,
-            'dedicatedsupporter' => $this->supporter->id, 'archiveid' => 0,
+            'dedicatedsupporter' => $this->supporter->id,
         ], false, false, true);
         foreach ([51, 52] as $issueid) {
             $discussion = $generator->get_plugin_generator('mod_forum')->create_discussion([

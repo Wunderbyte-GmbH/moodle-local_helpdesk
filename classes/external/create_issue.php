@@ -288,11 +288,6 @@ class create_issue extends external_api {
                     }
                 }
 
-                // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-                /* if (!forum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
-                    throw new moodle_exception('cannotcreatediscussion', 'forum');
-                }*/
-
                 $thresholdwarning = forum_check_throttling($forum, $cm);
                 forum_check_blocking_threshold($thresholdwarning);
 
@@ -306,8 +301,6 @@ class create_issue extends external_api {
                 $discussion->messageformat = FORMAT_HTML;   // Force formatting for now.
                 $discussion->messagetrust = trusttext_trusted($context);
                 $discussion->itemid = 0;
-                // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-                /* $options['inlineattachmentsid']; */
                 $discussion->groupid = $groupid;
                 $discussion->mailnow = 1;
                 if ($guestmodeenabled) {

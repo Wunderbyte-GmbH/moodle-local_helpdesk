@@ -50,5 +50,16 @@ function xmldb_local_helpdesk_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026091800, 'local', 'helpdesk');
     }
 
+    if ($oldversion < 2026091900) {
+        // The forum meant as an archive was never used.
+        $table = new xmldb_table('local_helpdesk');
+        $field = new xmldb_field('archiveid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026091900, 'local', 'helpdesk');
+    }
+
     return true;
 }

@@ -90,11 +90,7 @@ if (!$editable) {
         throw new \moodle_exception('Unable to find forum with id ' . $vdiscussion->get_forum_id());
     }
 
-    // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-    /* $course = $forum->get_course_record(); */
     $course = get_course($forum->course);
-    // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-    /* $cm = $forum->get_course_module_record(); */
     $cm = get_coursemodule_from_instance('forum', $forum->id, 0, false, MUST_EXIST);
 
 
@@ -131,9 +127,6 @@ if (!$editable) {
     }
 
     $draftitemid = \file_get_submitted_draft_itemid('attachments');
-    // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-    /* \file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_forum', 'attachment',
-        empty($post->id)?null:$post->id, \mod_forum_post_form::attachment_options($forum)); */
     \file_prepare_draft_area(
         $draftitemid,
         $modcontext->id,
@@ -200,9 +193,6 @@ if (!$editable) {
             throw new moodle_exception("couldnotupdate", "forum", $errordestination);
         }
         // Move uploaded files manually.
-        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-        /* $currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_forum', 'post', $postid,
-            \local_helpdesk\form\post_form::editor_options($modcontext, $postid), $post->message); */
         file_save_draft_area_files(
             $fromform->attachments,
             $modcontext->id,

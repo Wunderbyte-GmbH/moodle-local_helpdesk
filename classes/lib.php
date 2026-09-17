@@ -89,8 +89,12 @@ class lib {
             $coursectx = \context_course::instance($forum->course);
             if (!empty($coursectx->id)) {
                 if (!is_enrolled($coursectx, $user, '', true)) {
-                    // Enrol as student.
-                    self::course_manual_enrolments([$forum->course], [$user->id], 5);
+                    // Enrol with the role of a student.
+                    $studentroles = get_archetype_roles('student');
+                    $studentrole = reset($studentroles);
+                    if ($studentrole) {
+                        self::course_manual_enrolments([$forum->course], [$user->id], $studentrole->id);
+                    }
                 }
                 require_once("$CFG->dirroot/group/lib.php");
                 $groupname = fullname($user) . ' (' . $user->id . ')';
@@ -112,30 +116,6 @@ class lib {
                 }
             }
         }
-    }
-
-    /**
-     * Check whether the current user may configure the support forums of a course.
-     *
-     * @param int $courseid
-     * @return bool
-     */
-    public static function can_config_course($courseid): bool {
-        global $USER;
-        if (self::can_config_global()) {
-            return true;
-        }
-        $context = \context_course::instance($courseid);
-        return is_enrolled($context, $USER, 'moodle/course:activityvisibility');
-    }
-
-    /**
-     * Check whether the current user may configure the plugin site wide.
-     *
-     * @return bool
-     */
-    public static function can_config_global(): bool {
-        return \is_siteadmin();
     }
 
     /**
@@ -389,13 +369,6 @@ class lib {
      */
     public static function course_manual_enrolments(array $courseids, array $userids, int $roleid): bool {
         global $DB;
-        if (!is_array($courseids)) {
-            $courseids = [$courseids];
-        }
-        if (!is_array($userids)) {
-            $userids = [$userids];
-        }
-
         // Check manual enrolment plugin instance is enabled/exist.
         $enrol = enrol_get_plugin('manual');
         if (empty($enrol)) {
@@ -411,6 +384,11 @@ class lib {
             }
             if (empty($instances[$courseid])) {
                 $instances[$courseid] = self::get_enrol_instance($courseid);
+            }
+            if (empty($instances[$courseid])) {
+                // The course takes no manual enrolments, and none could be set up.
+                $failures++;
+                continue;
             }
 
             foreach ($userids as $userid) {
@@ -485,27 +463,6 @@ class lib {
     }
 
     /**
-     * Clones an object to reveal private fields.
-     *
-     * @param array $object
-     * @return array
-     */
-    public static function expose_properties(array $object = []): array {
-        $object = (array) $object;
-        $keys = array_keys($object);
-        foreach ($keys as $key) {
-            $xkey = explode("\0", $key);
-            $xkey = $xkey[count($xkey) - 1];
-            $object[$xkey] = $object[$key];
-            unset($object[$key]);
-            if (is_object($object[$xkey])) {
-                $object[$xkey] = self::expose_properties($object[$xkey]);
-            }
-        }
-        return $object;
-    }
-
-    /**
      * Checks for groupmode in a forum and lists available groups of this user.
      *
      * @param int $forumid the forum.
@@ -538,8 +495,6 @@ class lib {
 
         // We do not use the function groups_get_user_groups, as it does not
         // return groups that don't have members!!
-        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-        /* $groupsfromdb = \groups_get_user_groups($course->id); */
         $groupsfromdb = $DB->get_records('groups', ['courseid' => $course->id]);
         if (count($groupsfromdb) == 0) {
             return [];
@@ -1043,32 +998,6 @@ class lib {
     }
 
     /**
-     * Checks if a user belongs to the support team.
-     *
-     * @deprecated since 2.8.0. The two levels are separate, so ask for the one you mean:
-     *             is_second_level() for the platform team, is_first_level() for a course.
-     *
-     * @param int $userid check particular user, or current user
-     * @param int $courseid check for particular course
-     * @param bool $includeglobalteam if checking for particular course, also include global team.
-     * @return bool
-     */
-    public static function is_supportteam($userid = 0, $courseid = 0, $includeglobalteam = true) {
-        global $USER;
-
-        $userid = empty($userid) ? $USER->id : $userid;
-
-        if ($courseid > 0 && !$includeglobalteam) {
-            return self::is_first_level($userid, $courseid);
-        }
-        if ($courseid > 0) {
-            return self::is_second_level($userid) || self::is_first_level($userid, $courseid);
-        }
-
-        return self::is_second_level($userid);
-    }
-
-    /**
      * Checks if a given forum is used as support-forum.
      *
      * @param int $forumid the forum.
@@ -1110,7 +1039,7 @@ class lib {
      * Get the enrol instance for manual enrolments of a course, or create one.
      *
      * @param int $courseid the course.
-     * @return object enrolinstance
+     * @return \stdClass|null the instance, null if the course has none and none could be added.
      */
     private static function get_enrol_instance($courseid) {
         // Check manual enrolment plugin instance is enabled/exist.
@@ -1118,18 +1047,18 @@ class lib {
         if (empty($enrol)) {
             throw new \moodle_exception('manualpluginnotinstalled', 'enrol_manual');
         }
-        $instance = null;
-        $enrolinstances = enrol_get_instances($courseid, false);
-        foreach ($enrolinstances as $courseenrolinstance) {
-            if ($courseenrolinstance->enrol == "manual") {
-                return $courseenrolinstance;
+        // Look twice at most: the second time after an instance was added.
+        foreach ([false, true] as $added) {
+            foreach (enrol_get_instances($courseid, false) as $courseenrolinstance) {
+                if ($courseenrolinstance->enrol == "manual") {
+                    return $courseenrolinstance;
+                }
+            }
+            if (!$added) {
+                $enrol->add_default_instance(get_course($courseid));
             }
         }
-        if (empty($instance)) {
-            $course = get_course($courseid);
-            $enrol->add_default_instance($course);
-            return self::get_enrol_instance($courseid);
-        }
+        return null;
     }
 
     /**
@@ -1498,7 +1427,6 @@ class lib {
                 'categoryid' => $course->category,
                 'courseid' => $forum->course,
                 'forumid' => $forum->id,
-                'archiveid' => 0,
                 'dedicatedsupporter' => 0,
             ];
             $supportforum->id = $DB->insert_record('local_helpdesk', $supportforum);
@@ -1745,8 +1673,6 @@ class lib {
         $taskdata = [
             'issueid' => $issueid,
             // No second reminders anymore.
-            // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-            /* 'sendagain' => true, */
         ];
         $task = new reminder();
         $task->set_custom_data($taskdata);

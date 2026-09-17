@@ -71,46 +71,32 @@ class accountmanager {
     }
 
     /**
-     * returns all managers from site
+     * Everybody who may create courses somewhere, and the site administrators.
      *
-     * @return array|bool
+     * @return string[] user id => name, sorted by username.
      */
     public static function get_all_category_managers_from_site() {
         global $DB;
+        $users = [];
         $roles = get_roles_with_capability('moodle/course:create', CAP_ALLOW);
-        $sql = '
-        SELECT
-        DISTINCT u.username as username, u.id as userid, u.firstname, u.lastname
-        FROM {role_assignments} ra
-        JOIN {user} u ON u.id = ra.userid
-        JOIN {role} r ON r.id = ra.roleid
-        JOIN {context} ctx ON ctx.id = ra.contextid
-        WHERE ';
-        $i = 0;
-        foreach ($roles as $role) {
-            if ($i == 0) {
-                $sql .= "r.id = " . $role->id . " ";
-            } else {
-                $sql .= "OR r.id = " . $role->id . " ";
-            }
-            $i++;
+        if ($roles) {
+            [$insql, $params] = $DB->get_in_or_equal(array_keys($roles));
+            $sql = "SELECT DISTINCT u.id, u.username, u.firstname, u.lastname
+                      FROM {role_assignments} ra
+                      JOIN {user} u ON u.id = ra.userid
+                     WHERE u.deleted = 0 AND ra.roleid $insql";
+            $users = $DB->get_records_sql($sql, $params);
         }
-        $sql .= " UNION select u.username as username, u.id as userid, u.firstname, u.lastname
-        FROM {user} u
-        WHERE " . $DB->sql_concat("','", "(SELECT value FROM {config} WHERE name = 'siteadmins')", "','") .
-        " LIKE " . $DB->sql_concat("'%,'", "u.id", "',%'");
-        $sql .= "ORDER BY username";
+        foreach (get_admins() as $admin) {
+            $users[$admin->id] = $admin;
+        }
+        \core_collator::asort_objects_by_property($users, 'username');
 
-        $users = $DB->get_records_sql($sql);
-        if (isset($users)) {
-            foreach ($users as $user) {
-                $name = $user->firstname . ' ' . $user->lastname;
-                $id = $user->userid;
-                $possibleusers[$id] = $name;
-            }
-            return $possibleusers;
+        $possibleusers = [];
+        foreach ($users as $user) {
+            $possibleusers[$user->id] = $user->firstname . ' ' . $user->lastname;
         }
-        return false;
+        return $possibleusers;
     }
 
     /**
@@ -125,15 +111,11 @@ class accountmanager {
             return false;
         }
         $capability = explode(',', $capability);
-        $sql = '
-            SELECT  c.id as cid
-            FROM {role_assignments} ra
-            JOIN {context} c ON ra.contextid = c.id
-            JOIN {role} r ON ra.roleid = r.id
-   		    WHERE ra.userid = ?
-   		    AND c.contextlevel IN (10,40,50)
-            ORDER BY contextlevel DESC, contextid ASC, r.sortorder ASC
-        ';
+        $sql = "SELECT DISTINCT c.id AS cid
+                  FROM {role_assignments} ra
+                  JOIN {context} c ON ra.contextid = c.id
+                 WHERE ra.userid = ?
+                       AND c.contextlevel IN (" . CONTEXT_SYSTEM . ", " . CONTEXT_COURSECAT . ", " . CONTEXT_COURSE . ")";
         $records = $DB->get_records_sql($sql, [$USER->id]);
         if (!empty($records)) {
             foreach ($records as $record) {

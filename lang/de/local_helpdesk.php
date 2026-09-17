@@ -26,15 +26,11 @@
 $string['accountmanager'] = 'Dein Account Manager';
 $string['accountmanagers'] = 'Account Manager';
 $string['accountmanagertitle'] = 'Account Manager';
-$string['allowguesttickets'] = 'Anfragen von Gästen zulassen.';
-$string['allowguesttickets:description'] = 'Gäste können eine Anfrage stellen und erhalten Neuigkeiten dazu per E-Mail.';
 $string['archive'] = 'Archiv';
 $string['assigned'] = 'Zugeordnet';
 $string['auto2ndlvl'] = 'Automatische Weiterleitung zum 2nd Level Support';
 $string['auto2ndlvl:description'] = 'Automatische Weiterleitung zum 2nd Level Support nach Anlegen eines neuen Tickets';
 $string['autoassign'] = 'Automatisch zuweisbar';
-$string['autoassign:description'] = 'Ob eine Eskalation eine Anfrage an diese Person übergeben darf, ohne dass sie jemand auswählt. Für Spezialist:innen abschalten, die nur von Hand zugewiesen werden sollen.';
-$string['autocreate_usergroup'] = 'Automatisch private Gruppen für Nutzer/innen anlegen';
 $string['back'] = 'Zurück';
 $string['be_more_accurate'] = 'Bitte beschreiben Sie das Problem genauer!';
 $string['cachedef_spamprotect'] = 'Zählt die Anfragen einer Person oder einer Adresse';
@@ -44,7 +40,6 @@ $string['changes_saved_fail'] = 'Änderungen konnten nicht gespeichert werden.';
 $string['changes_saved_successfully'] = 'Änderungen erfolgreich gespeichert.';
 $string['changestatus'] = 'Status ändern';
 $string['contactphone'] = 'Telefon';
-$string['contactphone_missing'] = 'Bitte geben Sie Ihre Telefonnummer für Rückfragen an!';
 $string['continue'] = 'Weiter';
 $string['coursecategorydeletion'] = 'Sie versuchen einen Kursbereich zu löschen, der Supportforen enthält. Bitte stellen Sie sicher, dass Sie zuvor die Supportforen deaktivieren!';
 $string['coursesupporters'] = '1st Level Support';
@@ -56,7 +51,6 @@ $string['coursesupporters:nosupportforum'] = 'Dieser Kurs enthält kein Supportf
 $string['create_issue'] = 'Support kontaktieren';
 $string['create_issue_error_description'] = 'Die Anfrage konnte nicht gespeichert werden!';
 $string['create_issue_error_title'] = 'Fehler';
-$string['create_issue_mail_success_description'] = 'Ihre Anfrage wurde gespeichert. Wir helfen Ihnen so bald wie möglich!';
 $string['create_issue_success_close'] = 'Schließen';
 $string['create_issue_success_description'] = 'Ihre Anfrage wurde gespeichert. Wir kümmern uns darum so rasch wie möglich!';
 $string['create_issue_success_description_mail'] = 'Ihre Anfrage wurde per e-Mail gesendet. Wir kümmern uns darum so rasch wie möglich!';
@@ -93,8 +87,6 @@ $string['faqread:description'] = 'Ich bestätige hiermit die <a href="{$a}">FAQ<
 $string['firstlvlgroupmode'] = '1st level Support Gruppen Modus';
 $string['firstlvlgroupmode:description'] = 'Aktiviert den Gruppenmodus, so dass Nicht-Lehrer (andere Rollen) auf der Grundlage eines benutzerdefinierten Feldes verbunden werden und im Kursforum antworten können (stellen Sie sicher, dass Sie der Rolle "canforward2ndlevel" das Recht geben. Aktivieren Sie auch den Gruppenmodus im Kurs und aktivieren Sie getrennte Gruppen.';
 $string['furtherquestions'] = 'Da Sie eine Supportanfrage als Gastbenutzer gestellt haben, können Sie nicht antworten oder weitere Kommentare zu dieser Anfrage abgeben. Wenn Sie weitere Unterstützung wünschen, registrieren Sie sich bitte unter {$a->sitename}.';
-$string['goto_targetforum'] = 'Supportforum';
-$string['goto_tutorials'] = 'Hilfe & Anleitungen';
 $string['guestmail'] = 'Ihre E-Mail Adresse';
 $string['guestmodeenabled'] = 'Gastmodus aktiv';
 $string['guestmodeenabled:description'] = 'Gäste können auch Supporttickets anlegen und werden dann per Mail benachrichtigt';
@@ -118,13 +110,6 @@ $string['issue_assign'] = 'Zuordnen';
 $string['issue_assign_me'] = 'Mir zuweisen';
 $string['issue_assign_nextlevel'] = 'Dieses Ticket dem Plattform-Support zuweisen';
 $string['issue_assign_nextlevel:error'] = 'Entschuldigung, das Ticket konnte nicht dem Plattform Support Team zugewiesen werden.';
-$string['issue_assign_nextlevel:msgtosupporter'] = '<p>Ihnen wurde ein neuer Support-Request zugewiesen. Die folgende Nachricht wurde NICHT an den Benutzer gesendet,
-der die Support-Anfrage gestellt hat, da die Plugin-Einstellung "Senden von Support-Benutzerzuweisungen an den Benutzer" deaktiviert ist:</p>
-<p>Wir freuen uns, Ihnen mitteilen zu können, dass Ihre Support-Anfrage an das {$a->sitename} Support-Team weitergeleitet wurde!</p>
- <p>Sie werden in Kürze eine Antwort auf Ihre Frage erhalten. Bitte haben Sie Verständnis dafür, dass die Beantwortung mancher Fragen länger dauert und es einige Tage dauern kann, bis wir Ihnen eine Lösung anbieten können.</p>
- Sie erhalten diese E-Mail, weil Sie das Team von {$a->sitename} über eine Support-Anfrage um Hilfe gebeten haben. Sie finden alle Ihre Anfragen unter {$a->supportforumname} auf {$a->sitename}.
- <p>Wir wünschen Ihnen eine tolle Lernerfahrung!</p>
- <p>Ihr {$a->sitename} Team </p>';
 $string['issue_assign_nextlevel:post'] = '<p>Wir freuen uns, Ihnen mitteilen zu können, dass Ihre Support-Anfrage an das {$a->sitename} Support-Team weitergeleitet wurde!</p>
  <p>Sie werden in Kürze eine Antwort auf Ihre Frage erhalten. Bitte haben Sie Verständnis dafür, dass die Beantwortung mancher Fragen länger dauert und es einige Tage dauern kann, bis wir Ihnen eine Lösung anbieten können.</p>
  Sie erhalten diese E-Mail, weil Sie das Team von {$a->sitename} über eine Support-Anfrage um Hilfe gebeten haben. Sie finden alle Ihre Anfragen unter {$a->supportforumname} auf {$a->sitename}.
@@ -160,11 +145,7 @@ $string['issues:assigned:none'] = 'Es sind keine weiteren Anfragen abonniert wor
 $string['issues:closed'] = 'Geschlossen';
 $string['issues:current'] = 'Meine Verantwortung';
 $string['issues:current:none'] = 'Gönn dir ne Pause - es ist alles erledigt!';
-$string['issues:openall'] = '{$a} gesamt offen';
-$string['issues:openmine'] = '{$a} für mich';
-$string['issues:opennosupporter'] = '{$a} nicht zugeordnet';
 $string['issues:other'] = 'Andere Anfragen';
-$string['issues:other:none'] = 'Super, auf diesem Planeten gibt es keine Probleme mehr, oder doch?';
 $string['issues:show'] = 'Helpdesk-Anfragen anzeigen';
 $string['label:2ndlevel'] = 'Plattform Support Team';
 $string['level'] = 'Ebene';
@@ -192,12 +173,8 @@ $string['migrate:uninstall'] = 'local_edusupport deinstallieren';
 $string['migrate:uninstallhint'] = 'Solange local_edusupport installiert ist, zeigt es seinen eigenen Hilfe-Button neben jenem von Helpdesk an. Deinstallieren Sie es, sobald Sie die migrierten Daten geprüft haben. Beim Deinstallieren werden auch seine Tabellen entfernt, die bis dahin als Sicherung dienen.';
 $string['migrate:what'] = 'Daten';
 $string['missing_permission'] = 'Fehlende Erlaubnis!';
-$string['missing_targetforum'] = 'Das Zielforum fehlt und muss konfiguriert werden!';
-$string['missing_targetforum_exists'] = 'Das konfigurierte Zielforum existiert nicht. Die fehlerhafte Konfiguration muss behoben werden!';
 $string['no_such_issue'] = 'Dies ist kein offenes Ticket! Sie können die <a href="{$a->todiscussionurl}"><u>Diskussion direkt im Forum</u></a> aufrufen oder zurück zur <a href="{$a->toissuesurl}"><u>Übersicht der offenen Tickets</u></a> wechseln.';
 $string['none'] = 'nichts ausgewählt';
-$string['notasigned'] = 'Es wurde noch kein Support-User zugewiesen';
-$string['only_you'] = 'Nur Sie und unser Team';
 $string['overview'] = 'Alle Support-User';
 $string['overview:description'] = 'Alle, die auf dieser Plattform Support leisten: 1st Level wird je Kurs zugewiesen, 2nd Level ist das plattformweite Team.';
 $string['phonefield'] = 'Telefonfeld verbergen';
@@ -246,14 +223,11 @@ $string['privacy:metadata:helpdesk:supportlevel'] = 'Die selbst gewählte Bezeic
 $string['privacy:metadata:helpdesk:timecreated'] = 'Wann das Ticket erstellt wurde';
 $string['privacy:metadata:helpdesk:timemodified'] = 'Wann das Ticket zuletzt geändert wurde';
 $string['privacy:metadata:helpdesk:userid'] = 'Die Person';
-$string['relativeurlsupportarea'] = 'Relative URL zum Supportbereich';
 $string['rolename'] = 'Rollenname';
 $string['rolename:description'] = 'Rollenname für den 1st Level Support (z.B. teacher statt editingtecher oder eine eigens erstellte Rolle)';
 $string['scope'] = 'Betreut';
 $string['scope:platform'] = 'Die gesamte Plattform';
 $string['screenshot'] = 'Screenshot anhängen';
-$string['screenshot:description'] = 'Ein Screenshot kann bei der Problembehebung helfen!';
-$string['screenshot:generateinfo'] = 'Zur Generierung des Screenshots wird das Formular kurz unsichtbar, wird aber danach gleich wieder angezeigt!';
 $string['screenshot:invalid'] = 'Der Screenshot ist kein Bild, das angehängt werden kann (PNG, JPEG, GIF oder WebP).';
 $string['screenshot:toobig'] = 'Der Screenshot ist zu groß. Es können höchstens {$a} angehängt werden.';
 $string['screenshot:upload:failed'] = 'Vorbereitung der Datei fehlgeschlagen!';
@@ -297,13 +271,11 @@ $string['status:ongoing'] = 'In Bearbeitung';
 $string['subject'] = 'Betreff';
 $string['subject_missing'] = 'Bitte geben Sie einen stichwortartigen Titel an, der das Problem beschreibt!';
 $string['subject_prefix'] = 'Supportanfrage zu folgendem Thema: ';
-$string['support_area'] = 'Hilfe & Anleitungen';
 $string['supportadded'] = "Supportuser hinzugefgügt";
 $string['supportchanged'] = "Supportuser geändert";
 $string['supportcourse'] = 'Supportkurs';
 $string['supportdeleted'] = "Supportuser gelöscht";
 $string['supporters'] = 'Supportmitarbeiter/innen';
-$string['supporters:choose'] = 'Supportmitarbeiter/innen wählen';
 $string['supportforum:central:disable'] = 'deaktivieren';
 $string['supportforum:central:enable'] = 'aktivieren';
 $string['supportforum:choose'] = 'Foren für Helpdesk auswählen';
@@ -323,4 +295,3 @@ $string['userlinks'] = 'Userlinks';
 $string['userlinks:description'] = 'zeige Userlinks in Taskliste';
 $string['webhost'] = 'Host';
 $string['weburl'] = 'URL';
-$string['your_issues'] = 'Ihre Anfragen';

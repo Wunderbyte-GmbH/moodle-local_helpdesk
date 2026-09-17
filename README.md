@@ -17,14 +17,19 @@ Now you need to create at least one course with one general forum and mark it as
 
 ### Who is the 1st level support of a course?
 
-The 1st level support of a support forum is **everybody who holds the capability `moodle/course:update` in the course containing that forum** - by default the teacher (editingteacher) role. It is deliberately tied to the capability rather than to a role name, so that you can decide per course, and per role, who answers the requests filed there.
+The 1st level support of a support course is **assigned by name, per course**. Open the support course and choose **First level support** in the course menu, press **Assign first level support** and pick the people who answer the requests filed in that course.
 
-This is what carries the decentralised model: on a platform hosting many schools, every school gets its own support course, and the staff who maintain that course are its 1st level support. Only when they cannot help is an issue escalated to the 2nd level, which is the site wide team you configured above.
+* Who may assign: everybody holding the capability `local/helpdesk:assignsupporters` in the course - by default managers and teachers (editingteacher).
+* Who can be assigned: people enrolled in the course who may start discussions in the forum (`mod/forum:startdiscussion`) and see hidden activities (`moodle/course:viewhiddenactivities`), which by default means the teaching staff of that course and not its students.
 
-Two consequences worth knowing:
+This is what carries the decentralised model: on a platform hosting many schools, every school gets its own support course, and the staff named there are its 1st level support. Only when they cannot help is an issue escalated to the 2nd level, which is the site wide team you configured above. A support course in which nobody is assigned hands every request to the 2nd level directly.
 
-* Any role granting `moodle/course:update` in that course counts, including a manager assigned site wide or an integration account. If you find an unexpected person listed as a support contact, check `Course > Participants > Permissions` for `moodle/course:update`, or `/admin/roles/check.php` for that user in the course context.
-* By default the people found this way are named to the person filing a request, in the confirmation dialogue and in an automatic post in the ticket. Turn off **Show the support contacts to the person filing a request** in the plugin settings if they should stay unnamed. Supporters are notified about new tickets either way.
+Two things worth knowing:
+
+* On a site that used an earlier version, where the 1st level was everybody holding `moodle/course:update` in the course, the button **Fill first level support from course rights** in the plugin settings assigns exactly those people once. It first shows what it would do.
+* By default the people assigned are named to the person filing a request, in the confirmation dialogue and in an automatic post in the ticket. Turn off **Show the support contacts to the person filing a request** in the plugin settings if they should stay unnamed. People who are not logged in are never told, and mail addresses of supporters are not shown to anybody. Supporters are notified about new tickets either way.
+
+**Plugins > Local plugins > All support users** lists both levels with the courses they support.
 
 You can enable separated groups, visible groups or no group mode - doesn't matter. Users will receive notifications as usual if they subscribe the forum.
 
@@ -48,12 +53,12 @@ If a user presses this button a modal dialog appears and the user can describe t
 
 If the user has access to several supportforums he can choose the target, also if the forums use the group feature, the target group can be chosen. If the user has not access to any supportforum the system automatically falls back to an email mode, and the issue is sent to the mailaddress of the supportusers specified in the site administration.
 
-If a user has the capability 'helpdesk:canforward2ndlevel', which is set by default for the teacher role (1st Level Support), it is possible to forward the issue directly to the 2nd level on creation. You can also decide to grant this capability to other roles as well.
+If a user has the capability `local/helpdesk:canforward2ndlevel`, which is set by default for the teacher role, it is possible to forward the issue directly to the 2nd level on creation. You can also decide to grant this capability to other roles as well.
 
 
 ## Who is responsible for a ticket?
 
-1. The 1st level support, which means: everybody holding `moodle/course:update` in the support course - by default the teachers. These users can forward an issue to the 2nd level. On the discussion page they will find a button "Forward this issue to 2nd level support". If a dedicated supporter was set for this forum, this user will be named to be responsible for this ticket. Otherwise a random user from the 2nd level support team will be selected. For transparency reasons a post on behalf of the 1st level support user is automatically added to the discussion. Anybody from the 1st level support can also revoke the issue from the 2nd level.
+1. The 1st level support, which means: the people assigned to the support course (see above). Everybody holding `local/helpdesk:canforward2ndlevel` in the course can forward an issue to the 2nd level. On the discussion page they will find a button "Forward this issue to 2nd level support". If a dedicated supporter was set for this forum, this user will be named to be responsible for this ticket. Otherwise a random user from the 2nd level support team will be selected. For transparency reasons a post on behalf of the 1st level support user is automatically added to the discussion. Anybody from the 1st level support can also revoke the issue from the 2nd level.
 
 ![Forward issue to 2nd level](/doc/issue-forward.png)
 

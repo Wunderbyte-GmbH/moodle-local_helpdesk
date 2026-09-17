@@ -145,9 +145,6 @@ if (!\local_helpdesk\lib::can_view_issues()) {
 
         $postid = empty($post->id) ? null : $post->id;
         $draftitemid = \file_get_submitted_draft_itemid('attachments');
-        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-        /* \file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_forum', 'attachment', empty($post->id) ? null : $post->id,
-            \mod_forum_post_form::attachment_options($forum)); */
         \file_prepare_draft_area(
             $draftitemid,
             $modcontext->id,
@@ -282,8 +279,6 @@ if (!\local_helpdesk\lib::can_view_issues()) {
             "title" => \fullname($user) . ' (' . (!empty($supportlevel) ? $supportlevel :
                 get_string('label:2ndlevel', 'local_helpdesk')) . ')',
             "class" => '',
-            // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-            /* "icon" => 'i/checkpermissions', */
             "href" => (new moodle_url('/user/profile.php', ['id' => $user->id]))->out(false),
         ];
     }
@@ -430,15 +425,9 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     );
 
     $starts = [
-        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-        /* '<div class="singleselect d-inline-block">',
-        '<div class="discussion-nav clearfix">', */
         '<div class="commands">',
     ];
     $ends = [
-        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-        /* '</div>',
-        '</div>', */
         '</div>',
     ];
     for ($a = 0; $a < count($starts); $a++) {

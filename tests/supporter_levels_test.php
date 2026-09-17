@@ -40,7 +40,6 @@ use stdClass;
  * @covers     \local_helpdesk\lib::is_first_level
  * @covers     \local_helpdesk\lib::is_second_level
  * @covers     \local_helpdesk\lib::get_assignable_users
- * @covers     \local_helpdesk\lib::is_supportteam
  * @covers     \local_helpdesk\lib::get_course_supporters
  * @covers     \local_helpdesk\lib::can_assign_first_level
  * @covers     \local_helpdesk\lib::assign_first_level
@@ -480,27 +479,5 @@ final class supporter_levels_test extends advanced_testcase {
         $this->assertTrue(lib::can_assign_first_level($this->course->id, $editingteacher->id));
         $this->assertFalse(lib::can_assign_first_level($this->course->id, $teacher->id));
         $this->assertFalse(lib::can_assign_first_level($this->course->id, $student->id));
-    }
-
-    /**
-     * The old entry point keeps answering exactly as it did.
-     */
-    public function test_is_supportteam_still_answers_as_before(): void {
-        $platform = $this->getDataGenerator()->create_user();
-        $local = $this->user_with_role('editingteacher');
-        $this->generator->create_supporter(['userid' => $platform->id]);
-        $this->generator->create_supporter(['userid' => $local->id, 'courseid' => $this->course->id]);
-
-        // Without a course the question has always been about the platform team.
-        $this->assertTrue(lib::is_supportteam($platform->id));
-        $this->assertFalse(lib::is_supportteam($local->id));
-
-        // With a course, and by default, either level answers yes.
-        $this->assertTrue(lib::is_supportteam($platform->id, $this->course->id));
-        $this->assertTrue(lib::is_supportteam($local->id, $this->course->id));
-
-        // Asking for the course alone leaves the platform team out.
-        $this->assertFalse(lib::is_supportteam($platform->id, $this->course->id, false));
-        $this->assertTrue(lib::is_supportteam($local->id, $this->course->id, false));
     }
 }

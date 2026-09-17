@@ -91,7 +91,9 @@ class guest_supportuser {
         global $CFG;
         if (!$this->guestuser_exists()) {
             require_once($CFG->dirroot . '/user/lib.php');
-            $this->user->id = user_create_user($this->user, false, true);
+            $userid = user_create_user($this->user, false, true);
+            // The whole record, as it is for an account that exists already: names are built from it.
+            $this->user = \core_user::get_user($userid, '*', MUST_EXIST);
         }
         set_config('guestuserid', $this->user->id, 'local_helpdesk');
     }

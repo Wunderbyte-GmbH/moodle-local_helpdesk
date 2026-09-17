@@ -44,90 +44,48 @@ class reminder extends \core\task\adhoc_task {
     }
 
     /**
-     * Send the reminders this task was queued for.
+     * Remind the supporter of the issue this task was queued for, if it is still waiting for them.
      *
-     * @param bool $debug whether to report what is being done.
-     * @return bool|void
+     * @return void
      */
-    public function execute($debug = false) {
+    public function execute() {
         global $DB;
 
         $taskdata = $this->get_custom_data();
-        if (!get_config('local_helpdesk', 'sendreminders')) {
+        if (!get_config('local_helpdesk', 'sendreminders') || empty($taskdata->issueid)) {
             return;
         }
 
-        $sql = "SELECT discussionid, currentsupporter
-                FROM {local_helpdesk_issues}
-                WHERE priority > 0
-                AND currentsupporter > 0
-                AND status = :status
-                AND id = :issueid
-                ORDER BY currentsupporter ASC";
-
-        $params = [
+        $issue = $DB->get_record('local_helpdesk_issues', [
+            'id' => $taskdata->issueid,
             'status' => \local_helpdesk\lib::STATUS_AWAITING_SUPPORT_ACTION,
-            'issueid' => $taskdata->issueid,
-        ];
-
-        $issues = $DB->get_records_sql($sql, $params);
-
-        if (!empty($issues)) {
-            $currentsupporter = new \stdClass();
-            $reminders = [];
-            foreach ($issues as $issue) {
-                if (!empty($currentsupporter->id) && $issue->currentsupporter != $currentsupporter->id) {
-                    $this->send($currentsupporter, $reminders, $debug);
-                    $reminders = [];
-                    $currentsupporter = $issue->currentsupporter;
-                }
-                $currentsupporter = $DB->get_record('user', ['id' => $issue->currentsupporter]);
-                $discussion = $DB->get_record('forum_discussions', ['id' => $issue->discussionid]);
-                if (!empty($discussion->firstpost)) {
-                    $post = $DB->get_record('forum_posts', ['id' => $discussion->firstpost]);
-                    $user = $DB->get_record('user', ['id' => $discussion->userid]);
-                    $discussion->message = $post->message;
-                    $discussion->userfullname = \fullname($user);
-                    $discussion->useremail = $user->email;
-                    $reminders[] = $discussion;
-                }
-            }
-
-            // Send a message to the current supporter.
-            $this->send($currentsupporter, $reminders, $debug);
-
-            // No second reminders anymore!
-            // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-            /*if ($taskdata->sendagain &&
-                !\local_helpdesk\lib::issue_already_has_reminder($taskdata->issueid)) {
-
-                $task = new reminder();
-
-                // After the second reminder, we don't send any additional reminders.
-                $taskdata->sendagain = false;
-                $task->set_custom_data($taskdata);
-
-                // Second reminder will take twice as long.
-                $timebeforereminder = time() + 2 * (get_config('local_helpdesk', 'timebeforereminder'));
-                $task->set_next_run_time($timebeforereminder);
-
-                // Now queue the task or reschedule it if it already exists (with matching data).
-                \core\task\manager::queue_adhoc_task($task);
-            }*/
-
-            return true;
+        ]);
+        if (!$issue || $issue->priority <= 0 || empty($issue->currentsupporter)) {
+            return;
         }
-        return true;
+
+        $supporter = $DB->get_record('user', ['id' => $issue->currentsupporter, 'deleted' => 0]);
+        $discussion = $DB->get_record('forum_discussions', ['id' => $issue->discussionid]);
+        $post = $discussion ? $DB->get_record('forum_posts', ['id' => $discussion->firstpost]) : false;
+        $user = $discussion ? $DB->get_record('user', ['id' => $discussion->userid]) : false;
+        if (!$supporter || !$post || !$user) {
+            return;
+        }
+
+        $discussion->message = $post->message;
+        $discussion->userfullname = \fullname($user);
+        $discussion->useremail = $user->email;
+        $this->send($supporter, [$discussion]);
     }
+
     /**
      * Send one reminder message to a supporter.
      *
      * @param object $supporter the user to remind.
      * @param array $reminders the discussions to remind them of.
-     * @param bool $debug whether to report what is being done.
-     * @return bool|void
+     * @return void
      */
-    private function send($supporter, $reminders = [], $debug = false) {
+    private function send($supporter, $reminders = []) {
         global $CFG, $OUTPUT;
         if (!empty($supporter->id) && $supporter->id > 0 && count($reminders) > 0) {
             $subject = $this->get_name();
@@ -136,11 +94,6 @@ class reminder extends \core\task\adhoc_task {
                 ['discussions' => $reminders, 'wwwroot' => $CFG->wwwroot]
             );
             $mailtext = html_to_text($mailhtml);
-
-            if ($debug) {
-                echo "# Mail to " . $supporter->email;
-                debugging($mailhtml);
-            }
 
             $fromuser = \core_user::get_support_user();
             \email_to_user($supporter, $fromuser, $subject, $mailtext, $mailhtml, '', '', true);

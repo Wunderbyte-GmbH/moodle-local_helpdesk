@@ -127,94 +127,6 @@ if (!$issupportteam) {
         'url' => new moodle_url('/my'),
     ]);
 } else {
-    $issues = $DB->get_records('local_helpdesk_issues', [], 'priority,id,discussionid,status');
-
-    $params = [
-        'current' => [], // Issues the user is responsible for.
-        'assigned' => [], // Issues the user receives notifications for.
-        'other' => [], // All other issues.
-        'wwwroot' => $CFG->wwwroot,
-        'count' => [],
-    ];
-    $hasprio = get_config('local_helpdesk', 'prioritylvl');
-    $params['count']['current'] = 0;
-    $params['count']['closed'] = 0;
-    $params['count']['assigned'] = 0;
-    $params['count']['other'] = 0;
-    $params['userlinks'] = get_config('local_helpdesk', 'userlinks');
-    $params['hasprio'] = $hasprio;
-    $params['sesskey'] = sesskey();
-    foreach (array_reverse($issues) as $issue) {
-        // Collect certain data about this issue.
-        $discussion = $DB->get_record('forum_discussions', ['id' => $issue->discussionid]);
-        $issue->name = $discussion->name;
-        $issue->userid = $discussion->userid;
-        $postinguser = $DB->get_record('user', ['id' => $discussion->userid]);
-        $issue->userfullname = \fullname($postinguser);
-        $sql = "SELECT id,modified,userid FROM {forum_posts} WHERE discussion=? ORDER BY modified DESC";
-        $lastposts = $DB->get_records_sql($sql, [$issue->discussionid], 0, 1);
-        $lastpost = reset($lastposts);
-        $issue->lastmodified = $issue->timemodified;
-        $issue->lastpostuserid = $lastpost->userid;
-        $lastuser = $DB->get_record('user', ['id' => $issue->lastpostuserid]);
-        $issue->lastpostuserfullname = fullname($lastuser);
-        $assigned = $DB->get_record(
-            'local_helpdesk_subscr',
-            ['discussionid' => $issue->discussionid, 'userid' => $USER->id]
-        );
-        $issue->prio = "";
-        $issue->priolow = "";
-        $issue->priomid = "";
-        $issue->priohigh = "";
-        if (isset($issue->accountmanager)) {
-            $accountmanager = $DB->get_record('user', ['id' => $issue->accountmanager]);
-            $issue->accountmanagerfn = \fullname($accountmanager);
-        }
-
-        // Now get the current supporter.
-        if (!empty($issue->currentsupporter)) {
-            $supportuser = $DB->get_record('user', ['id' => $issue->currentsupporter]);
-            $issue->currentsupportername = \fullname($supportuser);
-            $issue->currentsupporterid = $issue->currentsupporter;
-        } else {
-            $issue->currentsupportername = get_string('label:2ndlevel', 'local_helpdesk');
-        }
-
-        $issue->state = \local_helpdesk\lib::status_to_template($issue->status);
-
-        if ($hasprio) {
-            if ($issue->priority <= 1) {
-                $issue->priolow = "active";
-                $issue->priomid = "";
-                $issue->priohigh = "";
-            }
-            if ($issue->priority > 1) {
-                $issue->priolow = "";
-                $issue->priomid = "active";
-                $issue->priohigh = "";
-            }
-            if ($issue->priority > 2) {
-                $issue->priolow = "";
-                $issue->priomid = "";
-                $issue->priohigh = "active";
-            }
-        }
-        // Now separate between current, assigned and other issues.
-        if ($issue->currentsupporter == $USER->id && $issue->priority > 0) {
-            $params['current'][] = $issue;
-            $params['count']['current'] = $params['count']['current'] + 1;
-        } else if (!empty($assigned->id)) {
-            $params['assigned'][] = $issue;
-            $params['count']['assigned'] = $params['count']['assigned'] + 1;
-        } else if ($issue->status != \local_helpdesk\lib::STATUS_CLOSED) {
-            $params['other'][] = $issue;
-            $params['count']['other'] = $params['count']['other'] + 1;
-        } else if ($issue->status == \local_helpdesk\lib::STATUS_CLOSED) {
-            $params['closed'][] = $issue;
-            $params['count']['closed'] = $params['count']['closed'] + 1;
-        }
-    }
-
     // Holiday mode was already handled before any output was sent, this only renders it.
     if (!empty($supporter->id) && !empty($holidaymodeform)) {
         $supporter->holidayform = $holidaymodeform->render();
@@ -223,11 +135,8 @@ if (!$issupportteam) {
         $supporter->sesskey = sesskey();
         echo $OUTPUT->render_from_template('local_helpdesk/holidaymode', $supporter);
     }
-    $params['accountmanagerenabled'] = !empty(get_config('local_helpdesk', 'accountmanagers'));
-    // The heading rows of the groups span the whole table, which has one column more with account managers.
-    $params['columncount'] = $params['accountmanagerenabled'] ? 6 : 5;
-
-    echo $OUTPUT->render_from_template('local_helpdesk/issues', $params);
+    $issuelist = new \local_helpdesk\output\issue_list($USER->id);
+    echo $OUTPUT->render_from_template('local_helpdesk/issues', $issuelist->export_for_template($OUTPUT));
 }
 
 echo $OUTPUT->footer();
