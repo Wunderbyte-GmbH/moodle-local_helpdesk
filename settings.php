@@ -45,6 +45,15 @@ if ($hassiteconfig) {
         true
     ));
 
+    // Reached from the button below as well; only offered where local_edusupport left its tables.
+    $ADMIN->add('localplugins', new admin_externalpage(
+        'local_helpdesk_migrate',
+        get_string('migrate', 'local_helpdesk'),
+        new moodle_url('/local/helpdesk/migrate.php'),
+        'moodle/site:config',
+        true
+    ));
+
     // Possibly we changed the menu, therefore we delete the cache. We should find a better place for this.
     $cache = cache::make('local_helpdesk', 'supportmenu');
     $cache->delete($USER->id);
@@ -324,6 +333,9 @@ if ($hassiteconfig) {
         (object) ['name' => 'seedfirstlevel', 'href' => 'seedfirstlevel.php'],
         (object) ['name' => 'overview', 'href' => 'overview.php'],
     ];
+    if (\local_helpdesk\local\migration\edusupport_migrator::source_exists()) {
+        $actions[] = (object) ['name' => 'migrate', 'href' => 'migrate.php'];
+    }
     $links = "<div class='grid-eq-3'>";
     foreach ($actions as $action) {
         $links .= '<a class="btn btn-secondary mr-2 mb-3" href="' . $CFG->wwwroot . '/local/helpdesk/' . $action->href . '">' .

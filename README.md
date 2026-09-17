@@ -79,3 +79,17 @@ This overviewpage allows access to the discussions that represent the issue. All
 This block allows users to instantly post problems to a standard forum from wherever they are on the site, including the possibility to attach a screenshot of the current page. It is recommended to use separated groups within this forum.
 
 For that purpose Helpdesk creates a group for each user to ensure a private communication channel to the support team. Users can be automatically enrolled to the course containing the support-forum when posting a problem, if this option is enabled in admin settings.
+
+## Migrating from local_edusupport
+
+Helpdesk is the successor of [local_edusupport](https://github.com/Wunderbyte-GmbH/moodle-local_edusupport) and works the same way. To move an existing site over:
+
+1. Upgrade local_edusupport to version 2.8.0 or later.
+2. Install local_helpdesk next to it. Do not configure any support forum in Helpdesk yet: the migration keeps the record ids and only runs while Helpdesk is empty.
+3. Open `Site administration > Plugins > Local plugins > Helpdesk` and press **Migrate from eduSupport**. The page first shows how many records will be taken over, nothing is changed before you confirm. On large sites you can use the command line instead:
+   `php local/helpdesk/cli/migrate_edusupport.php` (dry run) and `php local/helpdesk/cli/migrate_edusupport.php --run`.
+4. Check the issues in Helpdesk, then uninstall local_edusupport.
+
+What is taken over: support forums, issues, supporters, subscriptions, all settings, waiting reminders and mails, and the users' notification preferences. The support team role and the guest ticket user are renamed and reused, so role assignments in the support forums and the authors of forum posts stay as they are.
+
+After the migration local_edusupport no longer knows any support forum and therefore does nothing any more; its issues, supporters and subscriptions remain in its tables as a backup until you uninstall it. Until then its help button is still shown next to the one of Helpdesk. Log entries and notifications that were already sent keep their reference to local_edusupport.
