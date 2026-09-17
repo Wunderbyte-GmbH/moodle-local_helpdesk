@@ -72,6 +72,10 @@ final class edusupport_migrator_test extends advanced_testcase {
         $xmldbfile->loadXMLStructure();
         $sources = array_flip(edusupport_migrator::TABLES);
         foreach ($xmldbfile->getStructure()->getTables() as $table) {
+            if (!isset($sources[$table->getName()])) {
+                // A table local_edusupport never had.
+                continue;
+            }
             $table->setName($sources[$table->getName()]);
             if (!$dbman->table_exists($table)) {
                 $dbman->create_table($table);

@@ -97,9 +97,11 @@ final class create_issue_test extends advanced_testcase {
      *
      * @param string $subject
      * @param string $forumgroup
+     * @param string $image the screenshot as data URL.
+     * @param string $imagename the file name of the screenshot.
      * @return array the reply of the external function.
      */
-    private function create_issue(string $subject, string $forumgroup = ''): array {
+    private function create_issue(string $subject, string $forumgroup = '', string $image = '', string $imagename = ''): array {
         if ($forumgroup === '') {
             $forumgroup = $this->forum->id . '_0';
         }
@@ -108,8 +110,8 @@ final class create_issue_test extends advanced_testcase {
             'Beschreibung des Problems',
             $forumgroup,
             0,
-            '',
-            '',
+            $image,
+            $imagename,
             'https://example.com/course/view.php?id=' . $this->course->id,
             '',
             null,
@@ -316,5 +318,86 @@ final class create_issue_test extends advanced_testcase {
 
         $this->expectException(moodle_exception::class);
         $this->create_issue('Zweites Ticket');
+    }
+
+    /**
+     * Somebody who is not logged in is counted by address, so dropping the session does not help.
+     */
+    public function test_spam_protection_survives_a_new_session(): void {
+        set_config('spamprotectionlimit', 1, 'local_helpdesk');
+
+        $this->setUser(null);
+        \local_helpdesk\local\rate_limiter::register_ticket();
+        \core\session\manager::init_empty_session();
+
+        $this->expectException(moodle_exception::class);
+        \local_helpdesk\local\rate_limiter::register_ticket();
+    }
+
+    /**
+     * What comes as a screenshot has to be a picture.
+     */
+    public function test_a_screenshot_has_to_be_a_picture(): void {
+        $this->setUser($this->student);
+
+        $this->expectException(moodle_exception::class);
+        $this->expectExceptionMessage(get_string('screenshot:invalid', 'local_helpdesk'));
+        try {
+            $this->create_issue('Drucker', '', 'data:image/png;base64,' . base64_encode('<?php echo 1;'), 'shot.php');
+        } finally {
+            global $DB;
+            $this->assertSame(0, $DB->count_records('forum_discussions'));
+        }
+    }
+
+    /**
+     * A picture is attached to the ticket under the extension of what it really is.
+     */
+    public function test_a_screenshot_is_attached(): void {
+        global $DB;
+
+        $this->setUser($this->student);
+        // The smallest GIF there is.
+        $gif = base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+        $reply = $this->create_issue('Drucker', '', 'data:image/png;base64,' . base64_encode($gif), 'shot.php');
+
+        $discussion = $DB->get_record('forum_discussions', ['id' => $reply['discussionid']], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('forum', $this->forum->id);
+        $files = get_file_storage()->get_area_files(
+            \context_module::instance($cm->id)->id,
+            'mod_forum',
+            'attachment',
+            $discussion->firstpost,
+            'id',
+            false
+        );
+        $this->assertCount(1, $files);
+        $this->assertSame('shot.gif', reset($files)->get_filename());
+    }
+
+    /**
+     * A ticket can only go into a group of the person filing it.
+     */
+    public function test_a_foreign_group_is_refused(): void {
+        global $DB;
+
+        $DB->set_field('course_modules', 'groupmode', SEPARATEGROUPS, ['instance' => $this->forum->id]);
+        rebuild_course_cache($this->course->id, true);
+        $group = $this->getDataGenerator()->create_group(['courseid' => $this->course->id]);
+
+        $this->setUser($this->student);
+        $this->expectException(moodle_exception::class);
+        $this->create_issue('Drucker', $this->forum->id . '_' . $group->id);
+    }
+
+    /**
+     * The people looking after a ticket are named, their mail addresses are not handed out.
+     */
+    public function test_no_mail_addresses_of_supporters(): void {
+        $this->setUser($this->student);
+        $reply = $this->create_issue('Drucker geht nicht');
+
+        $this->assertNotEmpty($reply['responsibles']);
+        $this->assertSame([''], array_unique(array_column($reply['responsibles'], 'email')));
     }
 }

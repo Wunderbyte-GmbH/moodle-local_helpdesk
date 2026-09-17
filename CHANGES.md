@@ -3,6 +3,8 @@
 * Security: Supporters can only edit and delete posts that belong to the issue they are looking at, forwarding, revoking and deleting need a session key, names are escaped in the dialogues.
 * Bugfix: Attachments are served again, tickets keep their author in group mode, hidden course categories stay hidden unless they hold a support forum.
 * Removed the debug page testreminder.php.
+* Security: Tickets are counted per person or per address instead of per session, screenshots have to be pictures of acceptable size, a ticket can only go into a group of its author, and people who are not logged in are no longer told who supports a course. Mail addresses of supporters are not handed out any more.
+* Security: The address of a guest is stored with the ticket (new table local_helpdesk_guesttickets) instead of being read from the title of the discussion.
 * Port of local_edusupport 2.8.0 to local_helpdesk.
 * New: Migrate all data of an existing local_edusupport installation from the plugin settings or via CLI.
 

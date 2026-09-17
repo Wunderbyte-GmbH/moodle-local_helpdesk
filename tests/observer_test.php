@@ -282,6 +282,7 @@ final class observer_test extends advanced_testcase {
         [$discussion, , $asking] = $this->create_issue_with_a_subscriber(
             '[Guestticket: fragende@example.com] Drucker geht nicht'
         );
+        \local_helpdesk\local\guest_ticket::set_email($discussion->id, 'fragende@example.com');
 
         $sink = $this->redirectEmails();
         $this->reply_to($discussion, $asking);
@@ -292,5 +293,51 @@ final class observer_test extends advanced_testcase {
         $this->assertContains('fragende@example.com', $recipients);
         $this->assertNotContains('helpdesk@example.com', $recipients, 'That is the shared guest account.');
         $sink->close();
+    }
+
+    /**
+     * The title of a discussion does not decide where mail goes.
+     *
+     * Everybody can call a ticket "[Guestticket: somebody@else]". The answers of the support team
+     * used to follow that address.
+     *
+     * @covers \local_helpdesk\observer::event
+     */
+    public function test_an_address_in_the_title_gets_no_mail(): void {
+        set_config('guestmodeenabled', 1, 'local_helpdesk');
+
+        [$discussion, , $asking] = $this->create_issue_with_a_subscriber(
+            'Hilfe [Guestticket: mitleser@example.com] Drucker geht nicht'
+        );
+
+        $sink = $this->redirectEmails();
+        $this->reply_to($discussion, $asking);
+        $this->runAdhocTasks(send_mail::class);
+
+        $this->assertNotContains('mitleser@example.com', array_column($sink->get_messages(), 'to'));
+        $sink->close();
+    }
+
+    /**
+     * Older guest tickets have their address taken out of the title once, if the guest account wrote them.
+     *
+     * @covers \local_helpdesk\local\guest_ticket::backfill_from_titles
+     */
+    public function test_backfill_only_trusts_titles_of_the_guest_account(): void {
+        global $DB;
+
+        [$forged] = $this->create_issue_with_a_subscriber('[Guestticket: mitleser@example.com] Drucker');
+        $guest = (new guest_supportuser())->get_support_guestuser();
+        $generator = $this->getDataGenerator()->get_plugin_generator('local_helpdesk');
+        $genuine = $generator->create_issue([
+            'forumid' => $forged->forum,
+            'userid' => $guest->id,
+            'subject' => '[Guestticket: fragende@example.com] Drucker',
+        ]);
+
+        $this->assertSame(1, \local_helpdesk\local\guest_ticket::backfill_from_titles());
+        $this->assertSame('fragende@example.com', \local_helpdesk\local\guest_ticket::get_email($genuine->discussionid));
+        $this->assertNull(\local_helpdesk\local\guest_ticket::get_email($forged->id));
+        $this->assertSame(0, \local_helpdesk\local\guest_ticket::backfill_from_titles());
     }
 }

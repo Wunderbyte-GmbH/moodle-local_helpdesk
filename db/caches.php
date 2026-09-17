@@ -27,8 +27,11 @@
 defined('MOODLE_INTERNAL') || die;
 
 $definitions = [
+    // Counts the tickets of a person or of an address. Not in the session: tickets can be filed without one.
     'spamprotect' => [
-        'mode' => cache_store::MODE_SESSION,
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'ttl' => DAYSECS,
     ],
     'supportmenu' => [
         'mode' => cache_store::MODE_APPLICATION,

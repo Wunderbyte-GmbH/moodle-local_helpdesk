@@ -30,6 +30,25 @@
  * @return bool
  */
 function xmldb_local_helpdesk_upgrade($oldversion) {
-    // The plugin starts as a port of local_edusupport 2.8.0: its whole schema is in install.xml.
+    global $DB;
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2026091800) {
+        // The address of a guest moves out of the title of the discussion into a table of its own.
+        $table = new xmldb_table('local_helpdesk_guesttickets');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('discussionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('email', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('discussionid', XMLDB_INDEX_UNIQUE, ['discussionid']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        \local_helpdesk\local\guest_ticket::backfill_from_titles();
+
+        upgrade_plugin_savepoint(true, 2026091800, 'local', 'helpdesk');
+    }
+
     return true;
 }

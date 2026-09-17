@@ -104,6 +104,17 @@ class provider implements
             'privacy:metadata:helpdesk:supportforums'
         );
 
+        // Filed without an account, so there is no user this could be exported for or deleted with.
+        // It goes when the discussion goes.
+        $collection->add_database_table(
+            'local_helpdesk_guesttickets',
+            [
+                'discussionid' => 'privacy:metadata:helpdesk:discussionid',
+                'email' => 'privacy:metadata:helpdesk:email',
+            ],
+            'privacy:metadata:helpdesk:guesttickets'
+        );
+
         return $collection;
     }
 

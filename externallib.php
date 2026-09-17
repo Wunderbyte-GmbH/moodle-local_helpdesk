@@ -122,28 +122,8 @@ class local_helpdesk_external extends external_api {
     ): array {
         global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SITE;
 
-        $protecttime = get_config('local_helpdesk', 'spamprotectionthreshold');
-        $protectamount = get_config('local_helpdesk', 'spamprotectionlimit');
-
-        $cache = \cache::make('local_helpdesk', 'spamprotect');
-        $timeoffset = time() - $protecttime;
-        // An empty cache hands back false, which cannot be appended to further down.
-        $log = $cache->get('log') ?: [];
-        if (!empty($log)) {
-            for ($a = 0; $a < count($log); $a++) {
-                if ($log[$a] < $timeoffset) {
-                    $log[$a] = '';
-                }
-            }
-            $log = array_filter($log);
-            $log = array_values($log);
-            $cache->set('log', $log);
-            if ($protectamount <= count($log)) {
-                throw new \moodle_exception('spamprotection:exception', 'local_helpdesk');
-            }
-        }
-        $log[] = time();
-        $cache->set('log', $log);
+        // Counted per person, or per address for somebody who is not logged in.
+        \local_helpdesk\local\rate_limiter::register_ticket();
 
         $subjectprefixenabled = get_config('local_helpdesk', 'predefined_subjects_prefix');
         $guestmodeenabled = false;
@@ -169,7 +149,14 @@ class local_helpdesk_external extends external_api {
                 'responsibles' => [],
         ];
         // Whether the person filing the request gets to see who is going to look after it.
-        $showresponsibles = !empty(get_config('local_helpdesk', 'showresponsibles'));
+        // Somebody who is not logged in never does: the names would be there for everybody to collect.
+        $showresponsibles = !empty(get_config('local_helpdesk', 'showresponsibles')) && !$guestmodeenabled;
+
+        // Anything can be sent in place of a screenshot, so have a look before anything is created.
+        $screenshot = null;
+        if (!empty($params['image'])) {
+            $screenshot = new \local_helpdesk\local\screenshot($params['image'], $params['screenshotname']);
+        }
         if (!empty(get_config('local_helpdesk', 'trackhost'))) {
             $params['webhost'] = gethostname();
         }
@@ -205,12 +192,10 @@ class local_helpdesk_external extends external_api {
 
             // The mails are queued rather than sent from here: talking to the mail server takes
             // as long as it takes, and the person filing the request is waiting for the answer.
-            if (!empty($params['image'])) {
-                $filename = $params['screenshotname'];
+            if ($screenshot) {
+                $filename = $screenshot->get_filename();
                 // Write image to a temporary file. The task deletes it once the mail has gone out.
-                $x = explode(",", $params['image']);
-                $filepath = $CFG->tempdir . '/helpdesk-' . md5($user->id . microtime(true) . random_string());
-                file_put_contents($filepath, base64_decode($x[1]));
+                $filepath = $screenshot->write_tempfile(true);
                 \core\antivirus\manager::scan_file($filepath, $filename, true);
                 foreach ($recipients as $index => $recipient) {
                     // Every queued mail deletes its attachment, so each one needs a file of its own.
@@ -244,7 +229,8 @@ class local_helpdesk_external extends external_api {
                         $reply['responsibles'][] = [
                                 'userid' => $coursesupporter->id,
                                 'name' => \fullname($coursesupporter),
-                                'email' => $coursesupporter->email,
+                                // The profile is linked, the address is nobody's business.
+                                'email' => '',
                         ];
                     }
                 }
@@ -308,6 +294,12 @@ class local_helpdesk_external extends external_api {
                     // in this case, get the group for the user in the activity.
                     if (empty($groupid)) {
                         $groupid = groups_get_activity_group($cm);
+                    } else if (
+                        !$DB->record_exists('groups', ['id' => $groupid, 'courseid' => $forum->course])
+                        || !groups_is_member($groupid, $user->id)
+                    ) {
+                        // The form only offers the groups of the person filing the request.
+                        throw new moodle_exception('cannotcreatediscussion', 'forum');
                     }
                 }
 
@@ -359,13 +351,14 @@ class local_helpdesk_external extends external_api {
                 if ($discussionid = forum_add_discussion($discussion, null, null, $user->id)) {
                     $discussion->id = $discussionid;
 
-                    if (!empty($params['image'])) {
-                        $filename = $params['screenshotname'];
+                    if ($guestmodeenabled) {
+                        // The title shows the address to the supporters; the answers go to this one.
+                        \local_helpdesk\local\guest_ticket::set_email($discussionid, $params['guestmail']);
+                    }
 
-                        $x = explode(",", $params['image']);
-                        // Write the file to a temp target.
-                        $filepath = $CFG->tempdir . '/helpdesk-' . md5($user->id . date("Y-m-d H:i:s"));
-                        file_put_contents($filepath, base64_decode($x[1]));
+                    if ($screenshot) {
+                        $filename = $screenshot->get_filename();
+                        $filepath = $screenshot->write_tempfile();
 
                         $fs = get_file_storage();
                         // Scan for viruses.
@@ -381,7 +374,7 @@ class local_helpdesk_external extends external_api {
                         $fr->itemid = $discussion->firstpost;
                         $fr->license = $CFG->sitedefaultlicense;
                         $fr->author = fullname($user);
-                        $fr->source = serialize((object) ['source' => $filename]);
+                        $fr->source = $filename;
 
                         $fs->create_file_from_pathname($fr, $filepath);
                         $DB->set_field('forum_posts', 'attachment', 1, ['id' => $discussion->firstpost]);

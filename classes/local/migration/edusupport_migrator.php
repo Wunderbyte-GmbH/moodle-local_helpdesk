@@ -158,6 +158,8 @@ class edusupport_migrator {
         self::copy_config();
         self::take_over_role();
         self::take_over_guestuser();
+        // The old plugin kept the address of a guest in the title of the discussion only.
+        \local_helpdesk\local\guest_ticket::backfill_from_titles();
         self::take_over_adhoc_tasks();
         self::copy_message_preferences();
         self::retire_source();

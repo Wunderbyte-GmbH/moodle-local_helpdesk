@@ -87,6 +87,7 @@ class observer {
         $entry = (object)$event->get_data();
         if ($entry->eventname == '\mod_forum\event\discussion_deleted') {
             $discussionid = $entry->objectid;
+            \local_helpdesk\local\guest_ticket::delete($discussionid);
             return \local_helpdesk\lib::delete_issue($discussionid);
         } else {
             if (substr($entry->eventname, 0, strlen("\\mod_forum\\event\\post_")) == "\\mod_forum\\event\\post_") {
@@ -143,9 +144,8 @@ class observer {
             $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
 
             // Write to Guestuser.
-            if ($guestmode && strpos($discussion->name, 'Guestticket')) {
-                preg_match('/(?<=Guestticket: )(.*)(?=\])/', $discussion->name, $matches);
-                $mail = $matches[0];
+            $mail = $guestmode ? \local_helpdesk\local\guest_ticket::get_email($discussion->id) : null;
+            if ($mail) {
                 $guestuser = new guest_supportuser();
                 $touser = $guestuser->get_support_guestuser();
                 $touser->email = $mail;
