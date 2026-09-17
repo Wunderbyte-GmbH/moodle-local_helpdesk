@@ -284,14 +284,15 @@ class local_helpdesk_external extends external_api {
                     if (!empty($group->id)) {
                         // Find support users.
                         $groupusers = lib::get_support_user_by_matching_customfield($forum->course, $cfn);
-                        groups_add_member($group, $user);
+                        groups_add_member($group->id, $user);
                         if ($groupusers) {
                             $responsibles = [];
-                            foreach ($groupusers as $user) {
-                                groups_add_member($group, $user->userid);
+                            // Not $user: that is the person filing the request, and is needed below.
+                            foreach ($groupusers as $groupuser) {
+                                groups_add_member($group->id, $groupuser->userid);
                                 $responsibles[] =
-                                    "<a href='{$CFG->wwwroot}/user/profile.php?id={$user->userid}' target='_blank'>" .
-                                        "{$user->firstname} {$user->lastname}</a>";
+                                    "<a href='{$CFG->wwwroot}/user/profile.php?id={$groupuser->userid}' target='_blank'>" .
+                                        s("{$groupuser->firstname} {$groupuser->lastname}") . "</a>";
                             }
                         } else {
                             $postto2ndlevel = true;

@@ -8,7 +8,18 @@ define(
         screenshot: '',
         screenshotname: '',
         triggerSteps: 0,
+        /**
+         * Make a value from the server safe to be put into markup.
+         *
+         * @param {*} value the value, e.g. the name of a person.
+         * @returns {string} the value with its special characters escaped, quotes included.
+         */
+        escape: function(value) {
+            return $('<div>').text(value === null || value === undefined ? '' : String(value)).html()
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        },
         assignSupporter: function(discussionid) {
+                var MAIN = this;
                 // Show a selection of possible supporters.
                 AJAX.call([{
                     methodname: 'local_helpdesk_get_potentialsupporters',
@@ -21,12 +32,12 @@ define(
                         var body = '<input type="hidden" value="' + discussionid + '" />';
                         body += '<select>';
                         for (var a = 0; a < supportlevels.length; a++) {
-                            body += '<optgroup label="' + supportlevels[a] + '">';
+                            body += '<optgroup label="' + MAIN.escape(supportlevels[a]) + '">';
                             for (var b = 0; b < result.supporters[supportlevels[a]].length; b++) {
                                 var supporter = result.supporters[supportlevels[a]][b];
                                 var selected = supporter.selected ? ' selected="selected"' : '';
-                                body += '<option value="' + supporter.userid + '"' + selected + '>'
-                                    + supporter.firstname + ' ' + supporter.lastname + '</option>';
+                                body += '<option value="' + MAIN.escape(supporter.userid) + '"' + selected + '>'
+                                    + MAIN.escape(supporter.firstname + ' ' + supporter.lastname) + '</option>';
                             }
                             body += '</optgroup>';
                         }
@@ -208,7 +219,7 @@ define(
                         var root = modal.getRoot();
                         root.on(ModalEvents.save, function() {
                             top.location.href = URL.relativeUrl('/local/helpdesk/forward_2nd_level.php',
-                                {d: discussionid, revoke: revoke});
+                                {d: discussionid, revoke: revoke, sesskey: M.cfg.sesskey});
                         });
                         modal.show();
                     });
@@ -285,12 +296,13 @@ define(
                             var r = result.responsibles[i];
                             if (typeof r.userid !== 'undefined' && r.userid > 0) {
                                 responsibles += '<li><a href="'
-                                    + URL.fileUrl('/user', 'view.php?id=' + r.userid)
-                                    + '" target="_blank">' + r.name + '</a></li>';
+                                    + URL.fileUrl('/user', 'view.php?id=' + parseInt(r.userid, 10))
+                                    + '" target="_blank">' + MAIN.escape(r.name) + '</a></li>';
                             } else if (typeof r.email !== 'undefined' && r.email != '') {
-                                responsibles += '<li><a href="mailto:' + r.email + '">' + r.name + '</a></li>';
+                                responsibles += '<li><a href="mailto:' + MAIN.escape(r.email) + '">'
+                                    + MAIN.escape(r.name) + '</a></li>';
                             } else {
-                                responsibles += '<li>' + r.name + '</li>';
+                                responsibles += '<li>' + MAIN.escape(r.name) + '</li>';
                             }
                         }
                         responsibles += '</ul>';

@@ -45,7 +45,6 @@ $accountmanager = new accountmanager();
 
 $title = get_string('accountmanagers', 'local_helpdesk');
 $heading = get_string('accountmanagers', 'local_helpdesk');
-$mform = new accountmanager_form();
 $PAGE->set_title($title);
 $PAGE->set_heading($heading);
 
@@ -64,13 +63,19 @@ $PAGE->navbar->add(get_string('pluginname', 'local_helpdesk'), $url);
 $PAGE->navbar->add(get_string('supporters', 'local_helpdesk'), $PAGE->url);
 
 if (!is_siteadmin()) {
+    // Nothing below may run for anybody else: the form writes site wide settings.
     $tourl = new moodle_url('/my', []);
+    echo $OUTPUT->header();
     echo $OUTPUT->render_from_template('local_helpdesk/alert', [
         'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $tourl->__toString(),
     ]);
+    echo $OUTPUT->footer();
+    die;
 }
+
+$mform = new accountmanager_form();
 if ($mform->is_cancelled()) {
     redirect($url);
 } else if ($data = $mform->get_data()) {

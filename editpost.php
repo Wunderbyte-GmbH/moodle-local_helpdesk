@@ -29,7 +29,7 @@ require_once('../../config.php');
 // This code is mainly taken from /mod/forum/discuss.php.
 $d = optional_param('d', 0, PARAM_INT); // Discussionid.
 $discussion = optional_param('discussion', 0, PARAM_INT); // Discussionid.
-$discussionid = $discussion | $d;
+$discussionid = $discussion ?: $d;
 
 $edit   = required_param('edit', PARAM_INT);
 
@@ -45,9 +45,16 @@ $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*',
 $PAGE->set_title($discussion->name);
 $PAGE->set_heading($discussion->name);
 
-if (!\local_helpdesk\lib::is_second_level()) {
+// Supporters may edit the posts of an issue, and of nothing else: the post has to belong to
+// this discussion, and the discussion has to be an issue in a support forum.
+$editable = \local_helpdesk\lib::is_second_level()
+    && !empty($issue->id)
+    && \local_helpdesk\lib::is_supportforum($discussion->forum)
+    && $DB->record_exists('forum_posts', ['id' => $edit, 'discussion' => $discussionid]);
+
+if (!$editable) {
     echo $OUTPUT->header();
-    $tocmurl = new moodle_url('/course/view.php', ['id' => $issue->courseid]);
+    $tocmurl = new moodle_url('/course/view.php', ['id' => $discussion->course]);
     echo $OUTPUT->render_from_template('local_helpdesk/alert', [
         'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',

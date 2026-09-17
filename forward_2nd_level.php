@@ -55,15 +55,10 @@ if (!has_capability('local/helpdesk:canforward2ndlevel', $context)) {
         'url' => $todiscussion->__toString(),
     ]);
 } else {
+    require_sesskey();
     if (empty($revoke)) {
         if (\local_helpdesk\lib::set_2nd_level($d)) {
-            redirect($todiscussion->__toString());
-            echo $OUTPUT->header();
-            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
-                'content' => get_string('success'),
-                'type' => 'success',
-                'url' => $todiscussion->__toString(),
-            ]);
+            redirect($todiscussion);
         } else {
             echo $OUTPUT->header();
             echo $OUTPUT->render_from_template('local_helpdesk/alert', [
@@ -74,13 +69,7 @@ if (!has_capability('local/helpdesk:canforward2ndlevel', $context)) {
         }
     } else {
         if (\local_helpdesk\lib::revoke_issue($d)) {
-            redirect($todiscussion->__toString());
-            echo $OUTPUT->header();
-            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
-                'content' => get_string('success'),
-                'type' => 'success',
-                'url' => $todiscussion->__toString(),
-            ]);
+            redirect($todiscussion);
         } else {
             echo $OUTPUT->header();
             echo $OUTPUT->render_from_template('local_helpdesk/alert', [

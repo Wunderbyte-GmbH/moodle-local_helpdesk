@@ -29,7 +29,7 @@ require_once('../../config.php');
 // This code is mainly taken from /mod/forum/discuss.php.
 $d = optional_param('d', 0, PARAM_INT); // Discussionid.
 $discussion = optional_param('discussion', 0, PARAM_INT); // Discussionid.
-$discussionid = $discussion | $d;
+$discussionid = $discussion ?: $d;
 $replyto = optional_param('replyto', 0, PARAM_INT);      // If set, we reply to this post.
 $parent = optional_param('parent', 0, PARAM_INT);        // If set, then display this post and all children.
 $mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread.
@@ -321,7 +321,8 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     ob_start();
 
     if (!empty($delete)) {
-        $deletepost = $DB->get_record('forum_posts', ['id' => $delete]);
+        require_sesskey();
+        $deletepost = $DB->get_record('forum_posts', ['id' => $delete, 'discussion' => $discussionid]);
         if (!empty($deletepost->id) && $deletepost->userid == $USER->id) {
             $vaultfactory = mod_forum\local\container::get_vault_factory();
             $postvault = $vaultfactory->get_post_vault();
@@ -423,7 +424,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     );
     $out = str_replace(
         $CFG->wwwroot . '/mod/forum/post.php?delete=',
-        $CFG->wwwroot . '/local/helpdesk/issue.php?discussion=' . $discussionid . '&delete=',
+        $CFG->wwwroot . '/local/helpdesk/issue.php?discussion=' . $discussionid . '&sesskey=' . sesskey() . '&delete=',
         $out
     );
 

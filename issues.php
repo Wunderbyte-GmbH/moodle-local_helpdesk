@@ -151,8 +151,9 @@ if (!$issupportteam) {
         $issue->userid = $discussion->userid;
         $postinguser = $DB->get_record('user', ['id' => $discussion->userid]);
         $issue->userfullname = \fullname($postinguser);
-        $sql = "SELECT id,modified,userid FROM {forum_posts} WHERE discussion=? ORDER BY modified DESC LIMIT 1 OFFSET 0";
-        $lastpost = $DB->get_record_sql($sql, [$issue->discussionid]);
+        $sql = "SELECT id,modified,userid FROM {forum_posts} WHERE discussion=? ORDER BY modified DESC";
+        $lastposts = $DB->get_records_sql($sql, [$issue->discussionid], 0, 1);
+        $lastpost = reset($lastposts);
         $issue->lastmodified = $issue->timemodified;
         $issue->lastpostuserid = $lastpost->userid;
         $lastuser = $DB->get_record('user', ['id' => $issue->lastpostuserid]);

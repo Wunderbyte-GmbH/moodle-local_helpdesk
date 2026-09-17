@@ -141,6 +141,35 @@ final class create_issue_test extends advanced_testcase {
     }
 
     /**
+     * With groups per person the ticket still belongs to the person who filed it.
+     *
+     * The supporters sharing the value of the profile field are added to that group, and used
+     * to take the place of the author while that happened.
+     */
+    public function test_group_mode_keeps_the_author(): void {
+        global $DB;
+
+        $datagenerator = $this->getDataGenerator();
+        $datagenerator->create_custom_profile_field(['shortname' => 'school', 'name' => 'School', 'datatype' => 'text']);
+        profile_save_custom_fields($this->student->id, ['school' => 'HTL']);
+        profile_save_custom_fields($this->supporter->id, ['school' => 'HTL']);
+        set_config('firstlvlgroupmode', 1, 'local_helpdesk');
+        set_config('customfieldname', 'School', 'local_helpdesk');
+        set_config('rolename', 'editingteacher', 'local_helpdesk');
+
+        $this->setUser($this->student);
+        $reply = $this->create_issue('Drucker geht nicht');
+
+        $discussion = $DB->get_record('forum_discussions', ['id' => $reply['discussionid']], '*', MUST_EXIST);
+        $this->assertEquals($this->student->id, $discussion->userid);
+
+        $groupname = fullname($this->student) . ' (' . $this->student->id . '-coursesupport)';
+        $groupid = groups_get_group_by_name($this->course->id, $groupname);
+        $this->assertTrue(groups_is_member($groupid, $this->student->id));
+        $this->assertTrue(groups_is_member($groupid, $this->supporter->id));
+    }
+
+    /**
      * With automatic escalation the ticket becomes a tracked issue.
      */
     public function test_create_issue_registers_a_tracked_issue_when_escalated(): void {

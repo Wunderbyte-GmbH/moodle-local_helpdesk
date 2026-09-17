@@ -39,7 +39,7 @@ switch ($error) {
         $categoryid = required_param('categoryid', PARAM_INT);
         $urlparams['categoryid'] = $categoryid;
         $errparams['content'] = get_string('coursecategorydeletion', 'local_helpdesk');
-        $errparams['url'] = new \moodle_url('/course/management.php', ['categoryid' => 15]);
+        $errparams['url'] = new \moodle_url('/course/management.php', ['categoryid' => $categoryid]);
         break;
 }
 

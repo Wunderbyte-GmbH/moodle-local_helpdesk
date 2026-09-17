@@ -98,7 +98,7 @@ class lib {
                     $group->id = groups_create_group($group, false);
                 }
                 if (!empty($group->id)) {
-                    groups_add_member($group, $user);
+                    groups_add_member($group->id, $user);
                 }
             }
         }

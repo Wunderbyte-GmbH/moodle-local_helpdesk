@@ -47,19 +47,22 @@ class hook_callbacks {
         if ($PAGE->pagetype === 'mod-forum-discuss') {
             $d = optional_param('d', 0, PARAM_INT);
             $discussion = $DB->get_record('forum_discussions', ['id' => $d]);
+            if (!$discussion) {
+                // Let the forum itself tell the user that there is no such discussion.
+                return;
+            }
             $coursecontext = \context_course::instance($discussion->course);
 
             if (
                 has_capability('local/helpdesk:canforward2ndlevel', $coursecontext)
                 && \local_helpdesk\lib::is_supportforum($discussion->forum)
             ) {
-                $sql = "SELECT id FROM {local_helpdesk_subscr} WHERE discussionid=? LIMIT 1 OFFSET 0";
-                $chk = $DB->get_record_sql($sql, [$discussion->id]);
+                $hassubscribers = $DB->record_exists('local_helpdesk_subscr', ['discussionid' => $discussion->id]);
 
                 $PAGE->requires->js_call_amd(
                     'local_helpdesk/main',
                     'injectForwardButton',
-                    [$d, !empty($chk->id), $SITE->fullname]
+                    [$d, $hassubscribers, $SITE->fullname]
                 );
             }
             if (\local_helpdesk\lib::is_supportforum($discussion->forum)) {
@@ -89,16 +92,21 @@ class hook_callbacks {
                 }
             }
 
-            $coursecat = \core_course_category::get($categoryid, MUST_EXIST, true);
-            if (empty($coursecat->__get('visible'))) {
-                $coursecat->update(['visible' => 1]);
-            }
-
             $supportforums = $DB->get_records('local_helpdesk', ['categoryid' => $categoryid]);
             foreach ($supportforums as $supportforum) {
-                $course = $DB->get_record('course', ['id' => $supportforum->id]);
+                // Keep track of support courses that were moved to another category.
+                $course = $DB->get_record('course', ['id' => $supportforum->courseid]);
                 if (!empty($course->id) && $course->category != $categoryid) {
-                    $DB->set_field('local_helpdesk', 'categoryid', $categoryid, ['courseid' => $course->id]);
+                    $DB->set_field('local_helpdesk', 'categoryid', $course->category, ['id' => $supportforum->id]);
+                    unset($supportforums[$supportforum->id]);
+                }
+            }
+
+            // A category that holds a support forum has to stay visible. Any other category is none of our business.
+            if (!empty($supportforums)) {
+                $coursecat = \core_course_category::get($categoryid, MUST_EXIST, true);
+                if (empty($coursecat->visible)) {
+                    $coursecat->update(['visible' => 1]);
                 }
             }
         }
