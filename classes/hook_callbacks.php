@@ -64,6 +64,7 @@ class hook_callbacks {
                     'injectForwardButton',
                     [$d, $hassubscribers, $SITE->fullname]
                 );
+                $PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
             }
             if (\local_helpdesk\lib::is_supportforum($discussion->forum)) {
                 $PAGE->requires->js_call_amd('local_helpdesk/main', 'injectTest');

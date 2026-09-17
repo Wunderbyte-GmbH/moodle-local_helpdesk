@@ -1781,25 +1781,25 @@ class lib {
     public static function status_to_template(int $status): array {
         switch ($status) {
             case self::STATUS_NOTSTARTED:
-                return ['status' => get_string('status:notstarted', 'local_helpdesk'), 'class' => 'badge badge-danger',
+                return ['status' => get_string('status:notstarted', 'local_helpdesk'), 'class' => 'badge badge-danger bg-danger',
                     'stateclass' => 'notstarted'];
                 break;
             case self::STATUS_AWAITING_USER_REPLY:
                 return ['status' => get_string('status:awaitinguserreply', 'local_helpdesk'),
-                    'class' => 'badge badge-brown',
+                    'class' => 'badge local-helpdesk-badge-brown',
                     'stateclass' => 'awaiting'];
                 break;
             case self::STATUS_ONGOING:
-                return ['status' => get_string('status:ongoing', 'local_helpdesk'), 'class' => 'badge badge-success',
+                return ['status' => get_string('status:ongoing', 'local_helpdesk'), 'class' => 'badge badge-success bg-success',
                     'stateclass' => 'ongoing'];
                 break;
             case self::STATUS_AWAITING_SUPPORT_ACTION:
                 return ['status' => get_string('status:awaitingsupportaction', 'local_helpdesk'),
-                    'class' => 'badge badge-orange',
+                    'class' => 'badge local-helpdesk-badge-orange',
                     'stateclass' => 'awaitingsupportaction'];
                 break;
             case self::STATUS_CLOSED:
-                return ['status' => get_string('status:closed', 'local_helpdesk'), 'class' => 'badge badge-success',
+                return ['status' => get_string('status:closed', 'local_helpdesk'), 'class' => 'badge badge-success bg-success',
                     'stateclass' => 'closed'];
                 break;
         }

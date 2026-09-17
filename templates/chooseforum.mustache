@@ -71,13 +71,13 @@
                     <td>
                         {{^state}}
                             <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;state=1&amp;sesskey={{sesskey}}"
-                                class="btn btn-block btn-secondary">
+                                class="btn btn-block d-block w-100 btn-secondary">
                                 {{#str}} supportforum:enable, local_helpdesk {{/str}}
                             </a>
                         {{/state}}
                         {{#state}}
                         <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;state=-1&amp;sesskey={{sesskey}}"
-                            class="btn btn-block btn-primary">
+                            class="btn btn-block d-block w-100 btn-primary">
                             {{#str}} supportforum:disable, local_helpdesk {{/str}}
                         </a>
                         {{/state}}
@@ -89,13 +89,13 @@
                         {{#state}}
                             {{^statecentral}}
                                 <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;central=1&amp;sesskey={{sesskey}}"
-                                    class="btn btn-block btn-primary">
+                                    class="btn btn-block d-block w-100 btn-primary">
                                     {{#str}} supportforum:central:enable, local_helpdesk {{/str}}
                                 </a>
                             {{/statecentral}}
                             {{#statecentral}}
                                 <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;central=-1&amp;sesskey={{sesskey}}"
-                                    class="btn btn-block btn-primary">
+                                    class="btn btn-block d-block w-100 btn-primary">
                                     {{#str}} supportforum:central:disable, local_helpdesk {{/str}}
                                 </a>
                             {{/statecentral}}

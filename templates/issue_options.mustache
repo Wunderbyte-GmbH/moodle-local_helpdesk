@@ -26,9 +26,10 @@
    * none
 
    Context variables required for this template:
-   * options List of buttons, each with title and optionally class, icon, href and onclick.
+   * options List of buttons, each with title and optionally class, icon, href and action (a data-action of local_helpdesk/actions).
      An option without href is shown as a label instead of a button.
    * changestatus Whether to show the select to change the status.
+   * discussionid The discussion the actions are about.
    * id The id of the issue, needed when changestatus is set.
 
    Example context (json):
@@ -51,6 +52,7 @@
            }
        ],
        "changestatus": true,
+       "discussionid": 7,
        "id": 42
    }
  }}
@@ -59,14 +61,14 @@
         {{#href}}
             <a href="{{href}}"
                class="btn {{#class}} {{class}} {{/class}}"
-                {{#onclick}} onclick="{{onclick}}" {{/onclick}}>
+                {{#action}} data-action="{{action}}" data-discussionid="{{discussionid}}" {{/action}}>
                 {{#icon}} {{#pix}} {{icon}} {{/pix}} {{/icon}}
                 {{title}}
             </a>
         {{/href}}
         {{^href}}
             <span class="alert {{#class}} {{class}} {{/class}}"
-                {{#onclick}} onclick="{{onclick}}" {{/onclick}}>
+                {{#action}} data-action="{{action}}" data-discussionid="{{discussionid}}" {{/action}}>
                 {{#icon}} {{#pix}} {{icon}} {{/pix}} {{/icon}}
                 {{title}}
             </span>

@@ -45,7 +45,7 @@
         </div>
         <div>
             <i>{{#str}} holidaymode_is_on_descr, local_helpdesk {{/str}}</i>
-            <a href="{{wwwroot}}/local/helpdesk/issues.php?holidaymodeend=1&amp;sesskey={{sesskey}}" class="btn btn-primary btn-block">
+            <a href="{{wwwroot}}/local/helpdesk/issues.php?holidaymodeend=1&amp;sesskey={{sesskey}}" class="btn btn-primary btn-block d-block w-100">
                 <i class="fa fa-hourglass-end"></i>
                 {{#str}} holidaymode_end, local_helpdesk {{/str}}
             </a>
@@ -53,7 +53,7 @@
     {{/holidaymode}}
     {{^holidaymode}}
         <div style="float: right;">
-            <a href="#" onclick="require(['jquery'], function($) { $('#holidaymode-{{uniqid}}').css('display', 'block'); }); return false;">
+            <a href="#" data-holidaymode="show">
                 <i class="fa fa-plane"></i>
                 {{#str}} holidaymode, local_helpdesk {{/str}}
             </a>
@@ -67,7 +67,7 @@
                         <h5 class="modal-title" data-region="title">
                             {{#str}} holidaymode, local_helpdesk {{/str}}
                         </h5>
-                        <a href="#" class="btn close" onclick="require(['jquery'], function($) { $('#holidaymode-{{uniqid}}').css('display', 'none'); }); return false;"
+                        <a href="#" class="btn close btn-close" data-holidaymode="hide"
                              aria-label={{#quote}}{{#str}}closebuttontitle{{/str}}{{/quote}}>
                             <span aria-hidden="true">×</span>
                         </a>
@@ -76,12 +76,10 @@
                         {{{holidayform}}}
                     </div>
                     <div class="modal-footer" data-region="footer">
-                        <button type="button" class="btn btn-primary" data-action="save"
-                            onclick="require(['jquery'], function($) { $('#fitem_id_holidaymode').closest('form').submit(); });">
+                        <button type="button" class="btn btn-primary" data-holidaymode="save">
                             {{#str}} savechanges {{/str}}
                         </button>
-                        <button type="button" class="btn btn-secondary"
-                            onclick="require(['jquery'], function($) { $('#holidaymode-{{uniqid}}').css('display', 'none'); }); return false;">
+                        <button type="button" class="btn btn-secondary" data-holidaymode="hide">
                             {{#str}} cancel {{/str}}
                         </button>
                     </div>
@@ -90,3 +88,23 @@
         </div>
     {{/holidaymode}}
 </div>
+{{#js}}
+(function() {
+    var dialogue = document.getElementById('holidaymode-{{uniqid}}');
+    if (!dialogue) {
+        return;
+    }
+    dialogue.parentNode.addEventListener('click', function(e) {
+        var target = e.target.closest('[data-holidaymode]');
+        if (!target) {
+            return;
+        }
+        e.preventDefault();
+        if (target.dataset.holidaymode === 'save') {
+            dialogue.querySelector('form').submit();
+        } else {
+            dialogue.style.display = target.dataset.holidaymode === 'show' ? 'block' : 'none';
+        }
+    });
+})();
+{{/js}}

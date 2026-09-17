@@ -216,7 +216,7 @@ class issue_create_form extends moodleform {
             '<div class="form-group row fitem">',
             ' <div class="col-md-3">' . get_string('screenshot', 'local_helpdesk') . '</div>',
             ' <div class="col-md-9" id="helpdesk_screenshot">',
-            '  <input type="file" onchange="require([\'local_helpdesk/main\'], function(M) { M.uploadScreenshot(); });" /><br />',
+            '  <input type="file" data-action="local_helpdesk-uploadscreenshot" /><br />',
             '  <div class="alert alert-danger hidden">' . get_string('screenshot:upload:failed', 'local_helpdesk') . '</div>',
             '  <div class="alert alert-success hidden">' . get_string('screenshot:upload:successful', 'local_helpdesk') .
                 '</div>',

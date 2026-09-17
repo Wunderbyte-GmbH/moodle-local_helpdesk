@@ -333,7 +333,8 @@ if ($hassiteconfig) {
         }
         $links = "<div class='grid-eq-3'>";
         foreach ($actions as $action) {
-            $links .= '<a class="btn btn-secondary mr-2 mb-3" href="' . $CFG->wwwroot . '/local/helpdesk/' . $action->href . '">' .
+            $href = $CFG->wwwroot . '/local/helpdesk/' . $action->href;
+            $links .= '<a class="btn btn-secondary mr-2 me-2 mb-3" href="' . $href . '">' .
                             '<i class="fa fa-users"></i> ' .
                             get_string($action->name, 'local_helpdesk') .
                       '</a>';

@@ -145,3 +145,31 @@ Feature: Handling a support issue from creation to closing
     When I click on "Sam Support" "link"
     Then I should see "User details"
     And I should see "Sam Support"
+
+  @javascript
+  Scenario: A supporter hands an issue over through the dialogue
+    Given the following "users" exist:
+      | username  | firstname | lastname |
+      | platform1 | Paula     | Platform |
+    And the following "local_helpdesk > supporters" exist:
+      | user      |
+      | platform1 |
+    And I log in as "supporter1"
+    And I visit "/local/helpdesk/issues.php"
+    And I click on "Printer is broken" "link"
+    When I click on "Assign issue" "link"
+    And I set the field with xpath "//div[contains(@class, 'modal-body')]//select" to "Paula Platform"
+    And I click on "Save changes" "button" in the "Select" "dialogue"
+    Then I should see "Paula Platform"
+
+  @javascript
+  Scenario: Somebody supporting a course forwards a discussion to the platform team
+    Given the following "mod_forum > discussions" exist:
+      | forum         | course | user     | name           | message      |
+      | Support forum | SUP    | student1 | Beamer is dark | Please help. |
+    And I am on the "Support forum" "forum activity" page logged in as "supporter1"
+    And I click on "Beamer is dark" "link"
+    When I click on "Forward to the platform-support team" "link"
+    And I click on "Save changes" "button" in the "Confirm" "dialogue"
+    And I visit "/local/helpdesk/issues.php"
+    Then I should see "Beamer is dark"

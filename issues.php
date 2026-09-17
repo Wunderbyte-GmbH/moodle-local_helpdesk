@@ -29,7 +29,7 @@ $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
 $PAGE->set_url(new moodle_url('/local/helpdesk/issues.php'));
-$PAGE->requires->css('/local/helpdesk/style/helpdesk.css');
+$PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
 $title = get_string('issues', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);

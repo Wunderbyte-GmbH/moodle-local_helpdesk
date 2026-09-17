@@ -297,14 +297,14 @@ if (!\local_helpdesk\lib::can_view_issues()) {
         "class" => 'btn-secondary',
         "icon" => 'i/assignroles',
         "href" => '#',
-        "onclick" => "require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter($discussionid); }); return false;",
+        "action" => 'local_helpdesk-assign',
     ];
     $options[] = [
         "title" => get_string('issue_close', 'local_helpdesk'),
         "class" => 'btn-primary',
         "icon" => 't/approve',
         "href" => '#',
-        "onclick" => "require(['local_helpdesk/main'], function(MAIN){ MAIN.closeIssue($discussionid); }); return false;",
+        "action" => 'local_helpdesk-close',
     ];
     $changestatus = true;
     $id = $issue->id;
@@ -313,6 +313,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
         [
                 'options' => $options,
                 'changestatus' => $changestatus,
+                'discussionid' => $discussionid,
                 'id' => $id]
     );
 
@@ -397,6 +398,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     echo $discussionrenderer->render($user, $vpost, $replies);
 
     $PAGE->requires->js_call_amd("local_helpdesk/main", "injectReplyButtons", [$discussionid]);
+    $PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
 
     // Now catch the output from the renderer and modify some parts.
     $out = ob_get_contents();

@@ -222,5 +222,8 @@ function local_helpdesk_render_navbar_output(\renderer_base $renderer) {
     if (isguestuser() && !$guestmode) {
         return '';
     }
+    // The menu comes from a cache as markup, so its buttons are wired up here.
+    global $PAGE;
+    $PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
     return  \local_helpdesk\lib::get_supportmenu();
 }
