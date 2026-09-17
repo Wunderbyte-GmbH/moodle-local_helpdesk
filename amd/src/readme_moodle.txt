@@ -1,4 +1,4 @@
-Description of the html2canvas import into local_edusupport
+Description of the html2canvas import into local_helpdesk
 ===========================================================
 
 html2canvas renders the current page into a canvas, so that a support
@@ -23,6 +23,6 @@ To upgrade
 2. Replace amd/src/html2canvas.js with it, keeping the file name.
 3. Update the version in ../../thirdpartylibs.xml and in this file.
 4. Rebuild the AMD modules from the Moodle root:
-   npx grunt amd --root=local/edusupport
+   npx grunt amd --root=local/helpdesk
 5. Commit amd/src/html2canvas.js together with the rebuilt
    amd/build/html2canvas.min.js and its source map.

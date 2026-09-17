@@ -17,7 +17,7 @@
 /**
  * Overview of all support issues for the support team.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,13 +28,13 @@ require_once('../../config.php');
 $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
-$PAGE->set_url(new moodle_url('/local/edusupport/issues.php'));
-$PAGE->requires->css('/local/edusupport/style/edusupport.css');
-$title = get_string('issues', 'local_edusupport');
+$PAGE->set_url(new moodle_url('/local/helpdesk/issues.php'));
+$PAGE->requires->css('/local/helpdesk/style/helpdesk.css');
+$title = get_string('issues', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
-$issupportteam = \local_edusupport\lib::can_view_issues();
+$issupportteam = \local_helpdesk\lib::can_view_issues();
 
 // Handle all actions before any output is sent, so we can redirect afterwards (post/redirect/get).
 // Without the redirect a reload or the back button would trigger the same action again, which for
@@ -57,53 +57,53 @@ if ($issupportteam) {
         // Only act on discussions that actually are registered as an issue.
         $isissue = function ($discussionid) use ($DB) {
             return !empty($discussionid)
-                && $DB->record_exists('local_edusupport_issues', ['discussionid' => $discussionid]);
+                && $DB->record_exists('local_helpdesk_issues', ['discussionid' => $discussionid]);
         };
 
         if ($isissue($assign)) {
-            \local_edusupport\lib::subscription_add($assign);
+            \local_helpdesk\lib::subscription_add($assign);
         }
         if ($isissue($unassign)) {
-            \local_edusupport\lib::subscription_remove($unassign);
+            \local_helpdesk\lib::subscription_remove($unassign);
         }
         if ($isissue($take)) {
-            \local_edusupport\lib::set_current_supporter($take, $USER->id);
-            \local_edusupport\lib::subscription_add($take);
+            \local_helpdesk\lib::set_current_supporter($take, $USER->id);
+            \local_helpdesk\lib::subscription_add($take);
         }
         if ($isissue($reopen)) {
-            \local_edusupport\lib::reopen_issue($reopen);
+            \local_helpdesk\lib::reopen_issue($reopen);
         }
         if ($isissue($close)) {
-            \local_edusupport\lib::close_issue($close);
+            \local_helpdesk\lib::close_issue($close);
         }
         if (!empty($lvl) && $isissue($prio)) {
-            \local_edusupport\lib::set_prioritylvl($prio, $lvl);
+            \local_helpdesk\lib::set_prioritylvl($prio, $lvl);
         }
 
         redirect($PAGE->url);
     }
 
     // Holiday mode is handled here as well, so its form can redirect just like every other action.
-    if (get_config('local_edusupport', 'holidaymodeenabled')) {
+    if (get_config('local_helpdesk', 'holidaymodeenabled')) {
         // Holiday mode decides whether escalation reaches somebody, so it belongs to the
         // platform team row. A course assignment carries no holiday of its own, and with the
         // unique key that row is unambiguous.
         $supporterconditions = [
             'userid' => $USER->id,
-            'courseid' => \local_edusupport\lib::SYSTEM_COURSE_ID,
+            'courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID,
         ];
-        $supporter = $DB->get_record('local_edusupport_supporters', $supporterconditions);
+        $supporter = $DB->get_record('local_helpdesk_supporters', $supporterconditions);
         if (!empty($supporter->id)) {
-            $holidaymodeform = new \local_edusupport\holidaymode_form();
+            $holidaymodeform = new \local_helpdesk\holidaymode_form();
             $holidaymodeend = optional_param('holidaymodeend', 0, PARAM_INT);
             if (!empty($holidaymodeend)) {
                 require_sesskey();
-                $DB->set_field('local_edusupport_supporters', 'holidaymode', 0, $supporterconditions);
+                $DB->set_field('local_helpdesk_supporters', 'holidaymode', 0, $supporterconditions);
                 redirect($PAGE->url);
             } else if ($holidaymodedata = $holidaymodeform->get_data()) {
                 // The date_time_selector hands us a timestamp, and get_data() has checked the sesskey.
                 $DB->set_field(
-                    'local_edusupport_supporters',
+                    'local_helpdesk_supporters',
                     'holidaymode',
                     (int) $holidaymodedata->holidaymode,
                     $supporterconditions
@@ -112,7 +112,7 @@ if ($issupportteam) {
             } else if (!empty($supporter->holidaymode) && $supporter->holidaymode < time()) {
                 // Expired holiday mode - invalidate it.
                 $supporter->holidaymode = 0;
-                $DB->set_field('local_edusupport_supporters', 'holidaymode', 0, $supporterconditions);
+                $DB->set_field('local_helpdesk_supporters', 'holidaymode', 0, $supporterconditions);
             }
         }
     }
@@ -121,13 +121,13 @@ if ($issupportteam) {
 echo $OUTPUT->header();
 
 if (!$issupportteam) {
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => new moodle_url('/my'),
     ]);
 } else {
-    $issues = $DB->get_records('local_edusupport_issues', [], 'priority,id,discussionid,status');
+    $issues = $DB->get_records('local_helpdesk_issues', [], 'priority,id,discussionid,status');
 
     $params = [
         'current' => [], // Issues the user is responsible for.
@@ -136,12 +136,12 @@ if (!$issupportteam) {
         'wwwroot' => $CFG->wwwroot,
         'count' => [],
     ];
-    $hasprio = get_config('local_edusupport', 'prioritylvl');
+    $hasprio = get_config('local_helpdesk', 'prioritylvl');
     $params['count']['current'] = 0;
     $params['count']['closed'] = 0;
     $params['count']['assigned'] = 0;
     $params['count']['other'] = 0;
-    $params['userlinks'] = get_config('local_edusupport', 'userlinks');
+    $params['userlinks'] = get_config('local_helpdesk', 'userlinks');
     $params['hasprio'] = $hasprio;
     $params['sesskey'] = sesskey();
     foreach (array_reverse($issues) as $issue) {
@@ -158,7 +158,7 @@ if (!$issupportteam) {
         $lastuser = $DB->get_record('user', ['id' => $issue->lastpostuserid]);
         $issue->lastpostuserfullname = fullname($lastuser);
         $assigned = $DB->get_record(
-            'local_edusupport_subscr',
+            'local_helpdesk_subscr',
             ['discussionid' => $issue->discussionid, 'userid' => $USER->id]
         );
         $issue->prio = "";
@@ -176,10 +176,10 @@ if (!$issupportteam) {
             $issue->currentsupportername = \fullname($supportuser);
             $issue->currentsupporterid = $issue->currentsupporter;
         } else {
-            $issue->currentsupportername = get_string('label:2ndlevel', 'local_edusupport');
+            $issue->currentsupportername = get_string('label:2ndlevel', 'local_helpdesk');
         }
 
-        $issue->state = \local_edusupport\lib::status_to_template($issue->status);
+        $issue->state = \local_helpdesk\lib::status_to_template($issue->status);
 
         if ($hasprio) {
             if ($issue->priority <= 1) {
@@ -220,13 +220,13 @@ if (!$issupportteam) {
         $supporter->wwwroot = $CFG->wwwroot;
         $supporter->uniqid = uniqid();
         $supporter->sesskey = sesskey();
-        echo $OUTPUT->render_from_template('local_edusupport/holidaymode', $supporter);
+        echo $OUTPUT->render_from_template('local_helpdesk/holidaymode', $supporter);
     }
-    $params['accountmanagerenabled'] = !empty(get_config('local_edusupport', 'accountmanagers'));
+    $params['accountmanagerenabled'] = !empty(get_config('local_helpdesk', 'accountmanagers'));
     // The heading rows of the groups span the whole table, which has one column more with account managers.
     $params['columncount'] = $params['accountmanagerenabled'] ? 6 : 5;
 
-    echo $OUTPUT->render_from_template('local_edusupport/issues', $params);
+    echo $OUTPUT->render_from_template('local_helpdesk/issues', $params);
 }
 
 echo $OUTPUT->footer();

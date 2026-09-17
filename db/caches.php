@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Cache definitions for local_edusupport.
+ * Cache definitions for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  *             2020 onwards Zentrum für Lernmanagement (http://www.lernmanagement.at)
  * @author     Robert Schrenk
@@ -32,6 +32,6 @@ $definitions = [
     ],
     'supportmenu' => [
         'mode' => cache_store::MODE_APPLICATION,
-        'invalidationevents' => ['setbacksupportmenu'],
+        'invalidationevents' => ['local_helpdesk_setbacksupportmenu'],
     ],
 ];

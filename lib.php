@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library for the edusupport plugin.
+ * Library for the helpdesk plugin.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,40 +27,40 @@
  *
  * @param navigation_node $navigation The navigation node to extend
  */
-function local_edusupport_extend_navigation($navigation) {
+function local_helpdesk_extend_navigation($navigation) {
     // This node leads to issues.php, so it follows whoever that page lets in.
-    if (\local_edusupport\lib::can_view_issues()) {
+    if (\local_helpdesk\lib::can_view_issues()) {
         $nodehome = $navigation->get('home');
         if (empty($nodehome)) {
             $nodehome = $navigation;
         }
-        $label = get_string('issues', 'local_edusupport');
-        $link = new moodle_url('/local/edusupport/issues.php', []);
+        $label = get_string('issues', 'local_helpdesk');
+        $link = new moodle_url('/local/helpdesk/issues.php', []);
         $icon = new pix_icon('docs', '', '');
-        $nodecreatecourse = $nodehome->add($label, $link, navigation_node::NODETYPE_LEAF, $label, 'edusupportissues', $icon);
+        $nodecreatecourse = $nodehome->add($label, $link, navigation_node::NODETYPE_LEAF, $label, 'helpdeskissues', $icon);
         $nodecreatecourse->showinflatnavigation = true;
     }
 }
 
 /**
- * Extend course navigation with edusupport nodes.
+ * Extend course navigation with helpdesk nodes.
  *
  * @param navigation_node $parentnode The navigation node to add items to
  * @param stdClass $course The course object
  * @param context $context The context object
  * @return void
  */
-function local_edusupport_extend_navigation_course($parentnode, $course, $context) {
+function local_helpdesk_extend_navigation_course($parentnode, $course, $context) {
     // Both nodes land in the "More" menu of the course. That is where a setting used a few
     // times a year belongs, and forcing it makes the placement deterministic rather than a
     // side effect of how many nodes happen to fit next to it.
-    if (\local_edusupport\lib::can_assign_first_level($course->id)) {
+    if (\local_helpdesk\lib::can_assign_first_level($course->id)) {
         $node = navigation_node::create(
-            get_string('coursesupporters', 'local_edusupport'),
-            new moodle_url('/local/edusupport/coursesupporters.php', ['courseid' => $course->id]),
+            get_string('coursesupporters', 'local_helpdesk'),
+            new moodle_url('/local/helpdesk/coursesupporters.php', ['courseid' => $course->id]),
             navigation_node::TYPE_SETTING,
             null,
-            'local_edusupport_coursesupporters',
+            'local_helpdesk_coursesupporters',
             new pix_icon('i/users', '')
         );
         $node->set_force_into_more_menu(true);
@@ -69,11 +69,11 @@ function local_edusupport_extend_navigation_course($parentnode, $course, $contex
 
     if (is_siteadmin()) {
         $node = navigation_node::create(
-            get_string('supportforum:choose', 'local_edusupport'),
-            new moodle_url('/local/edusupport/chooseforum.php', ['courseid' => $course->id]),
+            get_string('supportforum:choose', 'local_helpdesk'),
+            new moodle_url('/local/helpdesk/chooseforum.php', ['courseid' => $course->id]),
             navigation_node::TYPE_SETTING,
             null,
-            'local_edusupport_chooseforum',
+            'local_helpdesk_chooseforum',
             new pix_icon('i/marker', '')
         );
         $node->set_force_into_more_menu(true);
@@ -84,7 +84,7 @@ function local_edusupport_extend_navigation_course($parentnode, $course, $contex
 /**
  * Serves the forum attachments. Implements needed access control ;-)
  *
- * @package  local_edusupport --> we fake downloads for mod_forum.
+ * @package  local_helpdesk --> we fake downloads for mod_forum.
  * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
@@ -95,9 +95,9 @@ function local_edusupport_extend_navigation_course($parentnode, $course, $contex
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function local_edusupport_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+function local_helpdesk_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $CFG, $DB, $USER;
-    require_once($CFG->dirroot . '/local/edusupport/classes/lib.php');
+    require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
     require_once($CFG->dirroot . '/mod/forum/lib.php');
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -108,8 +108,8 @@ function local_edusupport_pluginfile($course, $cm, $context, $filearea, $args, $
     // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
     /* require_course_login($course, true, $cm); */
     if (
-        !\local_edusupport\lib::is_second_level($USER->id)
-        && !\local_edusupport\lib::is_first_level($USER->id, $course->id)
+        !\local_helpdesk\lib::is_second_level($USER->id)
+        && !\local_helpdesk\lib::is_first_level($USER->id, $course->id)
     ) {
         return false;
     }
@@ -130,7 +130,7 @@ function local_edusupport_pluginfile($course, $cm, $context, $filearea, $args, $
         return false;
     }
 
-    if (!\local_edusupport\lib::is_supportforum($discussion->forum)) {
+    if (!\local_helpdesk\lib::is_supportforum($discussion->forum)) {
         return false;
     }
 
@@ -174,11 +174,11 @@ function local_edusupport_pluginfile($course, $cm, $context, $filearea, $args, $
  *
  * @param stdClass $category the course category.
  */
-function local_edusupport_pre_course_category_delete($category) {
+function local_helpdesk_pre_course_category_delete($category) {
     global $DB;
     $courses = $DB->get_records('course', ['category' => $category->id]);
     foreach ($courses as $course) {
-        local_edusupport_pre_course_delete($course);
+        local_helpdesk_pre_course_delete($course);
     }
 }
 
@@ -187,11 +187,11 @@ function local_edusupport_pre_course_category_delete($category) {
  *
  * @param stdClass $course the course.
  */
-function local_edusupport_pre_course_delete($course) {
+function local_helpdesk_pre_course_delete($course) {
     global $DB;
-    $supportforums = $DB->get_records('local_edusupport', ['courseid' => $course->id]);
+    $supportforums = $DB->get_records('local_helpdesk', ['courseid' => $course->id]);
     foreach ($supportforums as $supportforum) {
-        \local_edusupport\lib::supportforum_disable($supportforum->id);
+        \local_helpdesk\lib::supportforum_disable($supportforum->id);
     }
 }
 /**
@@ -199,11 +199,11 @@ function local_edusupport_pre_course_delete($course) {
  *
  * @param stdClass $cm the course module.
  */
-function local_edusupport_pre_course_module_delete($cm) {
+function local_helpdesk_pre_course_module_delete($cm) {
     global $DB;
     $forumtype = $DB->get_record('modules', ['name' => 'forum']);
     if (!empty($forumtype->id) && !empty($cm->module) && $cm->module == $forumtype->id) {
-        \local_edusupport\lib::supportforum_disable($cm->instance);
+        \local_helpdesk\lib::supportforum_disable($cm->instance);
     }
 }
 
@@ -213,8 +213,8 @@ function local_edusupport_pre_course_module_delete($cm) {
  * @param renderer_base $renderer
  * @return string The HTML
  */
-function local_edusupport_render_navbar_output(\renderer_base $renderer) {
-    $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+function local_helpdesk_render_navbar_output(\renderer_base $renderer) {
+    $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
     // Early bail out conditions.
     if (!isloggedin()  && !$guestmode) {
         return '';
@@ -222,5 +222,5 @@ function local_edusupport_render_navbar_output(\renderer_base $renderer) {
     if (isguestuser() && !$guestmode) {
         return '';
     }
-    return  \local_edusupport\lib::get_supportmenu();
+    return  \local_helpdesk\lib::get_supportmenu();
 }

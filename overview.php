@@ -17,7 +17,7 @@
 /**
  * Every support user of the platform and where they support.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,13 +26,13 @@ require_once('../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use core_reportbuilder\system_report_factory;
-use local_edusupport\reportbuilder\local\systemreports\supporters;
+use local_helpdesk\reportbuilder\local\systemreports\supporters;
 
-admin_externalpage_setup('local_edusupport_overview', '', null, '', ['pagelayout' => 'report']);
+admin_externalpage_setup('local_helpdesk_overview', '', null, '', ['pagelayout' => 'report']);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('overview', 'local_edusupport'));
-echo html_writer::tag('p', get_string('overview:description', 'local_edusupport'));
+echo $OUTPUT->heading(get_string('overview', 'local_helpdesk'));
+echo html_writer::tag('p', get_string('overview:description', 'local_helpdesk'));
 
 $report = system_report_factory::create(supporters::class, context_system::instance());
 echo $report->output();

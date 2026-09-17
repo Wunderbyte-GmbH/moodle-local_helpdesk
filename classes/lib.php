@@ -15,20 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Core library of the eduSupport plugin.
+ * Core library of the Helpdesk plugin.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use context_system;
 use core\message\message;
-use local_edusupport\task\reminder;
-use local_edusupport\guest_supportuser;
+use local_helpdesk\task\reminder;
+use local_helpdesk\guest_supportuser;
 use mod_forum\event\post_created;
 use moodle_url;
 use stdClass;
@@ -45,9 +45,9 @@ define("ISSUE_STATUS_AWAITING_SUPPORT_ACTION", 4);
 define("ISSUE_STATUS_CLOSED", 5);
 
 /**
- * Core library of the eduSupport plugin.
+ * Core library of the Helpdesk plugin.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -66,14 +66,14 @@ class lib {
      */
     public static function before_popup() {
         global $CFG, $DB, $USER;
-        $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+        $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
         if ($guestmode && (isguestuser() || !isloggedin())) {
             $guestuser = new guest_supportuser();
             $user = $guestuser->get_support_guestuser();
         } else {
             $user = $USER;
         }
-        $centralforum = get_config('local_edusupport', 'centralforum');
+        $centralforum = get_config('local_helpdesk', 'centralforum');
         if (!empty($centralforum) && self::is_supportforum($centralforum)) {
             $forum = $DB->get_record('forum', ['id' => $centralforum]);
             $coursectx = \context_course::instance($forum->course);
@@ -192,7 +192,7 @@ class lib {
             $like = $DB->sql_like('fd.name', ':prefix');
             $sql = "SELECT fd.id, fd.name
                       FROM {forum_discussions} fd
-                      JOIN {local_edusupport_issues} lei ON lei.discussionid = fd.id
+                      JOIN {local_helpdesk_issues} lei ON lei.discussionid = fd.id
                      WHERE $like";
             $params = ['prefix' => $DB->sql_like_escape($legacyprefix) . '%'];
             foreach ($DB->get_records_sql($sql, $params) as $discussion) {
@@ -235,26 +235,26 @@ class lib {
             $issue->discussionid,
             get_string(
                 'issue_closed:post',
-                'local_edusupport',
+                'local_helpdesk',
                 [
                     'fromuserfullname' => \fullname($USER),
                     'fromuserid' => $USER->id,
                     'wwwroot' => $CFG->wwwroot,
                 ]
             ),
-            get_string('issue_closed:subject', 'local_edusupport'),
-            get_config('local_edusupport', 'sendissueclosed')
+            get_string('issue_closed:subject', 'local_helpdesk'),
+            get_config('local_helpdesk', 'sendissueclosed')
         );
 
         // 3.) remove all supporters from the abo-list
-        $DB->delete_records('local_edusupport_subscr', ['discussionid' => $discussionid]);
+        $DB->delete_records('local_helpdesk_subscr', ['discussionid' => $discussionid]);
 
         $issue->priority = 0;
         $issue->discussionid = $discussionid;
         $issue->status = 5;
         $issue->timemodified = time();
         // 4.) remove issue-link from database
-        $DB->update_record('local_edusupport_issues', $issue);
+        $DB->update_record('local_helpdesk_issues', $issue);
         // Mark post as closed.
         $discussion->name = self::add_closed_prefix($discussion->name);
         $discussion->modified = time();
@@ -270,12 +270,12 @@ class lib {
     public static function delete_issue($discussionid) {
         global $CFG, $DB, $USER;
 
-        $issue = $DB->get_record('local_edusupport_issues', ['discussionid' => $discussionid]);
+        $issue = $DB->get_record('local_helpdesk_issues', ['discussionid' => $discussionid]);
         if (!empty($issue->id)) {
             // Remove all supporters from the abo-list.
-            $DB->delete_records('local_edusupport_subscr', ['discussionid' => $discussionid]);
+            $DB->delete_records('local_helpdesk_subscr', ['discussionid' => $discussionid]);
             // Delete issue.
-            $DB->delete_records('local_edusupport_issues', ['discussionid' => $discussionid]);
+            $DB->delete_records('local_helpdesk_issues', ['discussionid' => $discussionid]);
         }
         return true;
     }
@@ -285,12 +285,12 @@ class lib {
      */
     public static function get_supportmenu() {
         global $CFG, $OUTPUT, $USER;
-        $cache = \cache::make('local_edusupport', 'supportmenu');
+        $cache = \cache::make('local_helpdesk', 'supportmenu');
         if (!empty($cache->get($USER->id))) {
             return $cache->get($USER->id);
         }
 
-        $extralinksfromconfig = get_config('local_edusupport', 'extralinks');
+        $extralinksfromconfig = get_config('local_helpdesk', 'extralinks');
         $extralinks = [];
         if (!empty($extralinksfromconfig)) {
             $extralinksfromconfig = explode("\n", $extralinksfromconfig);
@@ -319,12 +319,12 @@ class lib {
         // We only show the "issues" navbar button starting from Moodle 4.0.
         if ($CFG->version >= 2022041900 && self::can_view_issues()) {
             $showissues = true;
-            $issuesurl = new moodle_url('/local/edusupport/issues.php');
+            $issuesurl = new moodle_url('/local/helpdesk/issues.php');
         }
 
-        $prepageenabled = get_config('local_edusupport', 'enableprepage');
+        $prepageenabled = get_config('local_helpdesk', 'enableprepage');
         $nav = $OUTPUT->render_from_template(
-            'local_edusupport/helpbutton',
+            'local_helpdesk/helpbutton',
             [
             'extralinks' => $extralinks,
             'hasextralinks' => count($extralinks) > 0,
@@ -353,7 +353,7 @@ class lib {
         $issue->timemodified = time();
 
         // 4.) remove issue-link from database.
-        $DB->update_record('local_edusupport_issues', $issue);
+        $DB->update_record('local_helpdesk_issues', $issue);
 
         // We also want to send reminders when we re-open an issue.
         self::send_reminder($issue->id);
@@ -431,7 +431,7 @@ class lib {
     public static function create_post(int $discussionid, string $text, string $subject = "", int $sendemail = 1): void {
         global $DB, $USER;
 
-        $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+        $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
         if ($guestmode && (isguestuser() || !isloggedin())) {
             $guestuser = new guest_supportuser();
             $user = $guestuser->get_support_guestuser();
@@ -503,7 +503,7 @@ class lib {
     public static function get_groups_for_user(int $forumid): array {
         // Store rating if we are permitted to.
         global $CFG, $DB, $USER;
-        $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+        $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
         if ((empty($USER->id) || isguestuser()) && !$guestmode) {
             return [];
         }
@@ -563,7 +563,7 @@ class lib {
         if (empty($discussionid)) {
             return;
         }
-        $issue = $DB->get_record('local_edusupport_issues', ['discussionid' => $discussionid]);
+        $issue = $DB->get_record('local_helpdesk_issues', ['discussionid' => $discussionid]);
         if (empty($issue->id) && !empty($createifnotexist)) {
             $issue = (object) [
                 'discussionid' => $discussionid,
@@ -575,7 +575,7 @@ class lib {
             }
             $issue->timecreated = time();
             $issue->timemodified = time();
-            $issue->id = $DB->insert_record('local_edusupport_issues', $issue);
+            $issue->id = $DB->insert_record('local_helpdesk_issues', $issue);
         }
         return $issue;
     }
@@ -588,7 +588,7 @@ class lib {
      */
     public static function get_potentialtargets(int $userid = 0): array {
         global $DB, $USER;
-        $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+        $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
         if (empty($userid)) {
             if ($guestmode && (isguestuser() || !isloggedin())) {
                 $guestuser = new guest_supportuser();
@@ -603,7 +603,7 @@ class lib {
         $courseids = implode(',', array_keys(enrol_get_all_users_courses($userid)));
         if (strlen($courseids) > 0) {
             $sql = " SELECT f.id,f.name,f.course
-                        FROM {local_edusupport} be, {forum} f, {course} c
+                        FROM {local_helpdesk} be, {forum} f, {course} c
                         WHERE f.course=c.id
                             AND be.forumid=f.id
                             AND c.id IN ($courseids)
@@ -624,7 +624,7 @@ class lib {
 
                 if ($cm->uservisible && has_capability('mod/forum:startdiscussion', $fctx, $userid)) {
                     $forum->name = $course->fullname . $delimiter . $forum->name;
-                    $forum->postto2ndlevel = has_capability('local/edusupport:canforward2ndlevel', $coursecontext, $userid);
+                    $forum->postto2ndlevel = has_capability('local/helpdesk:canforward2ndlevel', $coursecontext, $userid);
                     $forum->potentialgroups = self::get_groups_for_user($forum->id);
                     $forums[$forum->id] = $forum;
                 }
@@ -640,14 +640,14 @@ class lib {
      */
     public static function get_expiredissues() {
         global $DB;
-        $time = get_config('local_edusupport', 'deletethreshhold');
+        $time = get_config('local_helpdesk', 'deletethreshhold');
         $expirationtime = time() - $time;
         if (!$time || $time == 0) {
             $expirationtime = 0;
         }
 
         $sql = "SELECT edu.id, edu.discussionid, edu.priority, f.id, f.timemodified
-                FROM {local_edusupport_issues} edu
+                FROM {local_helpdesk_issues} edu
                 JOIN {forum_discussions} f
                     ON edu.discussionid = f.id
                 WHERE edu.priority = 0
@@ -672,13 +672,13 @@ class lib {
         $transaction = $DB->start_delegated_transaction();
 
         // A courseid of 0 was never a course. It always meant the platform wide team.
-        $DB->set_field('local_edusupport_supporters', 'courseid', self::SYSTEM_COURSE_ID, ['courseid' => 0]);
+        $DB->set_field('local_helpdesk_supporters', 'courseid', self::SYSTEM_COURSE_ID, ['courseid' => 0]);
 
         $removed = 0;
 
         // Rows pointing at users or courses that no longer exist.
         $orphans = "SELECT s.id
-                      FROM {local_edusupport_supporters} s
+                      FROM {local_helpdesk_supporters} s
                  LEFT JOIN {user} u ON u.id = s.userid
                  LEFT JOIN {course} c ON c.id = s.courseid
                      WHERE u.id IS NULL
@@ -687,20 +687,20 @@ class lib {
         $orphanids = array_keys($DB->get_records_sql($orphans, ['systemcourseid' => self::SYSTEM_COURSE_ID]));
         if (!empty($orphanids)) {
             [$insql, $inparams] = $DB->get_in_or_equal($orphanids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('local_edusupport_supporters', "id $insql", $inparams);
+            $DB->delete_records_select('local_helpdesk_supporters', "id $insql", $inparams);
             $removed += count($orphanids);
         }
 
         // Merge what is left, one group of (courseid, userid) at a time.
         $groups = $DB->get_records_sql(
             "SELECT MIN(id) AS lowestid, courseid, userid, COUNT(*) AS duplicates
-               FROM {local_edusupport_supporters}
+               FROM {local_helpdesk_supporters}
            GROUP BY courseid, userid
              HAVING COUNT(*) > 1"
         );
         foreach ($groups as $group) {
             $rows = $DB->get_records(
-                'local_edusupport_supporters',
+                'local_helpdesk_supporters',
                 ['courseid' => $group->courseid, 'userid' => $group->userid],
                 'id ASC'
             );
@@ -723,14 +723,14 @@ class lib {
                 $autoassign = max($autoassign, (int) $row->autoassign);
             }
             if ((int) $winner->holidaymode !== $holidaymode) {
-                $DB->set_field('local_edusupport_supporters', 'holidaymode', $holidaymode, ['id' => $winner->id]);
+                $DB->set_field('local_helpdesk_supporters', 'holidaymode', $holidaymode, ['id' => $winner->id]);
             }
             if ((int) $winner->autoassign !== $autoassign) {
-                $DB->set_field('local_edusupport_supporters', 'autoassign', $autoassign, ['id' => $winner->id]);
+                $DB->set_field('local_helpdesk_supporters', 'autoassign', $autoassign, ['id' => $winner->id]);
             }
 
             $DB->delete_records_select(
-                'local_edusupport_supporters',
+                'local_helpdesk_supporters',
                 'courseid = :courseid AND userid = :userid AND id <> :winner',
                 ['courseid' => $group->courseid, 'userid' => $group->userid, 'winner' => $winner->id]
             );
@@ -766,7 +766,7 @@ class lib {
             $params['now'] = time();
         }
 
-        return $DB->get_records_select('local_edusupport_supporters', implode(' AND ', $wheres), $params);
+        return $DB->get_records_select('local_helpdesk_supporters', implode(' AND ', $wheres), $params);
     }
 
     /**
@@ -783,7 +783,7 @@ class lib {
             return [];
         }
 
-        return $DB->get_records('local_edusupport_supporters', ['courseid' => $courseid]);
+        return $DB->get_records('local_helpdesk_supporters', ['courseid' => $courseid]);
     }
 
     /**
@@ -797,7 +797,7 @@ class lib {
 
         $userid = empty($userid) ? $USER->id : $userid;
 
-        return $DB->record_exists('local_edusupport_supporters', [
+        return $DB->record_exists('local_helpdesk_supporters', [
             'userid' => $userid,
             'courseid' => self::SYSTEM_COURSE_ID,
         ]);
@@ -817,7 +817,7 @@ class lib {
             return false;
         }
 
-        return $DB->record_exists('local_edusupport_supporters', [
+        return $DB->record_exists('local_helpdesk_supporters', [
             'userid' => $userid,
             'courseid' => $courseid,
         ]);
@@ -877,7 +877,7 @@ class lib {
     public static function rolecheck_course(int $courseid): void {
         global $DB;
 
-        $forums = $DB->get_records('local_edusupport', ['courseid' => $courseid], '', 'id, forumid');
+        $forums = $DB->get_records('local_helpdesk', ['courseid' => $courseid], '', 'id, forumid');
         foreach ($forums as $forum) {
             self::supportforum_rolecheck($forum->forumid);
         }
@@ -896,7 +896,7 @@ class lib {
         $userid = empty($userid) ? $USER->id : $userid;
 
         return has_capability(
-            'local/edusupport:assignsupporters',
+            'local/helpdesk:assignsupporters',
             \context_course::instance($courseid),
             $userid
         );
@@ -944,7 +944,7 @@ class lib {
             if (isset($current[$userid])) {
                 continue;
             }
-            $DB->insert_record('local_edusupport_supporters', (object) [
+            $DB->insert_record('local_helpdesk_supporters', (object) [
                 'courseid' => $courseid,
                 'userid' => $userid,
                 'supportlevel' => '',
@@ -964,7 +964,7 @@ class lib {
             if (!$replace || isset($wanted[$userid])) {
                 continue;
             }
-            $DB->delete_records('local_edusupport_supporters', ['id' => $row->id]);
+            $DB->delete_records('local_helpdesk_supporters', ['id' => $row->id]);
             $result['removed'][] = $userid;
             event\supportuser_deleted::create([
                 'objectid' => $courseid,
@@ -995,7 +995,7 @@ class lib {
     public static function seed_first_level_from_capabilities(bool $dryrun = true): array {
         global $DB;
 
-        $courseids = $DB->get_fieldset_sql('SELECT DISTINCT courseid FROM {local_edusupport} ORDER BY courseid');
+        $courseids = $DB->get_fieldset_sql('SELECT DISTINCT courseid FROM {local_helpdesk} ORDER BY courseid');
         $report = [];
 
         foreach ($courseids as $courseid) {
@@ -1064,7 +1064,7 @@ class lib {
      */
     public static function is_supportforum($forumid) {
         global $DB;
-        $chk = $DB->get_record('local_edusupport', ['forumid' => $forumid]);
+        $chk = $DB->get_record('local_helpdesk', ['forumid' => $forumid]);
         return !empty($chk->id);
     }
 
@@ -1135,7 +1135,7 @@ class lib {
         }
         // Check if the user taking the action has trainer permissions.
         $coursecontext = \context_course::instance($discussion->course);
-        if (!has_capability('local/edusupport:canforward2ndlevel', $coursecontext)) {
+        if (!has_capability('local/helpdesk:canforward2ndlevel', $coursecontext)) {
             return false;
         }
 
@@ -1144,22 +1144,22 @@ class lib {
             $issue->discussionid,
             get_string(
                 'issue_revoke:post',
-                'local_edusupport',
+                'local_helpdesk',
                 [
                     'fromuserfullname' => \fullname($USER),
                     'fromuserid' => $USER->id,
                     'wwwroot' => $CFG->wwwroot,
                 ]
             ),
-            get_string('issue_revoke:subject', 'local_edusupport'),
-            get_config('local_edusupport', 'sendissueclosed')
+            get_string('issue_revoke:subject', 'local_helpdesk'),
+            get_config('local_helpdesk', 'sendissueclosed')
         );
 
         // 3.) remove all supporters from the abo-list
-        $DB->delete_records('local_edusupport_subscr', ['discussionid' => $discussionid]);
+        $DB->delete_records('local_helpdesk_subscr', ['discussionid' => $discussionid]);
 
         // 4.) remove issue-link from database
-        $DB->delete_records('local_edusupport_issues', ['discussionid' => $discussionid]);
+        $DB->delete_records('local_helpdesk_issues', ['discussionid' => $discussionid]);
 
         return true;
     }
@@ -1184,9 +1184,9 @@ class lib {
             return false;
         }
         // Todo: MDL-000000 Only subscribe 1 person and make it responsible!
-        $supportforum = $DB->get_record('local_edusupport', ['forumid' => $discussion->forum]);
+        $supportforum = $DB->get_record('local_helpdesk', ['forumid' => $discussion->forum]);
 
-        $respectholidays = !empty(get_config('local_edusupport', 'holidaymodeenabled'));
+        $respectholidays = !empty(get_config('local_helpdesk', 'holidaymodeenabled'));
         $supporters = self::get_second_level(true, $respectholidays);
         if (empty($supporters) && $respectholidays) {
             // Everybody is away, so fall back to the whole assignable team rather than
@@ -1213,19 +1213,19 @@ class lib {
 
         if (!empty($dedicated->userid)) {
             $DB->set_field(
-                'local_edusupport_issues',
+                'local_helpdesk_issues',
                 'currentsupporter',
                 $dedicated->userid,
                 ['discussionid' => $discussion->id]
             );
             self::subscription_add($discussionid, $dedicated->userid);
         }
-        $centralforumid = get_config('local_edusupport', 'centralforum');
+        $centralforumid = get_config('local_helpdesk', 'centralforum');
         $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
 
-        if (!empty($dedicated->userid) && get_config('local_edusupport', 'sendmsgonset2ndlvl')) {
-            $subject = get_string('issue_assigned:subject', 'local_edusupport');
-            $messagebody = get_string('issue_assign_nextlevel:post', 'local_edusupport', (object) [
+        if (!empty($dedicated->userid) && get_config('local_helpdesk', 'sendmsgonset2ndlvl')) {
+            $subject = get_string('issue_assigned:subject', 'local_helpdesk');
+            $messagebody = get_string('issue_assign_nextlevel:post', 'local_helpdesk', (object) [
                 'fromuserfullname' => fullname($USER),
                 'fromuserid' => $USER->id,
                 'wwwroot' => $CFG->wwwroot,
@@ -1238,11 +1238,11 @@ class lib {
                 $messagebody,
                 $subject,
                 // Only send mail if setting is turned on!
-                get_config('local_edusupport', 'sendsupporterassignments')
+                get_config('local_helpdesk', 'sendsupporterassignments')
             );
             // In any case, send e-mail to the dedicated supporter.
-            $issueurl = (new moodle_url('/local/edusupport/issue.php?d=' . $discussion->id))->out(false);
-            $posthtml = get_string('issue:assigned', 'local_edusupport') . " " . $discussion->name . " $issueurl";
+            $issueurl = (new moodle_url('/local/helpdesk/issue.php?d=' . $discussion->id))->out(false);
+            $posthtml = get_string('issue:assigned', 'local_helpdesk') . " " . $discussion->name . " $issueurl";
             $postsubject = $discussion->name;
             $msg = new message();
             $touser = $DB->get_record('user', ['id' => $dedicated->userid]);
@@ -1255,8 +1255,8 @@ class lib {
             $msg->smallmessage = $postsubject;
             $msg->contexturl = $issueurl; // A relevant URL for the notification.
             $msg->contexturlname = 'Issue'; // Link title explaining where users get to for the contexturl.
-            $msg->name = 'edusupport_issue';
-            $msg->component = 'local_edusupport';
+            $msg->name = 'helpdesk_issue';
+            $msg->component = 'local_helpdesk';
             $msg->notification = 1;
             message_send($msg);
         } else {
@@ -1320,18 +1320,18 @@ class lib {
         $issue = self::get_issue($discussionid);
 
         // Set currentsupporter and add to subscribed users.
-        $DB->set_field('local_edusupport_issues', 'currentsupporter', $userid, ['discussionid' => $discussion->id]);
+        $DB->set_field('local_helpdesk_issues', 'currentsupporter', $userid, ['discussionid' => $discussion->id]);
         self::subscription_add($discussionid, $userid);
 
-        $supporter = $DB->get_record('local_edusupport_supporters', ['userid' => $userid]);
+        $supporter = $DB->get_record('local_helpdesk_supporters', ['userid' => $userid]);
         if (empty($supporter->supportlevel)) {
-            $supporter->supportlevel = get_string('label:2ndlevel', 'local_edusupport');
+            $supporter->supportlevel = get_string('label:2ndlevel', 'local_helpdesk');
         }
         $touser = $DB->get_record('user', ['id' => $userid]);
-        $subject = get_string('issue_assigned:subject', 'local_edusupport');
+        $subject = get_string('issue_assigned:subject', 'local_helpdesk');
         $messagebody = get_string(
             'issue_assign_nextlevel:post',
-            'local_edusupport',
+            'local_helpdesk',
             (object) [
                 'fromuserfullname' => \fullname($USER),
                 'fromuserid' => $USER->id,
@@ -1349,12 +1349,12 @@ class lib {
             $messagebody,
             $subject,
             // Only send mail if setting is turned on!
-            get_config('local_edusupport', 'sendsupporterassignments')
+            get_config('local_helpdesk', 'sendsupporterassignments')
         );
 
         // In any case, send e-mail to the assigned supporter.
-        $issueurl = (new moodle_url('/local/edusupport/issue.php?d=' . $discussion->id))->out(false);
-        $posthtml = get_string('issue:assigned', 'local_edusupport') . " " . $discussion->name . " $issueurl";
+        $issueurl = (new moodle_url('/local/helpdesk/issue.php?d=' . $discussion->id))->out(false);
+        $posthtml = get_string('issue:assigned', 'local_helpdesk') . " " . $discussion->name . " $issueurl";
         $postsubject = $discussion->name;
         $msg = new message();
         $touser = $DB->get_record('user', ['id' => $userid]);
@@ -1367,8 +1367,8 @@ class lib {
         $msg->smallmessage = $postsubject;
         $msg->contexturl = $issueurl; // A relevant URL for the notification.
         $msg->contexturlname = 'Issue'; // Link title explaining where users get to for the contexturl.
-        $msg->name = 'edusupport_issue';
-        $msg->component = 'local_edusupport';
+        $msg->name = 'helpdesk_issue';
+        $msg->component = 'local_helpdesk';
         $msg->notification = 1;
         message_send($msg);
         return true;
@@ -1389,7 +1389,7 @@ class lib {
         $issue->priority = $priority;
         $issue->discussionid = $discussionid;
         $issue->timemodified = time();
-        $DB->update_record('local_edusupport_issues', $issue);
+        $DB->update_record('local_helpdesk_issues', $issue);
         return true;
     }
 
@@ -1410,14 +1410,14 @@ class lib {
             return;
         }
         $issue = self::get_issue($discussionid);
-        $subscription = $DB->get_record('local_edusupport_subscr', ['discussionid' => $discussionid, 'userid' => $userid]);
+        $subscription = $DB->get_record('local_helpdesk_subscr', ['discussionid' => $discussionid, 'userid' => $userid]);
         if (empty($subscription->id)) {
             $subscription = (object) [
                 'issueid' => $issue->id,
                 'discussionid' => $discussionid,
                 'userid' => $userid,
             ];
-            $subscription->id = $DB->insert_record('local_edusupport_subscr', $subscription);
+            $subscription->id = $DB->insert_record('local_helpdesk_subscr', $subscription);
         }
         return $subscription;
     }
@@ -1433,7 +1433,7 @@ class lib {
         if (empty($userid)) {
             $userid = $USER->id;
         }
-        $DB->delete_records('local_edusupport_subscr', ['discussionid' => $discussionid, 'userid' => $userid]);
+        $DB->delete_records('local_helpdesk_subscr', ['discussionid' => $discussionid, 'userid' => $userid]);
     }
 
     /**
@@ -1444,10 +1444,10 @@ class lib {
      */
     public static function supportforum_disable($forumid) {
         global $DB;
-        $DB->delete_records('local_edusupport', ['forumid' => $forumid]);
+        $DB->delete_records('local_helpdesk', ['forumid' => $forumid]);
         self::supportforum_managecaps($forumid, false);
         self::supportforum_rolecheck($forumid);
-        $centralforum = get_config('local_edusupport', 'centralforum');
+        $centralforum = get_config('local_helpdesk', 'centralforum');
         if ($forumid == $centralforum) {
             self::supportforum_disablecentral();
         }
@@ -1461,7 +1461,7 @@ class lib {
         if (!is_siteadmin()) {
             return;
         }
-        set_config('centralforum', 0, 'local_edusupport');
+        set_config('centralforum', 0, 'local_helpdesk');
     }
 
     /**
@@ -1477,7 +1477,7 @@ class lib {
             return false;
         }
 
-        $supportforum = $DB->get_record('local_edusupport', ['forumid' => $forumid]);
+        $supportforum = $DB->get_record('local_helpdesk', ['forumid' => $forumid]);
         if (empty($supportforum->id)) {
             $course = $DB->get_record('course', ['id' => $forum->course]);
             $supportforum = (object) [
@@ -1487,7 +1487,7 @@ class lib {
                 'archiveid' => 0,
                 'dedicatedsupporter' => 0,
             ];
-            $supportforum->id = $DB->insert_record('local_edusupport', $supportforum);
+            $supportforum->id = $DB->insert_record('local_helpdesk', $supportforum);
         }
 
         self::supportforum_managecaps($forumid, true);
@@ -1515,9 +1515,9 @@ class lib {
             return false;
         }
 
-        $supportforum = $DB->get_record('local_edusupport', ['forumid' => $forumid]);
+        $supportforum = $DB->get_record('local_helpdesk', ['forumid' => $forumid]);
         if (!empty($supportforum->id)) {
-            set_config('centralforum', $forum->id, 'local_edusupport');
+            set_config('centralforum', $forum->id, 'local_helpdesk');
             return $forum;
         }
         return false;
@@ -1584,7 +1584,7 @@ class lib {
         global $DB;
         if (empty($forumid)) {
             // We have to re-sync all supportforums.
-            $forums = $DB->get_records('local_edusupport', []);
+            $forums = $DB->get_records('local_helpdesk', []);
             foreach ($forums as $forum) {
                 self::supportforum_rolecheck($forum->forumid);
             }
@@ -1598,7 +1598,7 @@ class lib {
             $cm = \get_coursemodule_from_instance('forum', $forumid, $forum->course, false, MUST_EXIST);
             $ctx = \context_module::instance($cm->id);
 
-            $roleid = get_config('local_edusupport', 'supportteamrole');
+            $roleid = get_config('local_helpdesk', 'supportteamrole');
 
             // Get all users that currently have the supporter-role.
             $sql = "SELECT userid FROM {role_assignments} WHERE roleid=? AND contextid=?";
@@ -1622,7 +1622,7 @@ class lib {
             if ($issupportforum) {
                 // Assign all current supportteam users.
                 $sql = "SELECT les.*
-                        FROM {local_edusupport_supporters} les
+                        FROM {local_helpdesk_supporters} les
                         JOIN {user} u
                         ON u.id = les.userid
                         WHERE (les.courseid=? OR les.courseid=?)
@@ -1648,12 +1648,12 @@ class lib {
         }
         global $DB;
         if ($userid == -1) {
-            $DB->set_field('local_edusupport', 'dedicatedsupporter', -1, ['forumid' => $forumid]);
+            $DB->set_field('local_helpdesk', 'dedicatedsupporter', -1, ['forumid' => $forumid]);
         } else {
             if (!self::is_second_level($userid)) {
                 return false;
             }
-            $DB->set_field('local_edusupport', 'dedicatedsupporter', $userid, ['forumid' => $forumid]);
+            $DB->set_field('local_helpdesk', 'dedicatedsupporter', $userid, ['forumid' => $forumid]);
         }
         return true;
     }
@@ -1668,14 +1668,14 @@ class lib {
     public static function get_support_user_by_matching_customfield($courseid, $cfn) {
         global $DB, $USER;
         $userid = $USER->id;
-        $customfieldname = get_config('local_edusupport', 'customfieldname');
+        $customfieldname = get_config('local_helpdesk', 'customfieldname');
         $sql = "SELECT uid.data, uif.id FROM {user_info_data} uid
         LEFT JOIN {user_info_field} uif
         on uid.fieldid = uif.id
         WHERE uif.name = :customfieldname AND uid.userid = :userid";
         $params = ['courseid' => $courseid, 'customfieldname' => $customfieldname, 'userid' => $userid];
         $customfielddata = $DB->get_record_sql($sql, $params);
-        $role = get_config('local_edusupport', 'rolename');
+        $role = get_config('local_helpdesk', 'rolename');
         $params = ['courseid' => $courseid, 'fieldid' => $customfielddata->id, 'customfieldvalue' => $customfielddata->data,
             'role' => $role];
         $sql = "SELECT  uid.userid, u.firstname, u.lastname,  uid.data,  r.shortname from {course} ic
@@ -1710,9 +1710,9 @@ class lib {
         $issue->status = $status;
         $issue->timemodified = time();
 
-        $DB->update_record('local_edusupport_issues', $issue);
+        $DB->update_record('local_helpdesk_issues', $issue);
 
-        if ($status == ISSUE_STATUS_AWAITING_SUPPORT_ACTION && get_config('local_edusupport', 'sendreminders')) {
+        if ($status == ISSUE_STATUS_AWAITING_SUPPORT_ACTION && get_config('local_helpdesk', 'sendreminders')) {
             self::send_reminder($issueid);
         }
     }
@@ -1736,7 +1736,7 @@ class lib {
         ];
         $task = new reminder();
         $task->set_custom_data($taskdata);
-        $timebeforereminder = time() + (get_config('local_edusupport', 'timebeforereminder'));
+        $timebeforereminder = time() + (get_config('local_helpdesk', 'timebeforereminder'));
         $task->set_next_run_time($timebeforereminder);
 
         // Unfortunately, reschedule does not work because set_status is called at each loading of issues.php.
@@ -1754,8 +1754,8 @@ class lib {
         $sql =
             "SELECT COUNT(*) AS cnt
             FROM {task_adhoc}
-            WHERE component = 'local_edusupport'
-            AND classname = '\\local_edusupport\\task\\reminder'
+            WHERE component = 'local_helpdesk'
+            AND classname = '\\local_helpdesk\\task\\reminder'
             AND customdata LIKE '{_issueid_:" . $issueid . "}%'";
 
         $record = $DB->get_record_sql($sql);
@@ -1776,25 +1776,25 @@ class lib {
     public static function status_to_template(int $status): array {
         switch ($status) {
             case ISSUE_STATUS_NOTSTARTED:
-                return ['status' => get_string('status:notstarted', 'local_edusupport'), 'class' => 'badge badge-danger',
+                return ['status' => get_string('status:notstarted', 'local_helpdesk'), 'class' => 'badge badge-danger',
                     'stateclass' => 'notstarted'];
                 break;
             case ISSUE_STATUS_AWAITING_USER_REPLY:
-                return ['status' => get_string('status:awaitinguserreply', 'local_edusupport'),
+                return ['status' => get_string('status:awaitinguserreply', 'local_helpdesk'),
                     'class' => 'badge badge-brown',
                     'stateclass' => 'awaiting'];
                 break;
             case ISSUE_STATUS_ONGOING:
-                return ['status' => get_string('status:ongoing', 'local_edusupport'), 'class' => 'badge badge-success',
+                return ['status' => get_string('status:ongoing', 'local_helpdesk'), 'class' => 'badge badge-success',
                     'stateclass' => 'ongoing'];
                 break;
             case ISSUE_STATUS_AWAITING_SUPPORT_ACTION:
-                return ['status' => get_string('status:awaitingsupportaction', 'local_edusupport'),
+                return ['status' => get_string('status:awaitingsupportaction', 'local_helpdesk'),
                     'class' => 'badge badge-orange',
                     'stateclass' => 'awaitingsupportaction'];
                 break;
             case ISSUE_STATUS_CLOSED:
-                return ['status' => get_string('status:closed', 'local_edusupport'), 'class' => 'badge badge-success',
+                return ['status' => get_string('status:closed', 'local_helpdesk'), 'class' => 'badge badge-success',
                     'stateclass' => 'closed'];
                 break;
         }

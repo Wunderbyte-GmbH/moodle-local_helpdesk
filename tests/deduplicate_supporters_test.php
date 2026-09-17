@@ -17,13 +17,13 @@
 /**
  * Tests for the cleanup that precedes the unique key on the supporter table.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use xmldb_index;
@@ -32,11 +32,11 @@ use xmldb_table;
 /**
  * Tests for the cleanup that precedes the unique key on the supporter table.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::deduplicate_supporters
+ * @covers     \local_helpdesk\lib::deduplicate_supporters
  */
 final class deduplicate_supporters_test extends advanced_testcase {
     /**
@@ -54,7 +54,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
         $this->resetAfterTest(true);
 
         $dbman = $DB->get_manager();
-        $table = new xmldb_table('local_edusupport_supporters');
+        $table = new xmldb_table('local_helpdesk_supporters');
         foreach (
             [
             new xmldb_index('courseid-userid', XMLDB_INDEX_UNIQUE, ['courseid', 'userid']),
@@ -76,7 +76,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
         global $DB;
 
         $dbman = $DB->get_manager();
-        $table = new xmldb_table('local_edusupport_supporters');
+        $table = new xmldb_table('local_helpdesk_supporters');
         $index = new xmldb_index('courseid-userid', XMLDB_INDEX_UNIQUE, ['courseid', 'userid']);
         $dbman->add_index($table, $index);
         $this->assertTrue($dbman->index_exists($table, $index));
@@ -94,7 +94,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
     private function raw_row(int $courseid, int $userid, string $supportlevel = '', int $holidaymode = 0): int {
         global $DB;
 
-        return $DB->insert_record('local_edusupport_supporters', (object) [
+        return $DB->insert_record('local_helpdesk_supporters', (object) [
             'courseid' => $courseid,
             'userid' => $userid,
             'supportlevel' => $supportlevel,
@@ -115,7 +115,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
 
         $this->assertSame(2, lib::deduplicate_supporters());
 
-        $rows = $DB->get_records('local_edusupport_supporters', ['userid' => $user->id]);
+        $rows = $DB->get_records('local_helpdesk_supporters', ['userid' => $user->id]);
         $this->assertCount(1, $rows);
         $survivor = reset($rows);
         $this->assertEquals($labelled, $survivor->id);
@@ -137,7 +137,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
 
         lib::deduplicate_supporters();
 
-        $rows = $DB->get_records('local_edusupport_supporters', ['userid' => $user->id]);
+        $rows = $DB->get_records('local_helpdesk_supporters', ['userid' => $user->id]);
         $this->assertCount(1, $rows);
         $survivor = reset($rows);
         $this->assertSame('technical', $survivor->supportlevel);
@@ -164,7 +164,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
 
         lib::deduplicate_supporters();
 
-        $remaining = $DB->get_records('local_edusupport_supporters');
+        $remaining = $DB->get_records('local_helpdesk_supporters');
         $this->assertCount(2, $remaining);
         foreach ($remaining as $row) {
             $this->assertEquals($keep->id, $row->userid);
@@ -182,7 +182,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
 
         lib::deduplicate_supporters();
 
-        $rows = $DB->get_records('local_edusupport_supporters', ['userid' => $user->id]);
+        $rows = $DB->get_records('local_helpdesk_supporters', ['userid' => $user->id]);
         $this->assertCount(1, $rows);
         $this->assertEquals(lib::SYSTEM_COURSE_ID, reset($rows)->courseid);
     }
@@ -199,7 +199,7 @@ final class deduplicate_supporters_test extends advanced_testcase {
 
         $this->assertSame(1, lib::deduplicate_supporters());
 
-        $rows = $DB->get_records('local_edusupport_supporters', ['userid' => $user->id]);
+        $rows = $DB->get_records('local_helpdesk_supporters', ['userid' => $user->id]);
         $this->assertCount(1, $rows);
         $this->assertSame('technical', reset($rows)->supportlevel);
 
@@ -218,6 +218,6 @@ final class deduplicate_supporters_test extends advanced_testcase {
         $this->raw_row($course->id, $user->id);
 
         $this->assertSame(0, lib::deduplicate_supporters());
-        $this->assertSame(2, $DB->count_records('local_edusupport_supporters'));
+        $this->assertSame(2, $DB->count_records('local_helpdesk_supporters'));
     }
 }

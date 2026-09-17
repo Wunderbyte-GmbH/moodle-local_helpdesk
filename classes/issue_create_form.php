@@ -17,14 +17,14 @@
 /**
  * Form used to file a support request.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_edusupport\accountmanager;
+use local_helpdesk\accountmanager;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -33,7 +33,7 @@ require_once($CFG->libdir . "/formslib.php");
 /**
  * Form used to file a support request.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -58,10 +58,10 @@ class issue_create_form extends moodleform {
     public function definition() {
         global $CFG, $COURSE, $SITE;
 
-        $faqread = get_config('local_edusupport', 'faqread');
-        $faqlink = get_config('local_edusupport', 'faqlink');
-        $prioritylvl = get_config('local_edusupport', 'prioritylvl');
-        $disablephonefield = get_config('local_edusupport', 'phonefield');
+        $faqread = get_config('local_helpdesk', 'faqread');
+        $faqlink = get_config('local_helpdesk', 'faqlink');
+        $prioritylvl = get_config('local_helpdesk', 'prioritylvl');
+        $disablephonefield = get_config('local_helpdesk', 'phonefield');
         $guestuserallowed = true; // Do we need 'guestuserallowed' from get_config?
 
         $editoroptions = ['subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0,
@@ -82,12 +82,12 @@ class issue_create_form extends moodleform {
         $mform->addElement('hidden', 'image', ''); // Base64 encoded image.
         $mform->setType('image', PARAM_RAW);
 
-        $mform->addElement('header', 'header', get_string('header', 'local_edusupport', $COURSE->fullname));
+        $mform->addElement('header', 'header', get_string('header', 'local_helpdesk', $COURSE->fullname));
 
         if ($faqread) {
-            $mform->addElement('checkbox', 'faqread', '', get_string('faqread:description', 'local_edusupport', $faqlink));
+            $mform->addElement('checkbox', 'faqread', '', get_string('faqread:description', 'local_helpdesk', $faqlink));
             $mform->setType('faqread', PARAM_BOOL);
-            $mform->addRule('faqread', get_string('subject_missing', 'local_edusupport'), 'required', true, 'server');
+            $mform->addRule('faqread', get_string('subject_missing', 'local_helpdesk'), 'required', true, 'server');
         } else {
             $mform->addElement('html', '<input type="checkbox" id="id_faqread" class="autochecked" ' .
                 'style="display: none;" checked="checked" />');
@@ -95,9 +95,9 @@ class issue_create_form extends moodleform {
 
         $mform->addElement('html', '<div id="create_issue_input">');
 
-        require_once($CFG->dirroot . '/local/edusupport/classes/lib.php');
+        require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
 
-        $potentialtargets = \local_edusupport\lib::get_potentialtargets();
+        $potentialtargets = \local_helpdesk\lib::get_potentialtargets();
 
         $hideifs = ['mail'];
 
@@ -120,15 +120,15 @@ class issue_create_form extends moodleform {
         }
         if (count($potentialtargets) == 0) {
             $supportuser = \core_user::get_support_user();
-            $options['mail'] = get_string('email_to_xyz', 'local_edusupport', (object) ['email' => $supportuser->email]);
+            $options['mail'] = get_string('email_to_xyz', 'local_helpdesk', (object) ['email' => $supportuser->email]);
         }
 
         $hideifs = '["' . implode('","', $hideifs) . '"]';
         $postto2ndlevelhideshow = [
             'require([\'jquery\'], function($) {',
                 'var val = $(\'#id_forum_group\').val();',
-                '$(\'.edusupport_label\').addClass(\'hidden\');',
-                '$(\'#edusupport_label_\' + val).removeClass(\'hidden\');',
+                '$(\'.helpdesk_label\').addClass(\'hidden\');',
+                '$(\'#helpdesk_label_\' + val).removeClass(\'hidden\');',
                 'var hide = (' . $hideifs . '.indexOf(val) > -1);',
                 'var pt2 = $(\'#id_postto2ndlevel\');',
                 '$(pt2).prop(\'checked\', false);',
@@ -138,41 +138,41 @@ class issue_create_form extends moodleform {
         $mform->addElement(
             'select',
             'forum_group',
-            get_string('to_group', 'local_edusupport'),
+            get_string('to_group', 'local_helpdesk'),
             $options,
             ['onchange' => implode("", $postto2ndlevelhideshow)]
         );
         $mform->setType('forum_group', PARAM_INT);
 
-        if (!empty($usesubjects = get_config('local_edusupport', 'predefined_subjects'))) {
+        if (!empty($usesubjects = get_config('local_helpdesk', 'predefined_subjects'))) {
             $options = ['' => ''];
             $options += explode(PHP_EOL, $usesubjects);
             $options = array_combine($options, $options);
             $mform->addElement(
                 'select',
                 'subject',
-                get_string('subject', 'local_edusupport'),
+                get_string('subject', 'local_helpdesk'),
                 $options,
                 ['style' => 'width: 100%;']
             );
             $mform->setType('subject', PARAM_TEXT);
-            $mform->addRule('subject', get_string('subject_missing', 'local_edusupport'), 'required', null, 'server');
+            $mform->addRule('subject', get_string('subject_missing', 'local_helpdesk'), 'required', null, 'server');
         } else {
             $mform->addElement(
                 'text',
                 'subject',
-                get_string('subject', 'local_edusupport'),
+                get_string('subject', 'local_helpdesk'),
                 ['style' => 'width: 100%;', 'type' => 'tel']
             );
             $mform->setType('subject', PARAM_TEXT);
-            $mform->addRule('subject', get_string('subject_missing', 'local_edusupport'), 'required', null, 'server');
+            $mform->addRule('subject', get_string('subject_missing', 'local_helpdesk'), 'required', null, 'server');
         }
 
         if (!$disablephonefield) {
             $mform->addElement(
                 'text',
                 'contactphone',
-                get_string('contactphone', 'local_edusupport'),
+                get_string('contactphone', 'local_helpdesk'),
                 ['style' => 'width: 100%;']
             );
         } else {
@@ -181,9 +181,9 @@ class issue_create_form extends moodleform {
         $mform->setType('contactphone', PARAM_TEXT);
 
         if ((isguestuser() || !isloggedin()) && $guestuserallowed) {
-            $mform->addElement('text', 'guestmail', get_string('guestmail', 'local_edusupport'), ['style' => 'width: 100%;']);
+            $mform->addElement('text', 'guestmail', get_string('guestmail', 'local_helpdesk'), ['style' => 'width: 100%;']);
             $mform->setType('guestmail', PARAM_EMAIL);
-            $mform->addRule('guestmail', get_string('mail_missing', 'local_edusupport'), 'required', null, 'server');
+            $mform->addRule('guestmail', get_string('mail_missing', 'local_helpdesk'), 'required', null, 'server');
         }
 
         // Accountmanager select.
@@ -193,15 +193,15 @@ class issue_create_form extends moodleform {
         $mform->addElement(
             'textarea',
             'description',
-            get_string('description', 'local_edusupport'),
+            get_string('description', 'local_helpdesk'),
             ['style' => 'width: 100%;', 'rows' => 10]
         );
         $mform->setType('description', PARAM_RAW);
-        $mform->addRule('description', get_string('description_missing', 'local_edusupport'), 'required', null, 'server');
+        $mform->addRule('description', get_string('description_missing', 'local_helpdesk'), 'required', null, 'server');
 
         $mform->addElement('checkbox', 'postto2ndlevel', '', get_string(
             'postto2ndlevel:description',
-            'local_edusupport',
+            'local_helpdesk',
             ['sitename' => $SITE->fullname]
         ));
         $mform->setType('postto2ndlevel', PARAM_BOOL);
@@ -209,11 +209,11 @@ class issue_create_form extends moodleform {
 
         $fileupload = [
             '<div class="form-group row fitem">',
-            ' <div class="col-md-3">' . get_string('screenshot', 'local_edusupport') . '</div>',
-            ' <div class="col-md-9" id="edusupport_screenshot">',
-            '  <input type="file" onchange="require([\'local_edusupport/main\'], function(M) { M.uploadScreenshot(); });" /><br />',
-            '  <div class="alert alert-danger hidden">' . get_string('screenshot:upload:failed', 'local_edusupport') . '</div>',
-            '  <div class="alert alert-success hidden">' . get_string('screenshot:upload:successful', 'local_edusupport') .
+            ' <div class="col-md-3">' . get_string('screenshot', 'local_helpdesk') . '</div>',
+            ' <div class="col-md-9" id="helpdesk_screenshot">',
+            '  <input type="file" onchange="require([\'local_helpdesk/main\'], function(M) { M.uploadScreenshot(); });" /><br />',
+            '  <div class="alert alert-danger hidden">' . get_string('screenshot:upload:failed', 'local_helpdesk') . '</div>',
+            '  <div class="alert alert-success hidden">' . get_string('screenshot:upload:successful', 'local_helpdesk') .
                 '</div>',
             ' </div>',
             '</div>',
@@ -244,9 +244,9 @@ class issue_create_form extends moodleform {
      */
     public function return_priority_options() {
         return [
-            "" => get_string('prioritylvl:low', 'local_edusupport'),
-            "!" => get_string('prioritylvl:mid', 'local_edusupport'),
-            "!!" => get_string('prioritylvl:high', 'local_edusupport'),
+            "" => get_string('prioritylvl:low', 'local_helpdesk'),
+            "!" => get_string('prioritylvl:mid', 'local_helpdesk'),
+            "!!" => get_string('prioritylvl:high', 'local_helpdesk'),
         ];
     }
 }

@@ -15,26 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event observers of the eduSupport plugin.
+ * Event observers of the Helpdesk plugin.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmangement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use cache_helper;
-use local_edusupport\event\supportuser_added;
-use local_edusupport\event\supportuser_changed;
-use local_edusupport\event\supportuser_deleted;
-use local_edusupport\task\send_mail;
+use local_helpdesk\event\supportuser_added;
+use local_helpdesk\event\supportuser_changed;
+use local_helpdesk\event\supportuser_deleted;
+use local_helpdesk\task\send_mail;
 
 /**
- * Event observers of the eduSupport plugin.
+ * Event observers of the Helpdesk plugin.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,7 +47,7 @@ class observer {
     public static function supportuser_added(supportuser_added $event) {
         // When a support user gets added, changed or deleted, we need to purge the navbar menu cache.
         // The navbar only shows issues if a user is a support user (or an admin).
-        cache_helper::purge_by_event('setbacksupportmenu');
+        cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
     }
 
     /**
@@ -58,7 +58,7 @@ class observer {
     public static function supportuser_changed(supportuser_changed $event) {
         // When a support user gets added, changed or deleted, we need to purge the navbar menu cache.
         // The navbar only shows issues if a user is a support user (or an admin).
-        cache_helper::purge_by_event('setbacksupportmenu');
+        cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
     }
 
     /**
@@ -69,7 +69,7 @@ class observer {
     public static function supportuser_deleted(supportuser_deleted $event) {
         // When a support user gets added, changed or deleted, we need to purge the navbar menu cache.
         // The navbar only shows issues if a user is a support user (or an admin).
-        cache_helper::purge_by_event('setbacksupportmenu');
+        cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
     }
 
     /**
@@ -87,7 +87,7 @@ class observer {
         $entry = (object)$event->get_data();
         if ($entry->eventname == '\mod_forum\event\discussion_deleted') {
             $discussionid = $entry->objectid;
-            return \local_edusupport\lib::delete_issue($discussionid);
+            return \local_helpdesk\lib::delete_issue($discussionid);
         } else {
             if (substr($entry->eventname, 0, strlen("\\mod_forum\\event\\post_")) == "\\mod_forum\\event\\post_") {
                 $post = $DB->get_record("forum_posts", ["id" => $entry->objectid]);
@@ -99,11 +99,11 @@ class observer {
 
             $forum = $DB->get_record("forum", ["id" => $discussion->forum]);
             $course = $DB->get_record("course", ["id" => $forum->course]);
-            $issue = $DB->get_record('local_edusupport_issues', ['discussionid' => $discussion->id]);
+            $issue = $DB->get_record('local_helpdesk_issues', ['discussionid' => $discussion->id]);
             if (empty($issue->id)) {
                 return;
             }
-            \local_edusupport\lib::reopen_issue($discussion->id);
+            \local_helpdesk\lib::reopen_issue($discussion->id);
             $author = $DB->get_record('user', ['id' => $post->userid]);
 
             // Having more than one user in the discussion means that someone has already answered.
@@ -116,13 +116,13 @@ class observer {
             if ($morethanoneuser->count > 1) {
                 if ($post->userid == $discussion->userid) {
                     // If the user posted, we are waiting for a support action.
-                    \local_edusupport\lib::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+                    \local_helpdesk\lib::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
                 } else {
                     // If the supporter posted, we are waiting for a user reply.
-                    \local_edusupport\lib::set_status(ISSUE_STATUS_AWAITING_USER_REPLY, $issue->id);
+                    \local_helpdesk\lib::set_status(ISSUE_STATUS_AWAITING_USER_REPLY, $issue->id);
                 }
             } else {
-                \local_edusupport\lib::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+                \local_helpdesk\lib::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
             }
             // Enhance post data.
             $post->wwwroot = $CFG->wwwroot;
@@ -135,12 +135,12 @@ class observer {
             $post->forumname = $forum->name;
             $post->discussionname = $discussion->name;
 
-            $post->issuelink = $CFG->wwwroot . '/local/edusupport/issue.php?d=' . $discussion->id;
-            $post->replylink = $CFG->wwwroot . '/local/edusupport/issue.php?d=' . $discussion->id . '&replyto=' . $post->id;
+            $post->issuelink = $CFG->wwwroot . '/local/helpdesk/issue.php?d=' . $discussion->id;
+            $post->replylink = $CFG->wwwroot . '/local/helpdesk/issue.php?d=' . $discussion->id . '&replyto=' . $post->id;
 
             // Get all subscribers.
-            $subscribers = $DB->get_records('local_edusupport_subscr', ['discussionid' => $discussion->id]);
-            $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+            $subscribers = $DB->get_records('local_helpdesk_subscr', ['discussionid' => $discussion->id]);
+            $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
 
             // Write to Guestuser.
             if ($guestmode && strpos($discussion->name, 'Guestticket')) {
@@ -149,10 +149,10 @@ class observer {
                 $guestuser = new guest_supportuser();
                 $touser = $guestuser->get_support_guestuser();
                 $touser->email = $mail;
-                $post->furtherquestions = get_string('furtherquestions', 'local_edusupport', ['sitename' => $CFG->wwwroot]);
+                $post->furtherquestions = get_string('furtherquestions', 'local_helpdesk', ['sitename' => $CFG->wwwroot]);
 
-                $mailhtml = $OUTPUT->render_from_template('local_edusupport/post_mailhtml_guest', $post);
-                $mailtext = $OUTPUT->render_from_template('local_edusupport/post_mailtext_guest', $post);
+                $mailhtml = $OUTPUT->render_from_template('local_helpdesk/post_mailhtml_guest', $post);
+                $mailtext = $OUTPUT->render_from_template('local_helpdesk/post_mailtext_guest', $post);
                 $subject = $discussion->name;
                 // The guest address travels with the queued mail, see send_mail::queue().
                 send_mail::queue($touser, $author, $subject, $mailtext, $mailhtml);
@@ -171,8 +171,8 @@ class observer {
 
                 // Send notification.
                 $subject = $discussion->name;
-                $mailhtml = $OUTPUT->render_from_template('local_edusupport/post_mailhtml', $post);
-                $mailtext = $OUTPUT->render_from_template('local_edusupport/post_mailtext', $post);
+                $mailhtml = $OUTPUT->render_from_template('local_helpdesk/post_mailhtml', $post);
+                $mailtext = $OUTPUT->render_from_template('local_helpdesk/post_mailtext', $post);
 
                 // Queued, so that a slow mail server does not hold up the request that posted this.
                 send_mail::queue($touser, $author, $subject, $mailtext, $mailhtml);
@@ -195,6 +195,6 @@ class observer {
      * @return void
      */
     public static function user_deleted(\core\event\user_deleted $event) {
-        \local_edusupport\privacy\provider::delete_user_data($event->objectid);
+        \local_helpdesk\privacy\provider::delete_user_data($event->objectid);
     }
 }

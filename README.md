@@ -1,6 +1,6 @@
-# moodle-local_edusupport
+# moodle-local_helpdesk
 
-## How to configure edusupport?
+## How to configure helpdesk?
 This plugin allows to manage a moodle based decentralized helpdesk with three support levels. It basically works with Moodle forums. After you installed the plugin, you should navigate to the Website Administration > Plugins > Local plugins > Help and set up your support site's team (only 2nd and 3rd level).
 
 ### Choose your support team (only 2nd and 3rd level supporters)
@@ -48,7 +48,7 @@ If a user presses this button a modal dialog appears and the user can describe t
 
 If the user has access to several supportforums he can choose the target, also if the forums use the group feature, the target group can be chosen. If the user has not access to any supportforum the system automatically falls back to an email mode, and the issue is sent to the mailaddress of the supportusers specified in the site administration.
 
-If a user has the capability 'edusupport:canforward2ndlevel', which is set by default for the teacher role (1st Level Support), it is possible to forward the issue directly to the 2nd level on creation. You can also decide to grant this capability to other roles as well.
+If a user has the capability 'helpdesk:canforward2ndlevel', which is set by default for the teacher role (1st Level Support), it is possible to forward the issue directly to the 2nd level on creation. You can also decide to grant this capability to other roles as well.
 
 
 ## Who is responsible for a ticket?
@@ -78,4 +78,4 @@ This overviewpage allows access to the discussions that represent the issue. All
 
 This block allows users to instantly post problems to a standard forum from wherever they are on the site, including the possibility to attach a screenshot of the current page. It is recommended to use separated groups within this forum.
 
-For that purpose eduSupport creates a group for each user to ensure a private communication channel to the support team. Users can be automatically enrolled to the course containing the support-forum when posting a problem, if this option is enabled in admin settings.
+For that purpose Helpdesk creates a group for each user to ensure a private communication channel to the support team. Users can be automatically enrolled to the course containing the support-forum when posting a problem, if this option is enabled in admin settings.

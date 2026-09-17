@@ -17,18 +17,18 @@
 /**
  * Form to assign the first level support of a course.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\form;
+namespace local_helpdesk\form;
 
 use context;
 use context_course;
 use core_form\dynamic_form;
-use local_edusupport\lib;
-use local_edusupport\output\course_supporters;
+use local_helpdesk\lib;
+use local_helpdesk\output\course_supporters;
 use moodle_url;
 
 /**
@@ -37,7 +37,7 @@ use moodle_url;
  * Runs over core_form_dynamic_form, so assigning somebody neither reloads the page nor
  * sends the whole course page over the wire again.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -74,11 +74,11 @@ class course_supporters_form extends dynamic_form {
         $mform->addElement(
             'autocomplete',
             'supporters',
-            get_string('coursesupporters:assign', 'local_edusupport'),
+            get_string('coursesupporters:assign', 'local_helpdesk'),
             $options,
-            ['multiple' => true, 'noselectionstring' => get_string('coursesupporters:none', 'local_edusupport')]
+            ['multiple' => true, 'noselectionstring' => get_string('coursesupporters:none', 'local_helpdesk')]
         );
-        $mform->addHelpButton('supporters', 'coursesupporters:assign', 'local_edusupport');
+        $mform->addHelpButton('supporters', 'coursesupporters:assign', 'local_helpdesk');
     }
 
     /**
@@ -96,7 +96,7 @@ class course_supporters_form extends dynamic_form {
      * @return void
      */
     protected function check_access_for_dynamic_submission(): void {
-        require_capability('local/edusupport:assignsupporters', $this->get_context_for_dynamic_submission());
+        require_capability('local/helpdesk:assignsupporters', $this->get_context_for_dynamic_submission());
     }
 
     /**
@@ -132,7 +132,7 @@ class course_supporters_form extends dynamic_form {
 
         return [
             'listhtml' => $output->render_from_template(
-                'local_edusupport/course_supporters',
+                'local_helpdesk/course_supporters',
                 (new course_supporters($courseid))->export_for_template($output)
             ),
         ];
@@ -144,6 +144,6 @@ class course_supporters_form extends dynamic_form {
      * @return moodle_url
      */
     protected function get_page_url_for_dynamic_submission(): moodle_url {
-        return new moodle_url('/local/edusupport/coursesupporters.php', ['courseid' => $this->get_courseid()]);
+        return new moodle_url('/local/helpdesk/coursesupporters.php', ['courseid' => $this->get_courseid()]);
     }
 }

@@ -18,13 +18,13 @@
  * Create a dummy user who is going to post forum messages instead of the Moodle guest user.
  * This user is needed when site visitors who do not have a login yet are using the support button to submit a support request.
  *
- * @package     local_edusupport
+ * @package     local_helpdesk
  * @author      Davvid Bogner
  * @copyright   2022 Wunderbyte GmbH
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use stdClass;
 
@@ -49,9 +49,9 @@ class guest_supportuser {
     public function __construct() {
         global $CFG;
         $user = new stdClass();
-        $user->username = "edusupport_guest_ticket";
+        $user->username = "helpdesk_guest_ticket";
         $user->firstname = "Guest";
-        $user->email = 'edusupport@example.com';
+        $user->email = 'helpdesk@example.com';
         $user->lastname = "Ticket";
         $user->mnethostid = $CFG->mnet_localhost_id;
         $this->user = $user;
@@ -74,7 +74,7 @@ class guest_supportuser {
      * @throws \dml_exception
      */
     protected function check_guestuser_config(): void {
-        $userid = get_config('local_edusupport', 'guestuserid');
+        $userid = get_config('local_helpdesk', 'guestuserid');
         if ($this->guestuser_exists() && (int) $this->user->id === (int) $userid) {
             return;
         }
@@ -93,7 +93,7 @@ class guest_supportuser {
             require_once($CFG->dirroot . '/user/lib.php');
             $this->user->id = user_create_user($this->user, false, true);
         }
-        set_config('guestuserid', $this->user->id, 'local_edusupport');
+        set_config('guestuserid', $this->user->id, 'local_helpdesk');
     }
 
     /**

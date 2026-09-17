@@ -1,4 +1,4 @@
-@local @local_edusupport
+@local @local_helpdesk
 Feature: Handling a support issue from creation to closing
   In order to keep track of support requests
   As a supporter
@@ -19,30 +19,30 @@ Feature: Handling a support issue from creation to closing
     And the following "activities" exist:
       | activity | course | name          | intro          |
       | forum    | SUP    | Support forum | Ask us anything |
-    And the following "local_edusupport > supportforums" exist:
+    And the following "local_helpdesk > supportforums" exist:
       | forum         |
       | Support forum |
-    And the following "local_edusupport > supporters" exist:
+    And the following "local_helpdesk > supporters" exist:
       | user       |
       | supporter1 |
-    And the following "local_edusupport > issues" exist:
+    And the following "local_helpdesk > issues" exist:
       | forum         | user     | subject             |
       | Support forum | student1 | Printer is broken   |
 
   Scenario: A supporter sees an open issue in the issue list
     Given I log in as "supporter1"
-    When I visit "/local/edusupport/issues.php"
+    When I visit "/local/helpdesk/issues.php"
     Then I should see "Printer is broken"
 
   Scenario: Closing an issue from the issue list marks it as closed
     Given I log in as "supporter1"
-    And I visit "/local/edusupport/issues.php"
+    And I visit "/local/helpdesk/issues.php"
     When I click on "close issue" "link"
     Then I should see "🔒 Printer is broken"
 
   Scenario: A closed issue can be reopened from the issue list
     Given I log in as "supporter1"
-    And I visit "/local/edusupport/issues.php"
+    And I visit "/local/helpdesk/issues.php"
     And I click on "close issue" "link"
     And I should see "🔒 Printer is broken"
     When I click on "reopen" "link"
@@ -53,25 +53,25 @@ Feature: Handling a support issue from creation to closing
     # The button and the page used to disagree: an admin who had not also been added to the
     # platform team saw the button and was then refused by the page behind it.
     Given I log in as "admin"
-    And "#edusupport-issues-toggle" "css_element" should exist
-    When I click on "#edusupport-issues-toggle" "css_element"
+    And "#helpdesk-issues-toggle" "css_element" should exist
+    When I click on "#helpdesk-issues-toggle" "css_element"
     Then I should see "Printer is broken"
     And I should not see "Missing required permission"
 
   Scenario: Someone outside the support team is offered no way in
     Given I log in as "student1"
-    Then "#edusupport-issues-toggle" "css_element" should not exist
+    Then "#helpdesk-issues-toggle" "css_element" should not exist
 
   Scenario: Someone outside the support team cannot see the issue list
     Given I log in as "student1"
-    When I visit "/local/edusupport/issues.php"
+    When I visit "/local/helpdesk/issues.php"
     Then I should see "Missing required permission"
     And I should not see "Printer is broken"
 
   @javascript
   Scenario: Closing an issue from the issue page marks it the same way
     Given I log in as "supporter1"
-    When I visit "/local/edusupport/issues.php"
+    When I visit "/local/helpdesk/issues.php"
     And I click on "Printer is broken" "link"
     And I click on "Close issue" "link"
     Then I should see "🔒 Printer is broken"
@@ -90,7 +90,7 @@ Feature: Handling a support issue from creation to closing
   @javascript
   Scenario: The state filter hides the issues that do not match
     Given I log in as "supporter1"
-    And I visit "/local/edusupport/issues.php"
+    And I visit "/local/helpdesk/issues.php"
     And I should see "Printer is broken"
     When I set the field "Closed" to "1"
     Then I should not see "Printer is broken"
@@ -100,11 +100,11 @@ Feature: Handling a support issue from creation to closing
   @javascript
   Scenario: A supporter changes the status of an issue from the issue page
     Given I log in as "supporter1"
-    And I visit "/local/edusupport/issues.php"
+    And I visit "/local/helpdesk/issues.php"
     And I click on "Printer is broken" "link"
     When I set the field "Change status" to "Ongoing"
     And I wait until the page is ready
-    And I visit "/local/edusupport/issues.php"
+    And I visit "/local/helpdesk/issues.php"
     # The state filter is the oracle here: the issue must have left "Not yet started"
     # and arrived at "Ongoing". Asserting on the label alone would pass either way.
     And I set the field "Not yet started" to "1"
@@ -119,7 +119,7 @@ Feature: Handling a support issue from creation to closing
       | forum    | SUP    | Second forum     | Not for support |
     And I log in as "admin"
     And I am on "Support area" course homepage
-    When I navigate to "Choose forums for eduSupport" in current page administration
+    When I navigate to "Choose forums for Helpdesk" in current page administration
     Then I should see "Second forum"
     And I should see "Course Supportforum"
     When I click on "enable" "link" in the "Second forum" "table_row"
@@ -131,16 +131,16 @@ Feature: Handling a support issue from creation to closing
     Given the following "users" exist:
       | username  | firstname | lastname |
       | platform1 | Paula     | Platform |
-    And the following "local_edusupport > supporters" exist:
+    And the following "local_helpdesk > supporters" exist:
       | user      |
       | platform1 |
-    And the following "local_edusupport > issues" exist:
+    And the following "local_helpdesk > issues" exist:
       | forum         | user     | subject        | supporter  |
       | Support forum | student1 | Mouse is stuck | supporter1 |
     # Somebody other than the assigned person looks at the issue, so the name on the page
     # can only be the link to the assigned person.
     And I log in as "platform1"
-    And I visit "/local/edusupport/issues.php"
+    And I visit "/local/helpdesk/issues.php"
     And I click on "Mouse is stuck" "link"
     When I click on "Sam Support" "link"
     Then I should see "User details"

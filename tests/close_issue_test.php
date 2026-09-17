@@ -17,13 +17,13 @@
 /**
  * Tests for closing and reopening a support issue.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
@@ -31,12 +31,12 @@ use stdClass;
 /**
  * Tests for closing and reopening a support issue.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::close_issue
- * @covers     \local_edusupport\lib::reopen_issue
+ * @covers     \local_helpdesk\lib::close_issue
+ * @covers     \local_helpdesk\lib::reopen_issue
  */
 final class close_issue_test extends advanced_testcase {
     /** @var stdClass the course holding the support forum. */
@@ -51,7 +51,7 @@ final class close_issue_test extends advanced_testcase {
     /** @var stdClass the user asking for support. */
     private $student;
 
-    /** @var \local_edusupport_generator the plugin data generator. */
+    /** @var \local_helpdesk_generator the plugin data generator. */
     private $generator;
 
     /**
@@ -63,11 +63,11 @@ final class close_issue_test extends advanced_testcase {
         $this->preventResetByRollback();
         $this->redirectMessages();
 
-        set_config('sendissueclosed', 0, 'local_edusupport');
+        set_config('sendissueclosed', 0, 'local_helpdesk');
 
         $this->setAdminUser();
         $datagenerator = $this->getDataGenerator();
-        $this->generator = $datagenerator->get_plugin_generator('local_edusupport');
+        $this->generator = $datagenerator->get_plugin_generator('local_helpdesk');
 
         $this->course = $datagenerator->create_course();
         $this->forum = $datagenerator->create_module('forum', ['course' => $this->course->id]);
@@ -101,7 +101,7 @@ final class close_issue_test extends advanced_testcase {
             $DB->get_field('forum_discussions', 'name', ['id' => $issue->discussionid])
         );
 
-        $closed = $DB->get_record('local_edusupport_issues', ['discussionid' => $issue->discussionid]);
+        $closed = $DB->get_record('local_helpdesk_issues', ['discussionid' => $issue->discussionid]);
         $this->assertEquals(ISSUE_STATUS_CLOSED, $closed->status);
         $this->assertEquals(0, $closed->priority);
     }
@@ -119,11 +119,11 @@ final class close_issue_test extends advanced_testcase {
 
         $this->setUser($this->supporter);
         lib::subscription_add($issue->discussionid, $this->supporter->id);
-        $this->assertTrue($DB->record_exists('local_edusupport_subscr', ['discussionid' => $issue->discussionid]));
+        $this->assertTrue($DB->record_exists('local_helpdesk_subscr', ['discussionid' => $issue->discussionid]));
 
         lib::close_issue($issue->discussionid);
 
-        $this->assertFalse($DB->record_exists('local_edusupport_subscr', ['discussionid' => $issue->discussionid]));
+        $this->assertFalse($DB->record_exists('local_helpdesk_subscr', ['discussionid' => $issue->discussionid]));
     }
 
     /**
@@ -227,7 +227,7 @@ final class close_issue_test extends advanced_testcase {
             $DB->get_field('forum_discussions', 'name', ['id' => $issue->discussionid])
         );
 
-        $reopened = $DB->get_record('local_edusupport_issues', ['discussionid' => $issue->discussionid]);
+        $reopened = $DB->get_record('local_helpdesk_issues', ['discussionid' => $issue->discussionid]);
         $this->assertEquals(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $reopened->status);
         $this->assertEquals(1, $reopened->priority);
     }

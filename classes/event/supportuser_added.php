@@ -17,12 +17,12 @@
 /**
  * The mod_forum discussion created event.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\event;
+namespace local_helpdesk\event;
 
 /**
  * The mod_forum discussion created event class.
@@ -33,7 +33,7 @@ namespace local_edusupport\event;
  *      - int forumid: The id of the forum the discussion is in.
  * }
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2022 Thomas Winkler Wunderbyte GmbH
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -46,7 +46,7 @@ class supportuser_added extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'local_edusupport_supporters';
+        $this->data['objecttable'] = 'local_helpdesk_supporters';
     }
 
     /**
@@ -65,7 +65,7 @@ class supportuser_added extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('supportadded', 'local_edusupport');
+        return get_string('supportadded', 'local_helpdesk');
     }
 
 

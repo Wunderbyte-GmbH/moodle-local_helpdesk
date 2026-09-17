@@ -17,26 +17,26 @@
 /**
  * Tests for the marker that flags a discussion as a closed issue.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 
 /**
  * Tests for the marker that flags a discussion as a closed issue.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::add_closed_prefix
- * @covers     \local_edusupport\lib::strip_closed_prefix
- * @covers     \local_edusupport\lib::migrate_legacy_closed_prefixes
+ * @covers     \local_helpdesk\lib::add_closed_prefix
+ * @covers     \local_helpdesk\lib::strip_closed_prefix
+ * @covers     \local_helpdesk\lib::migrate_legacy_closed_prefixes
  */
 final class closed_prefix_test extends advanced_testcase {
     /**
@@ -105,7 +105,7 @@ final class closed_prefix_test extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $forum = $this->getDataGenerator()->create_module('forum', ['course' => $course->id]);
-        $generator = $this->getDataGenerator()->get_plugin_generator('local_edusupport');
+        $generator = $this->getDataGenerator()->get_plugin_generator('local_helpdesk');
         $generator->create_supportforum(['forumid' => $forum->id]);
 
         $legacy = $generator->create_issue(['forumid' => $forum->id, 'subject' => '[Closed] Altes Ticket']);

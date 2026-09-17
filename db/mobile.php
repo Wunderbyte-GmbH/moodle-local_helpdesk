@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Mobile app definitions for local_edusupport.
+ * Mobile app definitions for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2019 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,15 +26,15 @@
 defined('MOODLE_INTERNAL') || die;
 
 $addons = [
-    'local_edusupport' => [ // Plugin identifier.
+    'local_helpdesk' => [ // Plugin identifier.
         'handlers' => [ // Different places where the plugin will display content.
             'issue_close' => [ // Handler unique name (alphanumeric).
                 'displaydata' => [
                     'icon' => $CFG->wwwroot . '/mod/certificate/pix/icon.gif',
-                    'class' => 'local_edusupport',
+                    'class' => 'local_helpdesk',
                     'title' => 'pluginname',
                 ],
-                'init' => 'edusupport_init',
+                'init' => 'helpdesk_init',
                 'delegate' => 'CoreCourseModuleDelegate', // Delegate, where to display the link to the plugin.
                 'method' => 'issue_close', // Main function in \mod_certificate\output\mobile.
                 'offlinefunctions' => [
@@ -44,8 +44,8 @@ $addons = [
             ],
         ],
         'lang' => [ // Language strings that are used in all the handlers.
-            ['pluginname', 'local_edusupport'],
-            ['issue_close', 'local_edusupport'],
+            ['pluginname', 'local_helpdesk'],
+            ['issue_close', 'local_helpdesk'],
         ],
     ],
 ];

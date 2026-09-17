@@ -17,13 +17,13 @@
 /**
  * Tests for reacting to a support issue: assignment, subscription and priority.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
@@ -31,16 +31,16 @@ use stdClass;
 /**
  * Tests for reacting to a support issue: assignment, subscription and priority.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::set_current_supporter
- * @covers     \local_edusupport\lib::set_prioritylvl
- * @covers     \local_edusupport\lib::set_2nd_level
- * @covers     \local_edusupport\lib::subscription_add
- * @covers     \local_edusupport\lib::subscription_remove
- * @covers     \local_edusupport\lib::validate_supporter_assignment
+ * @covers     \local_helpdesk\lib::set_current_supporter
+ * @covers     \local_helpdesk\lib::set_prioritylvl
+ * @covers     \local_helpdesk\lib::set_2nd_level
+ * @covers     \local_helpdesk\lib::subscription_add
+ * @covers     \local_helpdesk\lib::subscription_remove
+ * @covers     \local_helpdesk\lib::validate_supporter_assignment
  */
 final class supporter_assignment_test extends advanced_testcase {
     /** @var stdClass the course holding the support forum. */
@@ -55,7 +55,7 @@ final class supporter_assignment_test extends advanced_testcase {
     /** @var stdClass the user asking for support. */
     private $student;
 
-    /** @var \local_edusupport_generator the plugin data generator. */
+    /** @var \local_helpdesk_generator the plugin data generator. */
     private $generator;
 
     /**
@@ -67,12 +67,12 @@ final class supporter_assignment_test extends advanced_testcase {
         $this->preventResetByRollback();
         $this->redirectMessages();
 
-        set_config('sendmsgonset2ndlvl', 0, 'local_edusupport');
-        set_config('sendsupporterassignments', 0, 'local_edusupport');
+        set_config('sendmsgonset2ndlvl', 0, 'local_helpdesk');
+        set_config('sendsupporterassignments', 0, 'local_helpdesk');
 
         $this->setAdminUser();
         $datagenerator = $this->getDataGenerator();
-        $this->generator = $datagenerator->get_plugin_generator('local_edusupport');
+        $this->generator = $datagenerator->get_plugin_generator('local_helpdesk');
 
         $this->course = $datagenerator->create_course();
         $this->forum = $datagenerator->create_module('forum', ['course' => $this->course->id]);
@@ -112,9 +112,9 @@ final class supporter_assignment_test extends advanced_testcase {
 
         $this->assertEquals(
             $this->supporter->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
         );
-        $this->assertTrue($DB->record_exists('local_edusupport_subscr', [
+        $this->assertTrue($DB->record_exists('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $this->supporter->id,
         ]));
@@ -135,9 +135,9 @@ final class supporter_assignment_test extends advanced_testcase {
 
         $this->assertEquals(
             0,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
         );
-        $this->assertFalse($DB->record_exists('local_edusupport_subscr', [
+        $this->assertFalse($DB->record_exists('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $outsider->id,
         ]));
@@ -195,7 +195,7 @@ final class supporter_assignment_test extends advanced_testcase {
         foreach ($reasons as $reason) {
             foreach (['en', 'de'] as $language) {
                 $this->assertNotEmpty(
-                    get_string_manager()->get_string($reason, 'local_edusupport', null, $language),
+                    get_string_manager()->get_string($reason, 'local_helpdesk', null, $language),
                     "Missing {$language} string for {$reason}."
                 );
             }
@@ -214,13 +214,13 @@ final class supporter_assignment_test extends advanced_testcase {
         $this->assertTrue(lib::set_prioritylvl($issue->discussionid, 3));
         $this->assertEquals(
             3,
-            $DB->get_field('local_edusupport_issues', 'priority', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'priority', ['discussionid' => $issue->discussionid])
         );
 
         lib::set_prioritylvl($issue->discussionid, 1);
         $this->assertEquals(
             1,
-            $DB->get_field('local_edusupport_issues', 'priority', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'priority', ['discussionid' => $issue->discussionid])
         );
     }
 
@@ -236,14 +236,14 @@ final class supporter_assignment_test extends advanced_testcase {
         lib::subscription_add($issue->discussionid, $this->supporter->id);
         lib::subscription_add($issue->discussionid, $this->supporter->id);
 
-        $this->assertSame(1, $DB->count_records('local_edusupport_subscr', [
+        $this->assertSame(1, $DB->count_records('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $this->supporter->id,
         ]));
 
         lib::subscription_remove($issue->discussionid, $this->supporter->id);
 
-        $this->assertSame(0, $DB->count_records('local_edusupport_subscr', [
+        $this->assertSame(0, $DB->count_records('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $this->supporter->id,
         ]));
@@ -262,9 +262,9 @@ final class supporter_assignment_test extends advanced_testcase {
 
         $this->assertEquals(
             $this->supporter->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
         );
-        $this->assertTrue($DB->record_exists('local_edusupport_subscr', [
+        $this->assertTrue($DB->record_exists('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $this->supporter->id,
         ]));
@@ -276,7 +276,7 @@ final class supporter_assignment_test extends advanced_testcase {
     public function test_set_2nd_level_skips_a_supporter_on_holiday(): void {
         global $DB;
 
-        set_config('holidaymodeenabled', 1, 'local_edusupport');
+        set_config('holidaymodeenabled', 1, 'local_helpdesk');
 
         $away = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($away->id, $this->course->id, 'teacher');
@@ -289,7 +289,7 @@ final class supporter_assignment_test extends advanced_testcase {
 
         $this->assertEquals(
             $this->supporter->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
         );
     }
 
@@ -299,8 +299,8 @@ final class supporter_assignment_test extends advanced_testcase {
     public function test_set_2nd_level_falls_back_when_everyone_is_on_holiday(): void {
         global $DB;
 
-        set_config('holidaymodeenabled', 1, 'local_edusupport');
-        $DB->set_field('local_edusupport_supporters', 'holidaymode', time() + DAYSECS, [
+        set_config('holidaymodeenabled', 1, 'local_helpdesk');
+        $DB->set_field('local_helpdesk_supporters', 'holidaymode', time() + DAYSECS, [
             'userid' => $this->supporter->id,
         ]);
 
@@ -311,7 +311,7 @@ final class supporter_assignment_test extends advanced_testcase {
 
         $this->assertEquals(
             $this->supporter->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
         );
     }
 }

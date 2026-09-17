@@ -17,13 +17,13 @@
 /**
  * Tests for the ad hoc task that sends the mails of a support request.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\task;
+namespace local_helpdesk\task;
 
 use advanced_testcase;
 use core_user;
@@ -33,11 +33,11 @@ use moodle_exception;
 /**
  * Tests for the ad hoc task that sends the mails of a support request.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\task\send_mail
+ * @covers     \local_helpdesk\task\send_mail
  */
 final class send_mail_test extends advanced_testcase {
     /** @var \stdClass the user a mail is addressed to. */
@@ -117,7 +117,7 @@ final class send_mail_test extends advanced_testcase {
 
         $sink = $this->redirectEmails();
 
-        $filepath = $CFG->tempdir . '/edusupport-' . random_string();
+        $filepath = $CFG->tempdir . '/helpdesk-' . random_string();
         file_put_contents($filepath, 'not really a png');
 
         send_mail::queue(
@@ -179,7 +179,7 @@ final class send_mail_test extends advanced_testcase {
         $DB->set_field('user', 'email', 'keine-adresse', ['id' => $this->recipient->id]);
         $this->recipient = $DB->get_record('user', ['id' => $this->recipient->id]);
 
-        $filepath = $CFG->tempdir . '/edusupport-' . random_string();
+        $filepath = $CFG->tempdir . '/helpdesk-' . random_string();
         file_put_contents($filepath, 'not really a png');
 
         send_mail::queue(

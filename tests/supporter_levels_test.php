@@ -17,13 +17,13 @@
 /**
  * Tests for the separation of first and second level support.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
@@ -31,30 +31,30 @@ use stdClass;
 /**
  * Tests for the separation of first and second level support.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::get_first_level
- * @covers     \local_edusupport\lib::get_second_level
- * @covers     \local_edusupport\lib::is_first_level
- * @covers     \local_edusupport\lib::is_second_level
- * @covers     \local_edusupport\lib::get_assignable_users
- * @covers     \local_edusupport\lib::is_supportteam
- * @covers     \local_edusupport\lib::get_course_supporters
- * @covers     \local_edusupport\lib::can_assign_first_level
- * @covers     \local_edusupport\lib::assign_first_level
- * @covers     \local_edusupport\event\supportuser_deleted
- * @covers     \local_edusupport\lib::supportforum_rolecheck
- * @covers     \local_edusupport\lib::set_2nd_level
- * @covers     \local_edusupport\lib::subscription_add
- * @covers     \local_edusupport\lib::validate_supporter_assignment
+ * @covers     \local_helpdesk\lib::get_first_level
+ * @covers     \local_helpdesk\lib::get_second_level
+ * @covers     \local_helpdesk\lib::is_first_level
+ * @covers     \local_helpdesk\lib::is_second_level
+ * @covers     \local_helpdesk\lib::get_assignable_users
+ * @covers     \local_helpdesk\lib::is_supportteam
+ * @covers     \local_helpdesk\lib::get_course_supporters
+ * @covers     \local_helpdesk\lib::can_assign_first_level
+ * @covers     \local_helpdesk\lib::assign_first_level
+ * @covers     \local_helpdesk\event\supportuser_deleted
+ * @covers     \local_helpdesk\lib::supportforum_rolecheck
+ * @covers     \local_helpdesk\lib::set_2nd_level
+ * @covers     \local_helpdesk\lib::subscription_add
+ * @covers     \local_helpdesk\lib::validate_supporter_assignment
  */
 final class supporter_levels_test extends advanced_testcase {
     /** @var stdClass a course with a support forum. */
     private $course;
 
-    /** @var \local_edusupport_generator the plugin data generator. */
+    /** @var \local_helpdesk_generator the plugin data generator. */
     private $generator;
 
     /**
@@ -65,7 +65,7 @@ final class supporter_levels_test extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
-        $this->generator = $this->getDataGenerator()->get_plugin_generator('local_edusupport');
+        $this->generator = $this->getDataGenerator()->get_plugin_generator('local_helpdesk');
         $this->course = $this->getDataGenerator()->create_course();
     }
 
@@ -285,7 +285,7 @@ final class supporter_levels_test extends advanced_testcase {
 
         lib::subscription_add($issue->discussionid, $local->id);
 
-        $this->assertFalse($DB->record_exists('local_edusupport_subscr', [
+        $this->assertFalse($DB->record_exists('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $local->id,
         ]));
@@ -311,7 +311,7 @@ final class supporter_levels_test extends advanced_testcase {
 
         $this->assertEquals(
             $platform->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $issue->discussionid])
         );
     }
 
@@ -334,7 +334,7 @@ final class supporter_levels_test extends advanced_testcase {
 
         $cm = get_coursemodule_from_instance('forum', $forum->id);
         $context = \context_module::instance($cm->id);
-        $roleid = get_config('local_edusupport', 'supportteamrole');
+        $roleid = get_config('local_helpdesk', 'supportteamrole');
 
         foreach ([$platform->id, $local->id] as $userid) {
             $this->assertTrue(
@@ -459,7 +459,7 @@ final class supporter_levels_test extends advanced_testcase {
 
         $cm = get_coursemodule_from_instance('forum', $forum->id);
         $context = \context_module::instance($cm->id);
-        $roleid = get_config('local_edusupport', 'supportteamrole');
+        $roleid = get_config('local_helpdesk', 'supportteamrole');
         $conditions = ['roleid' => $roleid, 'userid' => $supporter->id, 'contextid' => $context->id];
 
         $this->assertTrue($DB->record_exists('role_assignments', $conditions));

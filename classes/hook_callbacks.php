@@ -17,13 +17,13 @@
 /**
  * Hook for before_standard_head_html_generation
  *
- * @package     local_edusupport
+ * @package     local_helpdesk
  * @author      Jacob Viertel
  * @copyright   2026 Wunderbyte GmbH
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 /**
  * Class before_standard_head_html_generation
@@ -50,20 +50,20 @@ class hook_callbacks {
             $coursecontext = \context_course::instance($discussion->course);
 
             if (
-                has_capability('local/edusupport:canforward2ndlevel', $coursecontext)
-                && \local_edusupport\lib::is_supportforum($discussion->forum)
+                has_capability('local/helpdesk:canforward2ndlevel', $coursecontext)
+                && \local_helpdesk\lib::is_supportforum($discussion->forum)
             ) {
-                $sql = "SELECT id FROM {local_edusupport_subscr} WHERE discussionid=? LIMIT 1 OFFSET 0";
+                $sql = "SELECT id FROM {local_helpdesk_subscr} WHERE discussionid=? LIMIT 1 OFFSET 0";
                 $chk = $DB->get_record_sql($sql, [$discussion->id]);
 
                 $PAGE->requires->js_call_amd(
-                    'local_edusupport/main',
+                    'local_helpdesk/main',
                     'injectForwardButton',
                     [$d, !empty($chk->id), $SITE->fullname]
                 );
             }
-            if (\local_edusupport\lib::is_supportforum($discussion->forum)) {
-                $PAGE->requires->js_call_amd('local_edusupport/main', 'injectTest');
+            if (\local_helpdesk\lib::is_supportforum($discussion->forum)) {
+                $PAGE->requires->js_call_amd('local_helpdesk/main', 'injectTest');
             }
         }
 
@@ -79,9 +79,9 @@ class hook_callbacks {
                     $coursecatcontext->path, $coursecatcontext->path . '/%']);
 
                 foreach ($subcategories as $subcategory) {
-                    $chkforforum = $DB->get_record('local_edusupport', ['categoryid' => $subcategory->instanceid]);
+                    $chkforforum = $DB->get_record('local_helpdesk', ['categoryid' => $subcategory->instanceid]);
                     if (!empty($chkforforum->id)) {
-                        redirect(new \moodle_url('/local/edusupport/error.php', [
+                        redirect(new \moodle_url('/local/helpdesk/error.php', [
                             'error' => 'coursecategorydeletion',
                             'categoryid' => $categoryid,
                         ]));
@@ -94,11 +94,11 @@ class hook_callbacks {
                 $coursecat->update(['visible' => 1]);
             }
 
-            $supportforums = $DB->get_records('local_edusupport', ['categoryid' => $categoryid]);
+            $supportforums = $DB->get_records('local_helpdesk', ['categoryid' => $categoryid]);
             foreach ($supportforums as $supportforum) {
                 $course = $DB->get_record('course', ['id' => $supportforum->id]);
                 if (!empty($course->id) && $course->category != $categoryid) {
-                    $DB->set_field('local_edusupport', 'categoryid', $categoryid, ['courseid' => $course->id]);
+                    $DB->set_field('local_helpdesk', 'categoryid', $categoryid, ['courseid' => $course->id]);
                 }
             }
         }

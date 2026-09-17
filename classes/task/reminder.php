@@ -17,18 +17,18 @@
 /**
  * Scheduled task that reminds supporters of issues waiting for them.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\task;
+namespace local_helpdesk\task;
 
 /**
  * Ad hoc task that reminds supporters of issues waiting for them.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,7 +40,7 @@ class reminder extends \core\task\adhoc_task {
      */
     public function get_name() {
         // Shown in admin screens.
-        return get_string('cron:reminder:title', 'local_edusupport');
+        return get_string('cron:reminder:title', 'local_helpdesk');
     }
 
     /**
@@ -53,12 +53,12 @@ class reminder extends \core\task\adhoc_task {
         global $DB;
 
         $taskdata = $this->get_custom_data();
-        if (!get_config('local_edusupport', 'sendreminders')) {
+        if (!get_config('local_helpdesk', 'sendreminders')) {
             return;
         }
 
         $sql = "SELECT discussionid, currentsupporter
-                FROM {local_edusupport_issues}
+                FROM {local_helpdesk_issues}
                 WHERE priority > 0
                 AND currentsupporter > 0
                 AND status = 4 -- Awaiting support action status.
@@ -98,7 +98,7 @@ class reminder extends \core\task\adhoc_task {
             // No second reminders anymore!
             // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
             /*if ($taskdata->sendagain &&
-                !\local_edusupport\lib::issue_already_has_reminder($taskdata->issueid)) {
+                !\local_helpdesk\lib::issue_already_has_reminder($taskdata->issueid)) {
 
                 $task = new reminder();
 
@@ -107,7 +107,7 @@ class reminder extends \core\task\adhoc_task {
                 $task->set_custom_data($taskdata);
 
                 // Second reminder will take twice as long.
-                $timebeforereminder = time() + 2 * (get_config('local_edusupport', 'timebeforereminder'));
+                $timebeforereminder = time() + 2 * (get_config('local_helpdesk', 'timebeforereminder'));
                 $task->set_next_run_time($timebeforereminder);
 
                 // Now queue the task or reschedule it if it already exists (with matching data).
@@ -131,7 +131,7 @@ class reminder extends \core\task\adhoc_task {
         if (!empty($supporter->id) && $supporter->id > 0 && count($reminders) > 0) {
             $subject = $this->get_name();
             $mailhtml = $OUTPUT->render_from_template(
-                'local_edusupport/reminder_discussions',
+                'local_helpdesk/reminder_discussions',
                 ['discussions' => $reminders, 'wwwroot' => $CFG->wwwroot]
             );
             $mailtext = html_to_text($mailhtml);

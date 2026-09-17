@@ -17,13 +17,13 @@
 /**
  * accountmanager
  *
- * @package     local_edusupport
+ * @package     local_helpdesk
  * @author      Thomas Winkler
  * @copyright   2022 Wunderbyte GmbH
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 /**
  * Class accountmanager
@@ -49,11 +49,11 @@ class accountmanager {
      * @param array $accountmanagers ids of the users who can be picked as account manager.
      * @param array $capstocheck capabilities that make a user an account manager.
      */
-    public function form_to_config_edusupport_accountmanager(array $accountmanagers, array $capstocheck) {
+    public function form_to_config_helpdesk_accountmanager(array $accountmanagers, array $capstocheck) {
         $accountmanagerslist = implode(',', $accountmanagers);
         $capstocheck = implode(',', $capstocheck);
-        set_config('accountmanagers', $accountmanagerslist, 'local_edusupport');
-        set_config('capstocheck', $capstocheck, 'local_edusupport');
+        set_config('accountmanagers', $accountmanagerslist, 'local_helpdesk');
+        set_config('capstocheck', $capstocheck, 'local_helpdesk');
     }
 
     /**
@@ -120,7 +120,7 @@ class accountmanager {
      */
     public function can_choose_accountmanager(): bool {
         global $DB, $USER;
-        $capability = get_config('local_edusupport', 'capstocheck');
+        $capability = get_config('local_helpdesk', 'capstocheck');
         if (empty($capability)) {
             return false;
         }
@@ -154,7 +154,7 @@ class accountmanager {
      */
     public function prepare_accountmanager_for_form(&$mform): void {
         global $CFG;
-        $accountmanagers = get_config('local_edusupport', 'accountmanagers');
+        $accountmanagers = get_config('local_helpdesk', 'accountmanagers');
         if (empty($accountmanagers) || isguestuser()) {
             return;
         }
@@ -163,13 +163,13 @@ class accountmanager {
         if (empty($users) || !$this->can_choose_accountmanager()) {
             return;
         }
-        $options = ['0' => get_string('none', 'local_edusupport')];
+        $options = ['0' => get_string('none', 'local_helpdesk')];
 
         foreach ($users as $user) {
             $options[$user->id] = $user->firstname . ' ' . $user->lastname;
         }
 
-        $mform->addElement('select', 'accountmanager', get_string('accountmanager', 'local_edusupport'), $options);
+        $mform->addElement('select', 'accountmanager', get_string('accountmanager', 'local_helpdesk'), $options);
         $mform->setDefault('accountmanager', 0);
     }
 
@@ -180,14 +180,14 @@ class accountmanager {
      * @return void
      */
     public static function delete_account_manager(int $userid) {
-        if (!get_config('local_edusupport', 'accountmanagers')) {
+        if (!get_config('local_helpdesk', 'accountmanagers')) {
             return;
         }
-        $accountmanagers = explode(',', get_config('local_edusupport', 'accountmanagers'));
+        $accountmanagers = explode(',', get_config('local_helpdesk', 'accountmanagers'));
         if (in_array($userid, $accountmanagers)) {
             unset($accountmanagers[array_search($userid, $accountmanagers)]);
             $accountmanagerslist = implode(',', $accountmanagers);
-            set_config('accountmanagers', $accountmanagerslist, 'local_edusupport');
+            set_config('accountmanagers', $accountmanagerslist, 'local_helpdesk');
         }
     }
 }

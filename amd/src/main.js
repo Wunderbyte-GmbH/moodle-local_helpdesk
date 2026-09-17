@@ -11,7 +11,7 @@ define(
         assignSupporter: function(discussionid) {
                 // Show a selection of possible supporters.
                 AJAX.call([{
-                    methodname: 'local_edusupport_get_potentialsupporters',
+                    methodname: 'local_helpdesk_get_potentialsupporters',
                     args: {discussionid: discussionid},
                     done: function(result) {
                         try {
@@ -46,7 +46,7 @@ define(
                                 var data = {'discussionid': discussionid, 'supporterid': supporterid};
                                 // Console.log('Store', this, e, data);
                                 AJAX.call([{
-                                    methodname: 'local_edusupport_set_currentsupporter',
+                                    methodname: 'local_helpdesk_set_currentsupporter',
                                     args: data,
                                     done: function(result) {
                                         if (result == 1) {
@@ -88,7 +88,7 @@ define(
         generateScreenshot: function() {
             var MAIN = this;
             MAIN.modal.hide();
-            require(['local_edusupport/html2canvas'], function(h2c) {
+            require(['local_helpdesk/html2canvas'], function(h2c) {
                 h2c(document.body).then(function(canvas) {
                     MAIN.canvas = canvas;
                     if (typeof MAIN.modal !== 'undefined') {
@@ -97,19 +97,6 @@ define(
                     }
                 });
             });
-        },
-        /**
-         * Inject a help button in the upper right menu.
-         */
-        injectHelpButton: function() {
-            AJAX.call([{
-                methodname: 'local_edusupport_get_extralinks',
-                args: {},
-                done: function(result) {
-                    $(result).insertBefore($('nav.fixed-top .nav .nav-item:last-child'));
-                },
-                fail: NOTIFICATION.exception
-            }]);
         },
         /**
          * Scans the page for all discussion posts and adds a reply-button.
@@ -134,7 +121,7 @@ define(
                                     + ' title="' + s[0] + '" aria-label="' + s[0] + '"'
                                     + ' role="menuitem" tabindex="-1">')
                                     .html(s[0])
-                                    .attr('href', URL.relativeUrl('/local/edusupport/issue.php?discussion='
+                                    .attr('href', URL.relativeUrl('/local/helpdesk/issue.php?discussion='
                                         + discussion + '&replyto=' + postid + '#mformforum'))
                             );
                         }
@@ -150,43 +137,14 @@ define(
          */
         closeIssue: function(discussionid) {
             AJAX.call([{
-                methodname: 'local_edusupport_close_issue',
+                methodname: 'local_helpdesk_close_issue',
                 args: {discussionid: discussionid},
                 done: function(result) {
                     if (result == 1) {
-                        top.location.href = URL.relativeUrl('/local/edusupport/issues.php', {});
+                        top.location.href = URL.relativeUrl('/local/helpdesk/issues.php', {});
                     } else {
                         NOTIFICATION.exception(result);
                         // Alert('Error: ' + result);
-                    }
-                },
-                fail: NOTIFICATION.exception
-            }]);
-        },
-        /**
-         * Colorize shown discussions.
-         **/
-        colorize: function() {
-            var discussionids = [];
-            $('table.forumheaderlist tr.discussion td.starter a').each(function() {
- var d = $(this).attr('href').split('?d='); discussionids[discussionids.length] = d[1];
-});
-            var data = {discussionids: discussionids};
-            AJAX.call([{
-                methodname: 'local_edusupport_colorize',
-                args: data,
-                done: function(result) {
-                    try {
- result = JSON.parse(result);
-} catch (e) {}
-                    if (typeof result.styles !== 'undefined') {
-                        var discussionids = Object.keys(result.styles);
-                        for (var a = 0; a < discussionids.length; a++) {
-                            var discussionid = discussionids[a];
-                            var style = result.styles[discussionid];
-                            $('table.forumheaderlist tr.discussion td.starter a[href$="d=' + discussionid + '"]')
-                                .closest('tr').attr('style', style);
-                        }
                     }
                 },
                 fail: NOTIFICATION.exception
@@ -208,12 +166,12 @@ define(
             STR.get_strings([
                     {
                         'key': (typeof isissue !== 'undefined' && isissue) ? 'issue_revoke' : 'issue_assign_nextlevel',
-                        component: 'local_edusupport'
+                        component: 'local_helpdesk'
                     },
                 ]).done(function(s) {
                     $('#page-content div[role="main"] .discussionname').parent().prepend(
                         $('<a href="#">')
-                                    .attr('onclick', "require(['local_edusupport/main'], function(MAIN) { "
+                                    .attr('onclick', "require(['local_helpdesk/main'], function(MAIN) { "
                                         + "MAIN.injectForwardModal(" + discussionid + ", " + isissue + "); });"
                                         + " return false;")
                                     .attr('style', 'float: right')
@@ -239,7 +197,7 @@ define(
                     {'key': 'confirm', component: 'core'},
                     {
                         'key': (typeof revoke !== 'undefined' && revoke) ? 'issue_revoke' : 'issue_assign_nextlevel',
-                        component: 'local_edusupport'
+                        component: 'local_helpdesk'
                     },
                 ]).done(function(s) {
                     SaveCancelModal.create({
@@ -249,7 +207,7 @@ define(
                     .then(function(modal) {
                         var root = modal.getRoot();
                         root.on(ModalEvents.save, function() {
-                            top.location.href = URL.relativeUrl('/local/edusupport/forward_2nd_level.php',
+                            top.location.href = URL.relativeUrl('/local/helpdesk/forward_2nd_level.php',
                                 {d: discussionid, revoke: revoke});
                         });
                         modal.show();
@@ -262,36 +220,36 @@ define(
             if (typeof MAIN.is_sending !== 'undefined' && MAIN.is_sending) {
                 return;
             }
-            var subject = $('#local_edusupport_create_form #id_subject').val();
-            var contactphone = $('#local_edusupport_create_form #id_contactphone').val() || '';
-            var description = $('#local_edusupport_create_form #id_description').val();
-            var forum_group = $('#local_edusupport_create_form #id_forum_group').val();
-            var postto2ndlevel = $('#local_edusupport_create_form #id_postto2ndlevel').prop('checked') ? 1 : 0;
-            var post_screenshot = true; // $('#local_edusupport_create_form #id_postscreenshot').prop('checked') ? 1 : 0;
-            var screenshot = MAIN.screenshot; // $('#local_edusupport_create_form img#screenshot').attr('src');
+            var subject = $('#local_helpdesk_create_form #id_subject').val();
+            var contactphone = $('#local_helpdesk_create_form #id_contactphone').val() || '';
+            var description = $('#local_helpdesk_create_form #id_description').val();
+            var forum_group = $('#local_helpdesk_create_form #id_forum_group').val();
+            var postto2ndlevel = $('#local_helpdesk_create_form #id_postto2ndlevel').prop('checked') ? 1 : 0;
+            var post_screenshot = true; // $('#local_helpdesk_create_form #id_postscreenshot').prop('checked') ? 1 : 0;
+            var screenshot = MAIN.screenshot; // $('#local_helpdesk_create_form img#screenshot').attr('src');
             var screenshotname = MAIN.screenshotname;
-            var faqread = $('#local_edusupport_create_form #id_faqread').prop('checked') ? 1 : 0;
-            var guestmailfield = $('#local_edusupport_create_form #id_guestmail');
+            var faqread = $('#local_helpdesk_create_form #id_faqread').prop('checked') ? 1 : 0;
+            var guestmailfield = $('#local_helpdesk_create_form #id_guestmail');
             var guestmail = guestmailfield.length ? guestmailfield.val() : null;
-            var accountmanagerfield = $('#local_edusupport_create_form #id_accountmanager');
+            var accountmanagerfield = $('#local_helpdesk_create_form #id_accountmanager');
             var accountmanager = accountmanagerfield.length ? accountmanagerfield.val() : null;
             var url = top.location.href;
             if (faqread == 0) {
-                var editaPresent = STR.get_string('faqread', 'local_edusupport', {});
+                var editaPresent = STR.get_string('faqread', 'local_helpdesk', {});
                 $.when(editaPresent).done(function(localizedEditString) {
                     NOTIFICATION.alert('', localizedEditString);
                 });
                 return;
             }
             if (subject.length == 0) {
-                var editaPresent = STR.get_string('select_subject', 'local_edusupport', {});
+                var editaPresent = STR.get_string('select_subject', 'local_helpdesk', {});
                 $.when(editaPresent).done(function(localizedEditString) {
                     NOTIFICATION.alert('', localizedEditString);
                 });
                 return;
             }
             if (subject.length < 3 || description.length < 5) {
-                var editaPresent = STR.get_string('be_more_accurate', 'local_edusupport', {});
+                var editaPresent = STR.get_string('be_more_accurate', 'local_helpdesk', {});
                 $.when(editaPresent).done(function(localizedEditString) {
                     NOTIFICATION.alert('', localizedEditString);
                 });
@@ -300,7 +258,7 @@ define(
 
             var validregex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
             if (guestmailfield.length && !guestmailfield.val().match(validregex)) {
-                var editaPresent = STR.get_string('invalidmail', 'local_edusupport', {});
+                var editaPresent = STR.get_string('invalidmail', 'local_helpdesk', {});
                 $.when(editaPresent).done(function(localizedEditString) {
                     NOTIFICATION.alert('', localizedEditString);
                 });
@@ -311,7 +269,7 @@ define(
 
             var imagedataurl = (post_screenshot && typeof screenshot !== 'undefined') ? screenshot : '';
             AJAX.call([{
-                methodname: 'local_edusupport_create_issue',
+                methodname: 'local_helpdesk_create_issue',
                 args: {subject: subject, description: description, forum_group: forum_group,
                     postto2ndlevel: postto2ndlevel, image: imagedataurl, screenshotname: screenshotname,
                      url: url, contactphone: contactphone, guestmail: guestmail, accountmanager: accountmanager},
@@ -322,7 +280,7 @@ define(
 
                     var responsibles = '';
                     if (typeof result.responsibles !== 'undefined') {
-                        responsibles += '<ul class="edusupport_responsible">';
+                        responsibles += '<ul class="helpdesk_responsible">';
                         for (var i = 0; i < result.responsibles.length; i++) {
                             var r = result.responsibles[i];
                             if (typeof r.userid !== 'undefined' && r.userid > 0) {
@@ -340,10 +298,10 @@ define(
                     if (typeof result.discussionid !== 'undefined' && parseInt(result.discussionid) == -999) {
                         // Confirmation, was sent by mail.
                         STR.get_strings([
-                            {'key': 'create_issue_success_title', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_description_mail', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_responsibles', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_close', component: 'local_edusupport'},
+                            {'key': 'create_issue_success_title', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_description_mail', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_responsibles', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_close', component: 'local_helpdesk'},
                             ]).done(function(s) {
                                 var desc = s[1];
                                 if (responsibles != '') {
@@ -355,11 +313,11 @@ define(
                     } else if (typeof result.discussionid !== 'undefined' && parseInt(result.discussionid) > 0) {
                         // Confirmation
                         STR.get_strings([
-                            {'key': 'create_issue_success_title', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_description', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_responsibles', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_goto', component: 'local_edusupport'},
-                            {'key': 'create_issue_success_close', component: 'local_edusupport'},
+                            {'key': 'create_issue_success_title', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_description', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_responsibles', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_goto', component: 'local_helpdesk'},
+                            {'key': 'create_issue_success_close', component: 'local_helpdesk'},
                             ]).done(function(s) {
                                 var desc = s[1];
                                 if (responsibles != '') {
@@ -372,8 +330,8 @@ define(
                         ).fail(NOTIFICATION.exception);
                     } else {
                         STR.get_strings([
-                                {'key': 'create_issue_error_title', component: 'local_edusupport'},
-                                {'key': 'create_issue_error_description', component: 'local_edusupport'},
+                                {'key': 'create_issue_error_title', component: 'local_helpdesk'},
+                                {'key': 'create_issue_error_description', component: 'local_helpdesk'},
                             ]).done(function(s) {
                                 NOTIFICATION.alert(s[0], s[1]);
                             }
@@ -399,7 +357,7 @@ define(
                 e.preventDefault();
                 // Do your form validation here.
             });
-            var editaPresent = STR.get_string('create_issue', 'local_edusupport', {});
+            var editaPresent = STR.get_string('create_issue', 'local_helpdesk', {});
             $.when(editaPresent).done(function(localizedEditString) {
                 MAIN.modal.setSaveButtonText(localizedEditString);
             });
@@ -439,12 +397,12 @@ define(
             } else {
                 MAIN.triggerSpinner(1);
                 AJAX.call([{
-                    methodname: 'local_edusupport_create_form',
+                    methodname: 'local_helpdesk_create_form',
                     args: {url: top.location.href, image: '', forumid: forumid},
                     done: function(result) {
                         MAIN.triggerSpinner(-1);
                         // Remove any previously created forms.
-                        $('#local_edusupport_create_form').remove();
+                        $('#local_helpdesk_create_form').remove();
                         // Console.log(result);
                         SaveCancelModal.create({
                             // Title: 'create issue',
@@ -475,12 +433,12 @@ define(
             } else {
                 MAIN.triggerSpinner(1);
                 AJAX.call([{
-                    methodname: 'local_edusupport_create_form',
+                    methodname: 'local_helpdesk_create_form',
                     args: {url: top.location.href, image: '', forumid: forumid},
                     done: function(result) {
                         MAIN.triggerSpinner(-1);
                         // Remove any previously created forms.
-                        $('#local_edusupport_create_form').remove();
+                        $('#local_helpdesk_create_form').remove();
                         // Console.log(result);
                         SaveCancelModal.create({
                             // Title: 'create issue',
@@ -510,31 +468,31 @@ define(
             var MAIN = this;
             MAIN.triggerSteps += steps;
             if (MAIN.triggerSteps > 0) {
-                if ($('body #edusupport-spinner').length == 0) {
-                    $('body').append($('<div id="edusupport-spinner" class="spinner-grid show">'
+                if ($('body #helpdesk-spinner').length == 0) {
+                    $('body').append($('<div id="helpdesk-spinner" class="spinner-grid show">'
                         + '<div></div><div></div><div></div><div></div></div>'));
                 }
             } else {
-                $('#edusupport-spinner').remove();
+                $('#helpdesk-spinner').remove();
             }
         },
         uploadScreenshot: function() {
             var MAIN = this;
-            $('#edusupport_screenshot input').addClass('disabled');
-            $('#edusupport_screenshot div.alert').addClass('hidden');
-            var file = document.querySelector('#edusupport_screenshot input[type="file"]').files[0];
+            $('#helpdesk_screenshot input').addClass('disabled');
+            $('#helpdesk_screenshot div.alert').addClass('hidden');
+            var file = document.querySelector('#helpdesk_screenshot input[type="file"]').files[0];
             var reader = new FileReader();
             reader.readAsDataURL(file);
             if (typeof file.name !== 'undefined') {
                 MAIN.screenshotname = file.name;
                 reader.onload = function() {
-                    $('#edusupport_screenshot div.alert-success').removeClass('hidden');
-                    $('#edusupport_screenshot input').removeClass('disabled');
+                    $('#helpdesk_screenshot div.alert-success').removeClass('hidden');
+                    $('#helpdesk_screenshot input').removeClass('disabled');
                     MAIN.screenshot = reader.result;
                 };
                 reader.onerror = function() {
-                    $('#edusupport_screenshot div.alert-danger').removeClass('hidden');
-                    $('#edusupport_screenshot input').removeClass('disabled');
+                    $('#helpdesk_screenshot div.alert-danger').removeClass('hidden');
+                    $('#helpdesk_screenshot input').removeClass('disabled');
 
                 };
             }

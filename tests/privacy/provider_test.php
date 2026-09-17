@@ -17,13 +17,13 @@
 /**
  * Tests for the privacy provider.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\privacy;
+namespace local_helpdesk\privacy;
 
 use context_system;
 use context_user;
@@ -37,11 +37,11 @@ use stdClass;
 /**
  * Tests for the privacy provider.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\privacy\provider
+ * @covers     \local_helpdesk\privacy\provider
  */
 final class provider_test extends provider_testcase {
     /** @var stdClass somebody who shows up in every place the plugin records people. */
@@ -70,7 +70,7 @@ final class provider_test extends provider_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $plugingenerator = $generator->get_plugin_generator('local_edusupport');
+        $plugingenerator = $generator->get_plugin_generator('local_helpdesk');
 
         $course = $generator->create_course();
         $forum = $generator->create_module('forum', ['course' => $course->id]);
@@ -91,7 +91,7 @@ final class provider_test extends provider_testcase {
             'forumid' => $forum->id,
             'currentsupporter' => $this->colleague->id,
         ]);
-        $DB->set_field('local_edusupport_issues', 'accountmanager', $this->supporter->id, ['id' => $this->otherissue->id]);
+        $DB->set_field('local_helpdesk_issues', 'accountmanager', $this->supporter->id, ['id' => $this->otherissue->id]);
 
         foreach ([$this->supporter, $this->colleague] as $user) {
             $subscription = [
@@ -99,13 +99,13 @@ final class provider_test extends provider_testcase {
                 'discussionid' => $this->issue->discussionid,
                 'userid' => $user->id,
             ];
-            if (!$DB->record_exists('local_edusupport_subscr', $subscription)) {
-                $DB->insert_record('local_edusupport_subscr', $subscription);
+            if (!$DB->record_exists('local_helpdesk_subscr', $subscription)) {
+                $DB->insert_record('local_helpdesk_subscr', $subscription);
             }
         }
 
-        $DB->set_field('local_edusupport', 'dedicatedsupporter', $this->supporter->id, ['id' => $this->supportforum->id]);
-        set_config('accountmanagers', $this->supporter->id . ',' . $this->colleague->id, 'local_edusupport');
+        $DB->set_field('local_helpdesk', 'dedicatedsupporter', $this->supporter->id, ['id' => $this->supportforum->id]);
+        set_config('accountmanagers', $this->supporter->id . ',' . $this->colleague->id, 'local_helpdesk');
     }
 
     /**
@@ -129,8 +129,8 @@ final class provider_test extends provider_testcase {
 
         $manager = $this->getDataGenerator()->create_user();
         $dedicated = $this->getDataGenerator()->create_user();
-        $DB->set_field('local_edusupport_issues', 'accountmanager', $manager->id, ['id' => $this->issue->id]);
-        $DB->set_field('local_edusupport', 'dedicatedsupporter', $dedicated->id, ['id' => $this->supportforum->id]);
+        $DB->set_field('local_helpdesk_issues', 'accountmanager', $manager->id, ['id' => $this->issue->id]);
+        $DB->set_field('local_helpdesk', 'dedicatedsupporter', $dedicated->id, ['id' => $this->supportforum->id]);
 
         $this->assertCount(1, provider::get_contexts_for_userid($manager->id));
         $this->assertCount(1, provider::get_contexts_for_userid($dedicated->id));
@@ -140,11 +140,11 @@ final class provider_test extends provider_testcase {
      * The person owning a user context is its only user; other contexts have nobody.
      */
     public function test_get_users_in_context(): void {
-        $userlist = new userlist(context_user::instance($this->supporter->id), 'local_edusupport');
+        $userlist = new userlist(context_user::instance($this->supporter->id), 'local_helpdesk');
         provider::get_users_in_context($userlist);
         $this->assertEquals([$this->supporter->id], $userlist->get_userids());
 
-        $userlist = new userlist(context_system::instance(), 'local_edusupport');
+        $userlist = new userlist(context_system::instance(), 'local_helpdesk');
         provider::get_users_in_context($userlist);
         $this->assertCount(0, $userlist);
     }
@@ -153,27 +153,27 @@ final class provider_test extends provider_testcase {
      * The export holds each kind of data once per entry, and nothing else.
      */
     public function test_export_user_data(): void {
-        $this->export_all_data_for_user($this->supporter->id, 'local_edusupport');
+        $this->export_all_data_for_user($this->supporter->id, 'local_helpdesk');
         $writer = writer::with_context(context_user::instance($this->supporter->id));
-        $root = get_string('pluginname', 'local_edusupport');
+        $root = get_string('pluginname', 'local_helpdesk');
 
-        $supporter = $writer->get_data([$root, get_string('privacy:export:supporter', 'local_edusupport')]);
+        $supporter = $writer->get_data([$root, get_string('privacy:export:supporter', 'local_helpdesk')]);
         $this->assertEqualsCanonicalizing(
-            [get_string('level:first', 'local_edusupport'), get_string('level:second', 'local_edusupport')],
+            [get_string('level:first', 'local_helpdesk'), get_string('level:second', 'local_helpdesk')],
             array_column($supporter->entries, 'level')
         );
 
-        $issues = $writer->get_data([$root, get_string('privacy:export:issues', 'local_edusupport')]);
+        $issues = $writer->get_data([$root, get_string('privacy:export:issues', 'local_helpdesk')]);
         $this->assertEqualsCanonicalizing(
             [$this->issue->id, $this->otherissue->id],
             array_column($issues->entries, 'issueid')
         );
 
-        $subscriptions = $writer->get_data([$root, get_string('privacy:export:subscriptions', 'local_edusupport')]);
+        $subscriptions = $writer->get_data([$root, get_string('privacy:export:subscriptions', 'local_helpdesk')]);
         $this->assertNotContains(null, $subscriptions->entries);
         $this->assertContains($this->issue->id, array_column($subscriptions->entries, 'issueid'));
 
-        $forums = $writer->get_data([$root, get_string('privacy:export:dedicated', 'local_edusupport')]);
+        $forums = $writer->get_data([$root, get_string('privacy:export:dedicated', 'local_helpdesk')]);
         $this->assertEquals([$this->supportforum->forumid], array_column($forums->entries, 'forumid'));
     }
 
@@ -181,13 +181,13 @@ final class provider_test extends provider_testcase {
      * Somebody else's export only shows what concerns them.
      */
     public function test_export_leaves_out_other_people(): void {
-        $this->export_all_data_for_user($this->colleague->id, 'local_edusupport');
+        $this->export_all_data_for_user($this->colleague->id, 'local_helpdesk');
         $writer = writer::with_context(context_user::instance($this->colleague->id));
-        $root = get_string('pluginname', 'local_edusupport');
+        $root = get_string('pluginname', 'local_helpdesk');
 
-        $issues = $writer->get_data([$root, get_string('privacy:export:issues', 'local_edusupport')]);
+        $issues = $writer->get_data([$root, get_string('privacy:export:issues', 'local_helpdesk')]);
         $this->assertEquals([$this->otherissue->id], array_column($issues->entries, 'issueid'));
-        $this->assertEmpty($writer->get_data([$root, get_string('privacy:export:dedicated', 'local_edusupport')]));
+        $this->assertEmpty($writer->get_data([$root, get_string('privacy:export:dedicated', 'local_helpdesk')]));
     }
 
     /**
@@ -218,26 +218,26 @@ final class provider_test extends provider_testcase {
         $context = context_user::instance($this->supporter->id);
         switch ($path) {
             case 'user':
-                provider::delete_data_for_user(new approved_contextlist($this->supporter, 'local_edusupport', [$context->id]));
+                provider::delete_data_for_user(new approved_contextlist($this->supporter, 'local_helpdesk', [$context->id]));
                 break;
             case 'users':
-                provider::delete_data_for_users(new approved_userlist($context, 'local_edusupport', [$this->supporter->id]));
+                provider::delete_data_for_users(new approved_userlist($context, 'local_helpdesk', [$this->supporter->id]));
                 break;
             default:
                 provider::delete_data_for_all_users_in_context($context);
         }
 
         $this->assertCount(0, provider::get_contexts_for_userid($this->supporter->id));
-        $this->assertEquals(0, $DB->get_field('local_edusupport_issues', 'currentsupporter', ['id' => $this->issue->id]));
-        $this->assertEquals(0, $DB->get_field('local_edusupport_issues', 'accountmanager', ['id' => $this->otherissue->id]));
-        $this->assertEquals(0, $DB->get_field('local_edusupport', 'dedicatedsupporter', ['id' => $this->supportforum->id]));
-        $this->assertSame((string) $this->colleague->id, get_config('local_edusupport', 'accountmanagers'));
+        $this->assertEquals(0, $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['id' => $this->issue->id]));
+        $this->assertEquals(0, $DB->get_field('local_helpdesk_issues', 'accountmanager', ['id' => $this->otherissue->id]));
+        $this->assertEquals(0, $DB->get_field('local_helpdesk', 'dedicatedsupporter', ['id' => $this->supportforum->id]));
+        $this->assertSame((string) $this->colleague->id, get_config('local_helpdesk', 'accountmanagers'));
 
-        $this->assertTrue($DB->record_exists('local_edusupport_supporters', ['userid' => $this->colleague->id]));
-        $this->assertTrue($DB->record_exists('local_edusupport_subscr', ['userid' => $this->colleague->id]));
+        $this->assertTrue($DB->record_exists('local_helpdesk_supporters', ['userid' => $this->colleague->id]));
+        $this->assertTrue($DB->record_exists('local_helpdesk_subscr', ['userid' => $this->colleague->id]));
         $this->assertEquals(
             $this->colleague->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['id' => $this->otherissue->id])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['id' => $this->otherissue->id])
         );
     }
 
@@ -248,7 +248,7 @@ final class provider_test extends provider_testcase {
         provider::delete_data_for_all_users_in_context(context_system::instance());
         provider::delete_data_for_users(new approved_userlist(
             context_user::instance($this->supporter->id),
-            'local_edusupport',
+            'local_helpdesk',
             [$this->colleague->id]
         ));
 

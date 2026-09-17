@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_edusupport/post_mailtext
+    @template local_helpdesk/post_mailtext
 
     The text mail telling a subscriber about a new post in an issue.
 
@@ -36,13 +36,13 @@
         "coursename": "Support area",
         "forumname": "Support forum",
         "discussionname": "Printer is broken",
-        "issuelink": "https://example.com/local/edusupport/issue.php?d=12",
+        "issuelink": "https://example.com/local/helpdesk/issue.php?d=12",
         "subject": "Printer is broken",
         "authorfullname": "Sally Student",
         "postdate": "11. September 2026, 15:30",
         "message": "The printer in room 12 does not print.",
         "attachments": "",
-        "replylink": "https://example.com/local/edusupport/issue.php?d=12&replyto=34"
+        "replylink": "https://example.com/local/helpdesk/issue.php?d=12&replyto=34"
     }
 }}
 
@@ -59,7 +59,7 @@
 {{{ attachments }}}
 ---------------------------------------------------------------------
 
-{{# str }} postmailinfolink, local_edusupport, {
+{{# str }} postmailinfolink, local_helpdesk, {
     "coursename": {{# quote }}{{{ coursename }}}{{/ quote }},
     "replylink": {{# quote }}{{ replylink }}{{/ quote }}
 } {{/ str }}

@@ -15,29 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Behat data generator for local_edusupport.
+ * Behat data generator for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Behat data generator for local_edusupport.
+ * Behat data generator for local_helpdesk.
  *
- * This only maps entity names to the methods of local_edusupport_generator, so that
+ * This only maps entity names to the methods of local_helpdesk_generator, so that
  * the core step "the following ... exist:" can set up support forums, supporters and
  * issues. It defines no step of its own.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_local_edusupport_generator extends behat_generator_base {
+class behat_local_helpdesk_generator extends behat_generator_base {
     /**
-     * Get a list of the entities that can be created for local_edusupport.
+     * Get a list of the entities that can be created for local_helpdesk.
      *
      * @return array entity name => information about how to generate.
      */

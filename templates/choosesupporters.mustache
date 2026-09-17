@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_edusupport/choosesupporters
+    @template local_helpdesk/choosesupporters
 
     The members of the platform team, to edit, remove or add them.
 
@@ -39,47 +39,47 @@
         ]
     }
 }}
-<div class="local_edusupport choosesupporters">
+<div class="local_helpdesk choosesupporters">
     {{! A form cannot be part of a table, so the forms stand apart and every field names its form. }}
     {{#supporters}}
-        <form method="post" enctype="multipart/form-data" id="local_edusupport_supporter_{{id}}">
+        <form method="post" enctype="multipart/form-data" id="local_helpdesk_supporter_{{id}}">
             <input type="hidden" name="id" value="{{id}}">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
         </form>
     {{/supporters}}
-    <form method="post" enctype="multipart/form-data" id="local_edusupport_supporter_new">
+    <form method="post" enctype="multipart/form-data" id="local_helpdesk_supporter_new">
         <input type="hidden" name="sesskey" value="{{sesskey}}">
     </form>
     <table class="generaltable w-100">
         <thead>
             <tr>
-                <th style="width: 50px">{{#str}} userid, local_edusupport {{/str}}</th>
+                <th style="width: 50px">{{#str}} userid, local_helpdesk {{/str}}</th>
                 <th>{{#str}} name {{/str}}</th>
-                <th>{{#str}} supportlevel, local_edusupport {{/str}}</th>
-                <th>{{#str}} autoassign, local_edusupport {{/str}}</th>
+                <th>{{#str}} supportlevel, local_helpdesk {{/str}}</th>
+                <th>{{#str}} autoassign, local_helpdesk {{/str}}</th>
                 <th>{{#str}} action {{/str}}</th>
             </tr>
         </thead>
         <tbody>
             {{#supporters}}
                 <tr>
-                    <td><input type="number" name="userid" value="{{userid}}" form="local_edusupport_supporter_{{id}}"></td>
+                    <td><input type="number" name="userid" value="{{userid}}" form="local_helpdesk_supporter_{{id}}"></td>
                     <td>{{lastname}} {{firstname}}</td>
-                    <td><input type="text" name="supportlevel" value="{{supportlevel}}" form="local_edusupport_supporter_{{id}}"></td>
-                    <td><input type="checkbox" name="autoassign" value="1" {{#autoassign}}checked{{/autoassign}} form="local_edusupport_supporter_{{id}}"></td>
+                    <td><input type="text" name="supportlevel" value="{{supportlevel}}" form="local_helpdesk_supporter_{{id}}"></td>
+                    <td><input type="checkbox" name="autoassign" value="1" {{#autoassign}}checked{{/autoassign}} form="local_helpdesk_supporter_{{id}}"></td>
                     <td>
-                        <input type="submit" name="remove" value="{{#str}} remove {{/str}}" form="local_edusupport_supporter_{{id}}">
-                        <input type="submit" value="{{#str}} save {{/str}}" form="local_edusupport_supporter_{{id}}">
+                        <input type="submit" name="remove" value="{{#str}} remove {{/str}}" form="local_helpdesk_supporter_{{id}}">
+                        <input type="submit" value="{{#str}} save {{/str}}" form="local_helpdesk_supporter_{{id}}">
                     </td>
                 </tr>
             {{/supporters}}
             <tr>
-                <td><input type="number" name="userid" value="" form="local_edusupport_supporter_new"></td>
+                <td><input type="number" name="userid" value="" form="local_helpdesk_supporter_new"></td>
                 <td>-</td>
-                <td><input type="text" name="supportlevel" value="" form="local_edusupport_supporter_new"></td>
-                <td><input type="checkbox" name="autoassign" value="1" checked form="local_edusupport_supporter_new"></td>
+                <td><input type="text" name="supportlevel" value="" form="local_helpdesk_supporter_new"></td>
+                <td><input type="checkbox" name="autoassign" value="1" checked form="local_helpdesk_supporter_new"></td>
                 <td>
-                    <input type="submit" value="{{#str}} save {{/str}}" form="local_edusupport_supporter_new">
+                    <input type="submit" value="{{#str}} save {{/str}}" form="local_helpdesk_supporter_new">
                 </td>
             </tr>
         </tbody>

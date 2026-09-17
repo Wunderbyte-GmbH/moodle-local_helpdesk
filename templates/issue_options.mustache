@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-   @template local_edusupport/issue_options
+   @template local_helpdesk/issue_options
 
    The purpose of this template is to render action buttons for issues.
 
@@ -54,7 +54,7 @@
        "id": 42
    }
  }}
-<div class="local_edusupport issue_options" style="float: right;">
+<div class="local_helpdesk issue_options" style="float: right;">
     {{#options}}
         {{#href}}
             <a href="{{href}}"
@@ -76,16 +76,16 @@
         <div class="d-inline-block">
             <div class="input-group">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="local_edusupport_issue_state_select_{{id}}">{{#str}} changestatus, local_edusupport {{/str}}</label>
+                    <label class="input-group-text" for="local_helpdesk_issue_state_select_{{id}}">{{#str}} changestatus, local_helpdesk {{/str}}</label>
                 </div>
-                {{> local_edusupport/issue_state_select }}
+                {{> local_helpdesk/issue_state_select }}
             </div>
         </div>
     {{/changestatus}}
 </div>
 {{#changestatus}}
     {{#js}}
-        require(['local_edusupport/issues'], function(issues) {
+        require(['local_helpdesk/issues'], function(issues) {
         issues.init();
         });
     {{/js}}

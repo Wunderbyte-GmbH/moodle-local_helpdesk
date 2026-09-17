@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * English strings for local_edusupport.
+ * English strings for local_helpdesk.
  *
- * @package   local_edusupport
+ * @package   local_helpdesk
  * @copyright 2018 Digital Education Society (http://www.dibig.at)
  * @author    Robert Schrenk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -34,7 +34,6 @@ $string['auto2ndlvl'] = 'Auto forward 2nd';
 $string['auto2ndlvl:description'] = 'Automatically forward all tickets to 2nd level support';
 $string['autoassign'] = 'Assignable automatically';
 $string['autoassign:description'] = 'Whether an escalation may hand a request to this person without anybody choosing them. Turn it off for specialists who should only ever be assigned by hand.';
-$string['autocreate_orggroup'] = 'Automatically create groups for eduvidual-Organizations';
 $string['autocreate_usergroup'] = 'Automatically create a private group for user';
 $string['back'] = 'back';
 $string['be_more_accurate'] = 'Please be more accurate when describing your problem!';
@@ -76,11 +75,6 @@ $string['deletethreshhold'] = 'Delete closed issues after';
 $string['deletethreshhold:description'] = 'Set the threshhold for the deletion of closed issues in the issues view. This only affects the issues page, but not the forum posts. 0 means to keep closed issues forever (not yet recommended)';
 $string['description'] = 'Describe the problem encountered including the link to the page/course where the problem occured';
 $string['description_missing'] = 'A detailed description of the problem is missing';
-$string['edusupport:addinstance'] = 'Add eduSupport block';
-$string['edusupport:assignsupporters'] = 'Assign the first level support of a course';
-$string['edusupport:canforward2ndlevel'] = 'Can forward issues to platform support team';
-$string['edusupport:manage'] = 'Manage';
-$string['edusupport:myaddinstance'] = 'Add eduSupport block';
 $string['email_to_xyz'] = 'Send mail to {$a->email}';
 $string['enableprepage'] = "Enable Prepage";
 $string['enableprepage:description'] = "Enables a site before form";
@@ -104,6 +98,8 @@ $string['guestmail'] = 'Your e-mail';
 $string['guestmodeenabled'] = 'Guestmode active';
 $string['guestmodeenabled:description'] = 'Guests can now also post supporttickets. These tickets get answered by mail';
 $string['header'] = 'Request for help in &nbsp;<i>{$a}</i>';
+$string['helpdesk:assignsupporters'] = 'Assign the first level support of a course';
+$string['helpdesk:canforward2ndlevel'] = 'Can forward issues to platform support team';
 $string['holidaymode'] = 'Holidaymode';
 $string['holidaymode_end'] = 'End holidaymode';
 $string['holidaymode_is_on'] = 'Holidaymode is on';
@@ -177,6 +173,7 @@ $string['label:2ndlevel'] = 'Platform support team';
 $string['level'] = 'Level';
 $string['level:first'] = 'First level, one course';
 $string['level:second'] = 'Second level, the platform';
+$string['messageprovider:helpdesk_issue'] = 'Helpdesk issue notifications';
 $string['missing_permission'] = 'Missing required permission';
 $string['missing_targetforum'] = 'Missing target forum, must be configured!';
 $string['missing_targetforum_exists'] = 'The configured target forum does not exist. Wrong configuration!';
@@ -188,8 +185,7 @@ $string['overview'] = 'All support users';
 $string['overview:description'] = 'Everybody who supports something on this platform: first level is assigned per course, second level is the platform wide team.';
 $string['phonefield'] = 'disable phone field';
 $string['phonefield:description'] = 'Deactivate phone field in the form for creating issues';
-$string['pluginname'] = 'eduSupport';
-
+$string['pluginname'] = 'Helpdesk';
 $string['possiblemanagers'] = 'Possible managers';
 $string['postmailinfolink'] = 'This is a copy of a message posted in {$a->coursename}.
 
@@ -202,7 +198,6 @@ $string['predefined_subjects_prefix'] = 'Enable prefix';
 $string['predefined_subjects_prefix:description'] = 'Enable prefix (name can be changed in language customisation subject_prefix e.g. Other:)';
 $string['prepage'] = "Prepage content";
 $string['prepage:description'] = "Content displayed before form e.g. faq";
-
 $string['priority'] = 'set priority';
 $string['prioritylvl'] = 'enable priorities';
 $string['prioritylvl:description'] = 'If enabled you can select priorities in the issues list';
@@ -213,25 +208,25 @@ $string['privacy:export:dedicated'] = 'Support forums you are the dedicated supp
 $string['privacy:export:issues'] = 'Issues you are responsible for';
 $string['privacy:export:subscriptions'] = 'Issues you follow';
 $string['privacy:export:supporter'] = 'Where you are a support user';
-$string['privacy:metadata:edusupport:accountmanager'] = 'The account manager responsible for the issue';
-$string['privacy:metadata:edusupport:autoassign'] = 'Whether requests can be passed on to the person automatically';
-$string['privacy:metadata:edusupport:courseid'] = 'The course the person supports';
-$string['privacy:metadata:edusupport:currentsupporter'] = 'The person the issue is currently assigned to';
-$string['privacy:metadata:edusupport:dedicatedsupporter'] = 'The person who receives the requests of this support forum first';
-$string['privacy:metadata:edusupport:discussionid'] = 'The forum discussion of the issue';
-$string['privacy:metadata:edusupport:forumid'] = 'The forum used as support forum';
-$string['privacy:metadata:edusupport:holidaymode'] = 'Until when the person is away';
-$string['privacy:metadata:edusupport:issueid'] = 'The issue';
-$string['privacy:metadata:edusupport:issues'] = 'Support issues and who handles them';
-$string['privacy:metadata:edusupport:priority'] = 'The priority of the issue';
-$string['privacy:metadata:edusupport:status'] = 'The status of the issue';
-$string['privacy:metadata:edusupport:subscr'] = 'Issues a person follows';
-$string['privacy:metadata:edusupport:supporters'] = 'People who give support, for a course or for the whole platform';
-$string['privacy:metadata:edusupport:supportforums'] = 'Forums used for support requests';
-$string['privacy:metadata:edusupport:supportlevel'] = 'The label chosen for the support role';
-$string['privacy:metadata:edusupport:timecreated'] = 'When the issue was created';
-$string['privacy:metadata:edusupport:timemodified'] = 'When the issue was last changed';
-$string['privacy:metadata:edusupport:userid'] = 'The person';
+$string['privacy:metadata:helpdesk:accountmanager'] = 'The account manager responsible for the issue';
+$string['privacy:metadata:helpdesk:autoassign'] = 'Whether requests can be passed on to the person automatically';
+$string['privacy:metadata:helpdesk:courseid'] = 'The course the person supports';
+$string['privacy:metadata:helpdesk:currentsupporter'] = 'The person the issue is currently assigned to';
+$string['privacy:metadata:helpdesk:dedicatedsupporter'] = 'The person who receives the requests of this support forum first';
+$string['privacy:metadata:helpdesk:discussionid'] = 'The forum discussion of the issue';
+$string['privacy:metadata:helpdesk:forumid'] = 'The forum used as support forum';
+$string['privacy:metadata:helpdesk:holidaymode'] = 'Until when the person is away';
+$string['privacy:metadata:helpdesk:issueid'] = 'The issue';
+$string['privacy:metadata:helpdesk:issues'] = 'Support issues and who handles them';
+$string['privacy:metadata:helpdesk:priority'] = 'The priority of the issue';
+$string['privacy:metadata:helpdesk:status'] = 'The status of the issue';
+$string['privacy:metadata:helpdesk:subscr'] = 'Issues a person follows';
+$string['privacy:metadata:helpdesk:supporters'] = 'People who give support, for a course or for the whole platform';
+$string['privacy:metadata:helpdesk:supportforums'] = 'Forums used for support requests';
+$string['privacy:metadata:helpdesk:supportlevel'] = 'The label chosen for the support role';
+$string['privacy:metadata:helpdesk:timecreated'] = 'When the issue was created';
+$string['privacy:metadata:helpdesk:timemodified'] = 'When the issue was last changed';
+$string['privacy:metadata:helpdesk:userid'] = 'The person';
 $string['relativeurlsupportarea'] = 'Relative URL to Supportarea';
 $string['rolename'] = 'rolename';
 $string['rolename:description'] = 'rolename for the supporters (e.g. teacher instead of editingtecher or customrole)';
@@ -274,7 +269,6 @@ $string['spamprotection:threshold:description'] = 'The time range that is used t
 $string['startedby'] = 'Started by';
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-
 $string['status'] = 'Status';
 $string['status:awaitingsupportaction'] = 'Awaiting support action';
 $string['status:awaitinguserreply'] = 'Awaiting user reply';
@@ -293,7 +287,7 @@ $string['supporters'] = 'Supporters';
 $string['supporters:choose'] = 'Choose supporters';
 $string['supportforum:central:disable'] = 'disable';
 $string['supportforum:central:enable'] = 'enable';
-$string['supportforum:choose'] = 'Choose forums for eduSupport';
+$string['supportforum:choose'] = 'Choose forums for Helpdesk';
 $string['supportforum:disable'] = 'disable';
 $string['supportforum:enable'] = 'enable';
 $string['supportlevel'] = 'Supportlevel';
@@ -304,7 +298,7 @@ $string['toggle'] = 'Course Supportforum';
 $string['toggle:central'] = 'Central Supportforum';
 $string['tooltiptext'] = 'Support';
 $string['trackhost'] = 'Track host';
-$string['trackhost:description'] = 'Big moodle sites may use an architecture with multiple webhosts. If you enable this option, edusupport will add the hostname of the used webhost to the issue.';
+$string['trackhost:description'] = 'Big moodle sites may use an architecture with multiple webhosts. If you enable this option, helpdesk will add the hostname of the used webhost to the issue.';
 $string['userid'] = 'UserID';
 $string['userlinks'] = 'enable userlinks';
 $string['userlinks:description'] = 'show userlinks in issues list';

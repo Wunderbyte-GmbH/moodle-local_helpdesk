@@ -19,7 +19,7 @@
  * THIS IS A CLONE OF THE STANDARD FORM, THAT IS MODIFIED A LITTLE
  * FOR THIS PLUGIN.
  *
- * @package   local_edusupport
+ * @package   local_helpdesk
  * @copyright Jamie Pratt <me@jamiep.org>
  *            modified by Rober Schrenk <robert.schrenk@lernmanagement.at>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/repository/lib.php');
  * @copyright Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_edusupport_post_form extends moodleform {
+class local_helpdesk_post_form extends moodleform {
     /**
      * Returns the options array to use in filemanager for forum attachments
      *

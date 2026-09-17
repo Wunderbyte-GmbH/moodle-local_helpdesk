@@ -1,6 +1,6 @@
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="local/edusupport/db" VERSION="20200824" COMMENT="XMLDB file for Moodle local/edusupport" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="local/helpdesk/db" VERSION="20200824" COMMENT="XMLDB file for Moodle local/helpdesk" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
-    <TABLE NAME="local_edusupport" COMMENT="Default comment for local_edusupport, please edit me">
+    <TABLE NAME="local_helpdesk" COMMENT="Default comment for local_helpdesk, please edit me">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
@@ -13,7 +13,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="local_edusupport_issues" COMMENT="List of issues">
+    <TABLE NAME="local_helpdesk_issues" COMMENT="List of issues">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="discussionid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
@@ -28,7 +28,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="local_edusupport_supporters" COMMENT="List of supporters and their level">
+    <TABLE NAME="local_helpdesk_supporters" COMMENT="List of supporters and their level">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
@@ -45,7 +45,7 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_edusupport_subscr" COMMENT="subscriptions of discussions.">
+    <TABLE NAME="local_helpdesk_subscr" COMMENT="subscriptions of discussions.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="issueid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Install time setup for local_edusupport.
+ * Install time setup for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learning Management (https://www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,31 +28,31 @@
  *
  * @return void
  */
-function xmldb_local_edusupport_install() {
+function xmldb_local_helpdesk_install() {
     global $DB, $CFG;
 
-    $role = $DB->get_record('role', ['shortname' => 'local_edusupport']);
+    $role = $DB->get_record('role', ['shortname' => 'local_helpdesk']);
     if (empty($role->id)) {
         $sql = "SELECT MAX(sortorder)+1 AS id FROM {role}";
         $max = $DB->get_record_sql($sql, []);
 
         $role = (object) [
-            'name' => 'eduSupport Team',
-            'shortname' => 'local_edusupport',
-            'description' => 'This role was automatically created by the local_edusupport Plugin',
+            'name' => 'Helpdesk Team',
+            'shortname' => 'local_helpdesk',
+            'description' => 'This role was automatically created by the local_helpdesk Plugin',
             'sortorder' => $max->id,
             'archetype' => '',
         ];
         $role->id = $DB->insert_record('role', $role);
     }
 
-    set_config('supportteamrole', $role->id, 'local_edusupport');
+    set_config('supportteamrole', $role->id, 'local_helpdesk');
 
     // Skip the dummy guest user on test sites: it becomes part of the site snapshot and
     // pollutes user-table fixtures (e.g. record-count assertions in behat suites of other
     // plugins). It is created on demand by guest_supportuser wherever it is needed.
     if (!defined('BEHAT_SITE_RUNNING') && !defined('BEHAT_UTIL') && !defined('PHPUNIT_TEST')) {
-        $guestuser = new local_edusupport\guest_supportuser();
+        $guestuser = new local_helpdesk\guest_supportuser();
         $guestuser->create_guestuser_if_inextistant();
     }
 

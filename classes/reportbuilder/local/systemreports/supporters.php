@@ -17,23 +17,23 @@
 /**
  * Every support user of the platform and where they support.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\reportbuilder\local\systemreports;
+namespace local_helpdesk\reportbuilder\local\systemreports;
 
 use context_system;
 use core_reportbuilder\local\entities\course;
 use core_reportbuilder\local\entities\user;
 use core_reportbuilder\system_report;
-use local_edusupport\reportbuilder\local\entities\supporter;
+use local_helpdesk\reportbuilder\local\entities\supporter;
 
 /**
  * Every support user of the platform and where they support.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -45,9 +45,9 @@ class supporters extends system_report {
      */
     protected function initialise(): void {
         $entity = new supporter();
-        $alias = $entity->get_table_alias('local_edusupport_supporters');
+        $alias = $entity->get_table_alias('local_helpdesk_supporters');
 
-        $this->set_main_table('local_edusupport_supporters', $alias);
+        $this->set_main_table('local_helpdesk_supporters', $alias);
         $this->add_entity($entity);
 
         $userentity = new user();
@@ -86,7 +86,7 @@ class supporters extends system_report {
         ]);
 
         $this->set_initial_sort_column('supporter:level', SORT_ASC);
-        $this->set_downloadable(true, get_string('supporters', 'local_edusupport'));
+        $this->set_downloadable(true, get_string('supporters', 'local_helpdesk'));
     }
 
     /**

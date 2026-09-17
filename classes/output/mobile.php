@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Mobile functions for edusupport
+ * Mobile functions for helpdesk
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2019 Zentrum für Lernmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\output;
+namespace local_helpdesk\output;
 
 /**
  * Ouput components to generate mobile app screens.
@@ -34,15 +34,15 @@ class mobile {
      *
      * @param array $args the arguments the mobile app sends.
      */
-    public static function edusupport_init(array $args): array {
+    public static function helpdesk_init(array $args): array {
         global $DB, $USER;
         $courseids = [];
-        $allsupportforums = $DB->get_records('local_edusupport', []);
+        $allsupportforums = $DB->get_records('local_helpdesk', []);
         foreach ($allsupportforums as $supportforum) {
             // If we are part of the support team of this forum, add the course.
             if (
-                \local_edusupport\lib::is_second_level($USER->id)
-                || \local_edusupport\lib::is_first_level($USER->id, $supportforum->courseid)
+                \local_helpdesk\lib::is_second_level($USER->id)
+                || \local_helpdesk\lib::is_first_level($USER->id, $supportforum->courseid)
             ) {
                 $courseids[] = $supportforum->courseid;
             }

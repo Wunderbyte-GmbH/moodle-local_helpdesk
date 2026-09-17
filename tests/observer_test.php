@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use core\task\manager;
-use local_edusupport\task\send_mail;
+use local_helpdesk\task\send_mail;
 
 /**
- * Test unit class of local_edusupport.
+ * Test unit class of local_helpdesk.
  *
- * @package local_edusupport
+ * @package local_helpdesk
  * @category test
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -39,7 +39,7 @@ final class observer_test extends advanced_testcase {
 
     /**
      * Make sure the observer kicks in to delete all data related to a user when the user is deleted.
-     * @covers \local_edusupport\observer
+     * @covers \local_helpdesk\observer
      */
     public function test_delete_user(): void {
 
@@ -47,38 +47,38 @@ final class observer_test extends advanced_testcase {
 
         $user = $this->getDataGenerator()->create_user();
 
-        $DB->insert_record('local_edusupport_supporters', [
+        $DB->insert_record('local_helpdesk_supporters', [
             'courseid' => 4,
             'userid' => $user->id,
             'supportlevel' => 'test',
             'holidaymode' => 1,
         ]);
 
-        $DB->insert_record('local_edusupport_subscr', [
+        $DB->insert_record('local_helpdesk_subscr', [
             'issueid' => 4,
             'userid' => $user->id,
             'discussionid' => 8,
         ]);
 
         $this->assertTrue(
-            $DB->record_exists('local_edusupport_supporters', ['userid' => $user->id]),
+            $DB->record_exists('local_helpdesk_supporters', ['userid' => $user->id]),
             "User {$user->id} should exist."
         );
 
         $this->assertTrue(
-            $DB->record_exists('local_edusupport_subscr', ['userid' => $user->id]),
+            $DB->record_exists('local_helpdesk_subscr', ['userid' => $user->id]),
             "User {$user->id} should exist"
         );
 
         user_delete_user($user);
 
         $this->assertFalse(
-            $DB->record_exists('local_edusupport_supporters', ['userid' => $user->id]),
+            $DB->record_exists('local_helpdesk_supporters', ['userid' => $user->id]),
             "User {$user->id} should no longer be a supporter."
         );
 
         $this->assertFalse(
-            $DB->record_exists('local_edusupport_subscr', ['userid' => $user->id]),
+            $DB->record_exists('local_helpdesk_subscr', ['userid' => $user->id]),
             "User {$user->id} should no longer be subscribed to any discussions."
         );
     }
@@ -90,16 +90,16 @@ final class observer_test extends advanced_testcase {
      * data never tripped over that, because phpunit gives every table its own id range, so a
      * row id never happens to equal a user id. The collision is built on purpose here.
      *
-     * @covers \local_edusupport\observer::user_deleted
+     * @covers \local_helpdesk\observer::user_deleted
      */
     public function test_deleting_a_user_leaves_other_supporters_alone(): void {
         global $DB;
 
         $leaving = $this->getDataGenerator()->create_user();
         $staying = $this->getDataGenerator()->create_user();
-        set_config('accountmanagers', $leaving->id . ',' . $staying->id, 'local_edusupport');
+        set_config('accountmanagers', $leaving->id . ',' . $staying->id, 'local_helpdesk');
 
-        $DB->insert_record('local_edusupport_supporters', (object) [
+        $DB->insert_record('local_helpdesk_supporters', (object) [
             'courseid' => lib::SYSTEM_COURSE_ID,
             'userid' => $leaving->id,
             'supportlevel' => '',
@@ -108,7 +108,7 @@ final class observer_test extends advanced_testcase {
         ]);
 
         // A row belonging to somebody else, whose own id equals the leaving user's id.
-        $DB->import_record('local_edusupport_supporters', (object) [
+        $DB->import_record('local_helpdesk_supporters', (object) [
             'id' => $leaving->id,
             'courseid' => lib::SYSTEM_COURSE_ID,
             'userid' => $staying->id,
@@ -119,25 +119,25 @@ final class observer_test extends advanced_testcase {
 
         delete_user($leaving);
 
-        $this->assertFalse($DB->record_exists('local_edusupport_supporters', ['userid' => $leaving->id]));
+        $this->assertFalse($DB->record_exists('local_helpdesk_supporters', ['userid' => $leaving->id]));
         $this->assertTrue(
-            $DB->record_exists('local_edusupport_supporters', ['id' => $leaving->id, 'userid' => $staying->id]),
+            $DB->record_exists('local_helpdesk_supporters', ['id' => $leaving->id, 'userid' => $staying->id]),
             'The row of an unrelated supporter must survive.'
         );
-        $this->assertSame((string) $staying->id, get_config('local_edusupport', 'accountmanagers'));
+        $this->assertSame((string) $staying->id, get_config('local_helpdesk', 'accountmanagers'));
     }
 
     /**
      * A deleted user no longer handles issues or a support forum.
      *
-     * @covers \local_edusupport\observer::user_deleted
+     * @covers \local_helpdesk\observer::user_deleted
      */
     public function test_deleting_a_user_takes_them_off_issues_and_forums(): void {
         global $DB;
 
         $this->setAdminUser();
         $generator = $this->getDataGenerator();
-        $plugingenerator = $generator->get_plugin_generator('local_edusupport');
+        $plugingenerator = $generator->get_plugin_generator('local_helpdesk');
 
         $course = $generator->create_course();
         $forum = $generator->create_module('forum', ['course' => $course->id]);
@@ -146,15 +146,15 @@ final class observer_test extends advanced_testcase {
         $leaving = $generator->create_user();
         $plugingenerator->create_supporter(['userid' => $leaving->id]);
         $issue = $plugingenerator->create_issue(['forumid' => $forum->id, 'currentsupporter' => $leaving->id]);
-        $DB->set_field('local_edusupport_issues', 'accountmanager', $leaving->id, ['id' => $issue->id]);
-        $DB->set_field('local_edusupport', 'dedicatedsupporter', $leaving->id, ['id' => $supportforum->id]);
+        $DB->set_field('local_helpdesk_issues', 'accountmanager', $leaving->id, ['id' => $issue->id]);
+        $DB->set_field('local_helpdesk', 'dedicatedsupporter', $leaving->id, ['id' => $supportforum->id]);
 
         delete_user($leaving);
 
-        $issue = $DB->get_record('local_edusupport_issues', ['id' => $issue->id], '*', MUST_EXIST);
+        $issue = $DB->get_record('local_helpdesk_issues', ['id' => $issue->id], '*', MUST_EXIST);
         $this->assertEquals(0, $issue->currentsupporter);
         $this->assertEquals(0, $issue->accountmanager);
-        $this->assertEquals(0, $DB->get_field('local_edusupport', 'dedicatedsupporter', ['id' => $supportforum->id]));
+        $this->assertEquals(0, $DB->get_field('local_helpdesk', 'dedicatedsupporter', ['id' => $supportforum->id]));
     }
 
     /**
@@ -168,7 +168,7 @@ final class observer_test extends advanced_testcase {
 
         $this->setAdminUser();
         $generator = $this->getDataGenerator();
-        $plugingenerator = $generator->get_plugin_generator('local_edusupport');
+        $plugingenerator = $generator->get_plugin_generator('local_helpdesk');
 
         $course = $generator->create_course();
         $forum = $generator->create_module('forum', ['course' => $course->id]);
@@ -185,7 +185,7 @@ final class observer_test extends advanced_testcase {
         ]);
         $discussion = $DB->get_record('forum_discussions', ['id' => $issue->discussionid], '*', MUST_EXIST);
 
-        $DB->insert_record('local_edusupport_subscr', (object) [
+        $DB->insert_record('local_helpdesk_subscr', (object) [
             'issueid' => $issue->id,
             'userid' => $supporter->id,
             'discussionid' => $discussion->id,
@@ -229,9 +229,9 @@ final class observer_test extends advanced_testcase {
      * A reply hands its notifications to cron rather than to the mail server.
      *
      * Posting used to wait for every subscriber's mail to go out, which freezes the page for
-     * as long as the mail server takes. See {@see \local_edusupport\task\send_mail}.
+     * as long as the mail server takes. See {@see \local_helpdesk\task\send_mail}.
      *
-     * @covers \local_edusupport\observer::event
+     * @covers \local_helpdesk\observer::event
      */
     public function test_a_reply_queues_its_notifications(): void {
         [$discussion, $supporter, $asking] = $this->create_issue_with_a_subscriber();
@@ -255,7 +255,7 @@ final class observer_test extends advanced_testcase {
     /**
      * The author of the reply is not notified of their own post.
      *
-     * @covers \local_edusupport\observer::event
+     * @covers \local_helpdesk\observer::event
      */
     public function test_a_reply_does_not_notify_its_own_author(): void {
         [$discussion, $supporter] = $this->create_issue_with_a_subscriber();
@@ -274,10 +274,10 @@ final class observer_test extends advanced_testcase {
      * the queued mail. Reading it off the account when the task runs would send every reply to
      * the same placeholder address.
      *
-     * @covers \local_edusupport\observer::event
+     * @covers \local_helpdesk\observer::event
      */
     public function test_a_reply_to_a_guest_ticket_keeps_the_address_the_guest_left(): void {
-        set_config('guestmodeenabled', 1, 'local_edusupport');
+        set_config('guestmodeenabled', 1, 'local_helpdesk');
 
         [$discussion, , $asking] = $this->create_issue_with_a_subscriber(
             '[Guestticket: fragende@example.com] Drucker geht nicht'
@@ -290,7 +290,7 @@ final class observer_test extends advanced_testcase {
 
         $recipients = array_column($sink->get_messages(), 'to');
         $this->assertContains('fragende@example.com', $recipients);
-        $this->assertNotContains('edusupport@example.com', $recipients, 'That is the shared guest account.');
+        $this->assertNotContains('helpdesk@example.com', $recipients, 'That is the shared guest account.');
         $sink->close();
     }
 }

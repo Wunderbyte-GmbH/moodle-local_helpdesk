@@ -16,7 +16,7 @@
 
 /**
  * Version details.
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (https://www.dibig.at)
  *             2020 onwards Center for Learningmanagement (https://www.lernmanagement.at)
  *             2021 onwards Wunderbyte GmbH (https://www.wunderbyte.at)
@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2026091004;
+$plugin->version = 2026091700;
 $plugin->requires = 2024100700; // Requires Moodle 4.5.
-$plugin->component = 'local_edusupport';
-$plugin->release = '2.8.0';
+$plugin->component = 'local_helpdesk';
+$plugin->release = '1.0.0';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->supported = [405, 500];

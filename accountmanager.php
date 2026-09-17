@@ -17,17 +17,17 @@
 /**
  * Assign the account manager a user turns to for support.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2022 Thomas Winkler
  * @author     Thomas Winkler
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 require_once('../../config.php');
 
-use local_edusupport\form\accountmanager_form;
+use local_helpdesk\form\accountmanager_form;
 use moodle_url;
 use stdClass;
 
@@ -35,7 +35,7 @@ $context = \context_system::instance();
 
 // Set PAGE variables.
 $PAGE->set_context($context);
-$PAGE->set_url($CFG->wwwroot . '/local/edusupport/accountmanager.php');
+$PAGE->set_url($CFG->wwwroot . '/local/helpdesk/accountmanager.php');
 
 // Force the user to login/create an account to access this page.
 require_login();
@@ -43,8 +43,8 @@ require_login();
 $PAGE->set_pagelayout('admin');
 $accountmanager = new accountmanager();
 
-$title = get_string('accountmanagers', 'local_edusupport');
-$heading = get_string('accountmanagers', 'local_edusupport');
+$title = get_string('accountmanagers', 'local_helpdesk');
+$heading = get_string('accountmanagers', 'local_helpdesk');
 $mform = new accountmanager_form();
 $PAGE->set_title($title);
 $PAGE->set_heading($heading);
@@ -58,15 +58,15 @@ $PAGE->navbar->add(get_string('plugins', 'core_admin'), $url);
 $url = new \moodle_url('/admin/category.php', ['category' => 'localplugins']);
 $PAGE->navbar->add(get_string('localplugins'), $url);
 
-$url = new \moodle_url('/admin/settings.php', ['section' => 'local_edusupport_settings']);
-$PAGE->navbar->add(get_string('pluginname', 'local_edusupport'), $url);
+$url = new \moodle_url('/admin/settings.php', ['section' => 'local_helpdesk_settings']);
+$PAGE->navbar->add(get_string('pluginname', 'local_helpdesk'), $url);
 
-$PAGE->navbar->add(get_string('supporters', 'local_edusupport'), $PAGE->url);
+$PAGE->navbar->add(get_string('supporters', 'local_helpdesk'), $PAGE->url);
 
 if (!is_siteadmin()) {
     $tourl = new moodle_url('/my', []);
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $tourl->__toString(),
     ]);
@@ -74,7 +74,7 @@ if (!is_siteadmin()) {
 if ($mform->is_cancelled()) {
     redirect($url);
 } else if ($data = $mform->get_data()) {
-    $accountmanager->form_to_config_edusupport_accountmanager($data->possiblemanagers, $data->capstocheck);
+    $accountmanager->form_to_config_helpdesk_accountmanager($data->possiblemanagers, $data->capstocheck);
 }
 echo $OUTPUT->header();
 $mform->set_data(new stdClass());

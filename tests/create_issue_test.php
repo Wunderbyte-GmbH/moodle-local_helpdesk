@@ -17,33 +17,33 @@
 /**
  * Tests for creating a support issue through the external function.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
-use local_edusupport_external;
-use local_edusupport\lib;
-use local_edusupport\task\send_mail;
+use local_helpdesk_external;
+use local_helpdesk\lib;
+use local_helpdesk\task\send_mail;
 use moodle_exception;
 use stdClass;
 
 /**
  * Tests for creating a support issue through the external function.
  *
- * local_edusupport_external still builds on lib/externallib.php, the deprecated compatibility
+ * local_helpdesk_external still builds on lib/externallib.php, the deprecated compatibility
  * shim, which refuses to be loaded outside an isolated process. Hence the annotation below and
  * the require inside setUp() rather than at the top of this file.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport_external::create_issue
+ * @covers     \local_helpdesk_external::create_issue
  * @runTestsInSeparateProcesses
  */
 final class create_issue_test extends advanced_testcase {
@@ -66,20 +66,20 @@ final class create_issue_test extends advanced_testcase {
         global $CFG;
 
         parent::setUp();
-        require_once($CFG->dirroot . '/local/edusupport/externallib.php');
+        require_once($CFG->dirroot . '/local/helpdesk/externallib.php');
 
         $this->resetAfterTest(true);
 
         // Without an explicit limit the spam check compares against an empty setting.
-        set_config('spamprotectionthreshold', 60, 'local_edusupport');
-        set_config('spamprotectionlimit', 100, 'local_edusupport');
+        set_config('spamprotectionthreshold', 60, 'local_helpdesk');
+        set_config('spamprotectionlimit', 100, 'local_helpdesk');
 
         $this->setAdminUser();
         $datagenerator = $this->getDataGenerator();
 
         $this->course = $datagenerator->create_course();
         $this->forum = $datagenerator->create_module('forum', ['course' => $this->course->id]);
-        $datagenerator->get_plugin_generator('local_edusupport')
+        $datagenerator->get_plugin_generator('local_helpdesk')
             ->create_supportforum(['forumid' => $this->forum->id]);
 
         $this->student = $datagenerator->create_user();
@@ -103,7 +103,7 @@ final class create_issue_test extends advanced_testcase {
         if ($forumgroup === '') {
             $forumgroup = $this->forum->id . '_0';
         }
-        return local_edusupport_external::create_issue(
+        return local_helpdesk_external::create_issue(
             $subject,
             'Beschreibung des Problems',
             $forumgroup,
@@ -120,7 +120,7 @@ final class create_issue_test extends advanced_testcase {
     /**
      * A ticket ends up as a discussion in the support forum.
      *
-     * It does not yet become a tracked issue: local_edusupport_issues is only written by
+     * It does not yet become a tracked issue: local_helpdesk_issues is only written by
      * set_2nd_level(), so with first level support alone the ticket lives in the forum only
      * and does not appear on issues.php. See the escalation test below.
      */
@@ -137,7 +137,7 @@ final class create_issue_test extends advanced_testcase {
         $this->assertSame('Drucker geht nicht', $discussion->name);
         $this->assertEquals($this->student->id, $discussion->userid);
 
-        $this->assertFalse($DB->record_exists('local_edusupport_issues', ['discussionid' => $reply['discussionid']]));
+        $this->assertFalse($DB->record_exists('local_helpdesk_issues', ['discussionid' => $reply['discussionid']]));
     }
 
     /**
@@ -146,19 +146,19 @@ final class create_issue_test extends advanced_testcase {
     public function test_create_issue_registers_a_tracked_issue_when_escalated(): void {
         global $DB;
 
-        set_config('auto2ndlvl', 1, 'local_edusupport');
+        set_config('auto2ndlvl', 1, 'local_helpdesk');
 
         $datagenerator = $this->getDataGenerator();
         $supporter = $datagenerator->create_user();
         $datagenerator->enrol_user($supporter->id, $this->course->id, 'teacher');
-        $datagenerator->get_plugin_generator('local_edusupport')
+        $datagenerator->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $supporter->id]);
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');
 
         $this->assertGreaterThan(0, $reply['discussionid']);
-        $this->assertTrue($DB->record_exists('local_edusupport_issues', ['discussionid' => $reply['discussionid']]));
+        $this->assertTrue($DB->record_exists('local_helpdesk_issues', ['discussionid' => $reply['discussionid']]));
     }
 
     /**
@@ -176,7 +176,7 @@ final class create_issue_test extends advanced_testcase {
 
         // A member of the platform team, who is second level and not a contact here.
         $platform = $datagenerator->create_user();
-        $datagenerator->get_plugin_generator('local_edusupport')->create_supporter(['userid' => $platform->id]);
+        $datagenerator->get_plugin_generator('local_helpdesk')->create_supporter(['userid' => $platform->id]);
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');
@@ -197,17 +197,17 @@ final class create_issue_test extends advanced_testcase {
         global $DB;
 
         $platform = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->get_plugin_generator('local_edusupport')
+        $this->getDataGenerator()->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $platform->id]);
         lib::assign_first_level($this->course->id, []);
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');
 
-        $this->assertTrue($DB->record_exists('local_edusupport_issues', ['discussionid' => $reply['discussionid']]));
+        $this->assertTrue($DB->record_exists('local_helpdesk_issues', ['discussionid' => $reply['discussionid']]));
         $this->assertEquals(
             $platform->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', ['discussionid' => $reply['discussionid']])
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', ['discussionid' => $reply['discussionid']])
         );
     }
 
@@ -215,7 +215,7 @@ final class create_issue_test extends advanced_testcase {
      * The support contacts can be kept from the person filing the request.
      */
     public function test_support_contacts_can_be_hidden(): void {
-        set_config('showresponsibles', 0, 'local_edusupport');
+        set_config('showresponsibles', 0, 'local_helpdesk');
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');
@@ -230,7 +230,7 @@ final class create_issue_test extends advanced_testcase {
     public function test_hiding_the_contacts_skips_the_post_naming_them(): void {
         global $DB;
 
-        set_config('showresponsibles', 0, 'local_edusupport');
+        set_config('showresponsibles', 0, 'local_helpdesk');
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');
@@ -245,7 +245,7 @@ final class create_issue_test extends advanced_testcase {
     public function test_showing_the_contacts_posts_them_into_the_ticket(): void {
         global $DB;
 
-        set_config('showresponsibles', 1, 'local_edusupport');
+        set_config('showresponsibles', 1, 'local_helpdesk');
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');
@@ -257,7 +257,7 @@ final class create_issue_test extends advanced_testcase {
      * Without a target forum the request is sent to the site support address instead.
      *
      * The mail itself is left to cron, so that a slow mail server cannot hold up the answer
-     * the browser is waiting for. See {@see \local_edusupport\task\send_mail}.
+     * the browser is waiting for. See {@see \local_helpdesk\task\send_mail}.
      */
     public function test_create_issue_falls_back_to_mail(): void {
         $sink = $this->redirectEmails();
@@ -280,7 +280,7 @@ final class create_issue_test extends advanced_testcase {
      * Too many tickets in a row are refused.
      */
     public function test_spam_protection_blocks_a_burst_of_issues(): void {
-        set_config('spamprotectionlimit', 1, 'local_edusupport');
+        set_config('spamprotectionlimit', 1, 'local_helpdesk');
 
         $this->setUser($this->student);
         $this->create_issue('Erstes Ticket');

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_edusupport/reminder_discussions
+    @template local_helpdesk/reminder_discussions
 
     The mail reminding a supporter of issues that wait for them.
 
@@ -40,15 +40,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{#str}} cron:reminder:title, local_edusupport {{/str}}</title>
+    <title>{{#str}} cron:reminder:title, local_helpdesk {{/str}}</title>
 </head>
 <body>
-<h3>{{#str}} cron:reminder:title, local_edusupport {{/str}}</h3>
-<p>{{#str}} cron:reminder:intro, local_edusupport {{/str}}</p>
+<h3>{{#str}} cron:reminder:title, local_helpdesk {{/str}}</h3>
+<p>{{#str}} cron:reminder:intro, local_helpdesk {{/str}}</p>
 <ul>
     {{#discussions}}
         <li>
-            {{userfullname}}: <a href="{{wwwroot}}/local/edusupport/issue.php?d={{id}}" target="_blank">{{name}}</a>,
+            {{userfullname}}: <a href="{{wwwroot}}/local/helpdesk/issue.php?d={{id}}" target="_blank">{{name}}</a>,
             {{#userdate}} {{timemodified}}, %d. %B %Y, %H:%M {{/userdate}}
         </li>
     {{/discussions}}

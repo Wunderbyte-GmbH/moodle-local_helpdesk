@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_edusupport/chooseforum
+    @template local_helpdesk/chooseforum
 
     The forums of a course, to pick which of them are support forums.
 
@@ -55,14 +55,14 @@
         ]
     }
 }}
-<div class="local_edusupport chooseforum">
+<div class="local_helpdesk chooseforum">
     <table class="generaltable w-100">
         <thead>
             <tr>
-                <td style="width: 250px">{{#str}} toggle, local_edusupport {{/str}}</td>
-                <td style="width: 250px">{{#str}} toggle:central, local_edusupport {{/str}}</td>
+                <td style="width: 250px">{{#str}} toggle, local_helpdesk {{/str}}</td>
+                <td style="width: 250px">{{#str}} toggle:central, local_helpdesk {{/str}}</td>
                 <td>{{#str}} name {{/str}}</td>
-                <td style="width: 150px">{{#str}} dedicatedsupporter, local_edusupport {{/str}}</td>
+                <td style="width: 150px">{{#str}} dedicatedsupporter, local_helpdesk {{/str}}</td>
             </tr>
         </thead>
         <tbody>
@@ -70,15 +70,15 @@
                 <tr>
                     <td>
                         {{^state}}
-                            <a href="{{wwwroot}}/local/edusupport/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;state=1&amp;sesskey={{sesskey}}"
+                            <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;state=1&amp;sesskey={{sesskey}}"
                                 class="btn btn-block btn-secondary">
-                                {{#str}} supportforum:enable, local_edusupport {{/str}}
+                                {{#str}} supportforum:enable, local_helpdesk {{/str}}
                             </a>
                         {{/state}}
                         {{#state}}
-                        <a href="{{wwwroot}}/local/edusupport/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;state=-1&amp;sesskey={{sesskey}}"
+                        <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;state=-1&amp;sesskey={{sesskey}}"
                             class="btn btn-block btn-primary">
-                            {{#str}} supportforum:disable, local_edusupport {{/str}}
+                            {{#str}} supportforum:disable, local_helpdesk {{/str}}
                         </a>
                         {{/state}}
                     </td>
@@ -88,15 +88,15 @@
                         {{/state}}
                         {{#state}}
                             {{^statecentral}}
-                                <a href="{{wwwroot}}/local/edusupport/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;central=1&amp;sesskey={{sesskey}}"
+                                <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;central=1&amp;sesskey={{sesskey}}"
                                     class="btn btn-block btn-primary">
-                                    {{#str}} supportforum:central:enable, local_edusupport {{/str}}
+                                    {{#str}} supportforum:central:enable, local_helpdesk {{/str}}
                                 </a>
                             {{/statecentral}}
                             {{#statecentral}}
-                                <a href="{{wwwroot}}/local/edusupport/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;central=-1&amp;sesskey={{sesskey}}"
+                                <a href="{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;central=-1&amp;sesskey={{sesskey}}"
                                     class="btn btn-block btn-primary">
-                                    {{#str}} supportforum:central:disable, local_edusupport {{/str}}
+                                    {{#str}} supportforum:central:disable, local_helpdesk {{/str}}
                                 </a>
                             {{/statecentral}}
                         {{/state}}
@@ -107,7 +107,7 @@
                             -
                         {{/state}}
                         {{#state}}
-                        <select name="setsupporter_{{uniqid}}_{{id}}" onchange="top.location.href='{{wwwroot}}/local/edusupport/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;dedicatedsupporter=' + this.value + '&amp;sesskey={{sesskey}}';">
+                        <select name="setsupporter_{{uniqid}}_{{id}}" onchange="top.location.href='{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;dedicatedsupporter=' + this.value + '&amp;sesskey={{sesskey}}';">
                             <option value="-1">{{#str}} none {{/str}}</option>
                             {{#supporters}}
                             <option value="{{userid}}"{{#selected}} selected="selected" {{/selected}}>

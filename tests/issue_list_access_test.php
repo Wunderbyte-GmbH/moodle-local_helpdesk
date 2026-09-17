@@ -17,13 +17,13 @@
 /**
  * Tests for who is let into the list of support issues.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 
@@ -34,11 +34,11 @@ use advanced_testcase;
  * look at it. Those two used to disagree about site admins, who were shown the button and then
  * refused by the page unless they had also been added to the platform team.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::can_view_issues
+ * @covers     \local_helpdesk\lib::can_view_issues
  */
 final class issue_list_access_test extends advanced_testcase {
     /**
@@ -58,7 +58,7 @@ final class issue_list_access_test extends advanced_testcase {
         $this->setAdminUser();
 
         $this->assertFalse(
-            $DB->record_exists('local_edusupport_supporters', ['courseid' => lib::SYSTEM_COURSE_ID]),
+            $DB->record_exists('local_helpdesk_supporters', ['courseid' => lib::SYSTEM_COURSE_ID]),
             'The point of this test is an admin who is not on the support team.'
         );
         $this->assertTrue(lib::can_view_issues());
@@ -69,7 +69,7 @@ final class issue_list_access_test extends advanced_testcase {
      */
     public function test_the_platform_team_may_view_the_issue_list(): void {
         $supporter = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->get_plugin_generator('local_edusupport')
+        $this->getDataGenerator()->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $supporter->id]);
 
         $this->assertTrue(lib::can_view_issues($supporter->id));
@@ -109,15 +109,15 @@ final class issue_list_access_test extends advanced_testcase {
 
         $admin = get_admin();
         $supporter = $generator->create_user();
-        $generator->get_plugin_generator('local_edusupport')->create_supporter(['userid' => $supporter->id]);
+        $generator->get_plugin_generator('local_helpdesk')->create_supporter(['userid' => $supporter->id]);
         $outsider = $generator->create_user();
 
         foreach ([$admin, $supporter, $outsider] as $user) {
             $this->setUser($user);
             // The menu is cached per user, and the cache outlives setUser().
-            \cache_helper::purge_by_event('setbacksupportmenu');
+            \cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
 
-            $offered = strpos(lib::get_supportmenu(), '/local/edusupport/issues.php') !== false;
+            $offered = strpos(lib::get_supportmenu(), '/local/helpdesk/issues.php') !== false;
             $this->assertSame(
                 lib::can_view_issues($user->id),
                 $offered,

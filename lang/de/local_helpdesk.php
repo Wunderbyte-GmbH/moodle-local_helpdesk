@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * German strings for local_edusupport.
+ * German strings for local_helpdesk.
  *
- * @package   local_edusupport
+ * @package   local_helpdesk
  * @copyright 2018 Digital Education Society (http://www.dibig.at)
  * @author    Robert Schrenk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -31,7 +31,6 @@ $string['auto2ndlvl'] = 'Automatische Weiterleitung zum 2nd Level Support';
 $string['auto2ndlvl:description'] = 'Automatische Weiterleitung zum 2nd Level Support nach Anlegen eines neuen Tickets';
 $string['autoassign'] = 'Automatisch zuweisbar';
 $string['autoassign:description'] = 'Ob eine Eskalation eine Anfrage an diese Person übergeben darf, ohne dass sie jemand auswählt. Für Spezialist:innen abschalten, die nur von Hand zugewiesen werden sollen.';
-$string['autocreate_orggroup'] = 'Automatisch Gruppen für eduvidual-Organisationen anlegen';
 $string['autocreate_usergroup'] = 'Automatisch private Gruppen für Nutzer/innen anlegen';
 $string['back'] = 'Zurück';
 $string['be_more_accurate'] = 'Bitte beschreiben Sie das Problem genauer!';
@@ -69,11 +68,6 @@ $string['dedicatedsupporter:not_successfully_set'] = 'Konnte bevorzugte/n Suppor
 $string['dedicatedsupporter:successfully_set'] = 'Erfolgreich eine/n bevorzugte/n Supportmitarbeiter/in ausgewählt.';
 $string['description'] = 'Beschreiben Sie das Problem und posten Sie den Link zur Seite oder zum Kurs wo das Problem auftrat';
 $string['description_missing'] = 'Bitte geben Sie eine detaillierte Beschreibung an!';
-$string['edusupport:addinstance'] = 'eduSupport Block hinzufügen';
-$string['edusupport:assignsupporters'] = '1st Level Support eines Kurses zuweisen';
-$string['edusupport:canforward2ndlevel'] = 'Kann Probleme an das Plattform Support Team melden';
-$string['edusupport:manage'] = 'Verwalten';
-$string['edusupport:myaddinstance'] = 'eduSupport Block hinzufügen';
 $string['email_to_xyz'] = 'Sende e-Mail an {$a->email}';
 $string['enableprepage'] = "enable Prepage";
 $string['enableprepage:description'] = "enables a site before form";
@@ -97,6 +91,8 @@ $string['guestmail'] = 'Ihre E-Mail Adresse';
 $string['guestmodeenabled'] = 'Gastmodus aktiv';
 $string['guestmodeenabled:description'] = 'Gäste können auch Supporttickets anlegen und werden dann per Mail benachrichtigt';
 $string['header'] = 'Hilfe in &nbsp;<i>{$a}</i>&nbsp; anfordern';
+$string['helpdesk:assignsupporters'] = '1st Level Support eines Kurses zuweisen';
+$string['helpdesk:canforward2ndlevel'] = 'Kann Probleme an das Plattform Support Team melden';
 $string['holidaymode'] = 'Urlaubsmodus';
 $string['holidaymode_end'] = 'Beende Urlaubsmodus';
 $string['holidaymode_is_on'] = 'Urlaubsmodus ist an';
@@ -161,6 +157,7 @@ $string['label:2ndlevel'] = 'Plattform Support Team';
 $string['level'] = 'Ebene';
 $string['level:first'] = '1st Level, ein Kurs';
 $string['level:second'] = '2nd Level, die Plattform';
+$string['messageprovider:helpdesk_issue'] = 'Helpdesk-Benachrichtigungen zu Anfragen';
 $string['missing_permission'] = 'Fehlende Erlaubnis!';
 $string['missing_targetforum'] = 'Das Zielforum fehlt und muss konfiguriert werden!';
 $string['missing_targetforum_exists'] = 'Das konfigurierte Zielforum existiert nicht. Die fehlerhafte Konfiguration muss behoben werden!';
@@ -172,7 +169,7 @@ $string['overview'] = 'Alle Support-User';
 $string['overview:description'] = 'Alle, die auf dieser Plattform Support leisten: 1st Level wird je Kurs zugewiesen, 2nd Level ist das plattformweite Team.';
 $string['phonefield'] = 'Telefonfeld verbergen';
 $string['phonefield:description'] = 'Telefonfeld verbergen';
-$string['pluginname'] = 'eduSupport';
+$string['pluginname'] = 'Helpdesk';
 $string['possiblemanagers'] = 'Mögliche Manager';
 $string['postmailinfolink'] = 'Dies ist die Kopie einer Nachricht, die in {$a->coursename} gepostet wurde.
 
@@ -195,25 +192,25 @@ $string['privacy:export:dedicated'] = 'Supportforen, in denen Sie fest zuständi
 $string['privacy:export:issues'] = 'Tickets, für die Sie zuständig sind';
 $string['privacy:export:subscriptions'] = 'Tickets, denen Sie folgen';
 $string['privacy:export:supporter'] = 'Wo Sie Support leisten';
-$string['privacy:metadata:edusupport:accountmanager'] = 'Der für das Ticket zuständige Accountmanager';
-$string['privacy:metadata:edusupport:autoassign'] = 'Ob Anfragen automatisch an die Person weitergegeben werden können';
-$string['privacy:metadata:edusupport:courseid'] = 'Der Kurs, in dem die Person Support leistet';
-$string['privacy:metadata:edusupport:currentsupporter'] = 'Die Person, der das Ticket derzeit zugewiesen ist';
-$string['privacy:metadata:edusupport:dedicatedsupporter'] = 'Die Person, die Anfragen aus diesem Supportforum zuerst erhält';
-$string['privacy:metadata:edusupport:discussionid'] = 'Die Forumsdiskussion des Tickets';
-$string['privacy:metadata:edusupport:forumid'] = 'Das als Supportforum verwendete Forum';
-$string['privacy:metadata:edusupport:holidaymode'] = 'Bis wann die Person abwesend ist';
-$string['privacy:metadata:edusupport:issueid'] = 'Das Ticket';
-$string['privacy:metadata:edusupport:issues'] = 'Supporttickets und wer sie bearbeitet';
-$string['privacy:metadata:edusupport:priority'] = 'Die Priorität des Tickets';
-$string['privacy:metadata:edusupport:status'] = 'Der Status des Tickets';
-$string['privacy:metadata:edusupport:subscr'] = 'Tickets, denen eine Person folgt';
-$string['privacy:metadata:edusupport:supporters'] = 'Personen, die Support leisten, für einen Kurs oder die ganze Plattform';
-$string['privacy:metadata:edusupport:supportforums'] = 'Foren für Supportanfragen';
-$string['privacy:metadata:edusupport:supportlevel'] = 'Die selbst gewählte Bezeichnung der Supportrolle';
-$string['privacy:metadata:edusupport:timecreated'] = 'Wann das Ticket erstellt wurde';
-$string['privacy:metadata:edusupport:timemodified'] = 'Wann das Ticket zuletzt geändert wurde';
-$string['privacy:metadata:edusupport:userid'] = 'Die Person';
+$string['privacy:metadata:helpdesk:accountmanager'] = 'Der für das Ticket zuständige Accountmanager';
+$string['privacy:metadata:helpdesk:autoassign'] = 'Ob Anfragen automatisch an die Person weitergegeben werden können';
+$string['privacy:metadata:helpdesk:courseid'] = 'Der Kurs, in dem die Person Support leistet';
+$string['privacy:metadata:helpdesk:currentsupporter'] = 'Die Person, der das Ticket derzeit zugewiesen ist';
+$string['privacy:metadata:helpdesk:dedicatedsupporter'] = 'Die Person, die Anfragen aus diesem Supportforum zuerst erhält';
+$string['privacy:metadata:helpdesk:discussionid'] = 'Die Forumsdiskussion des Tickets';
+$string['privacy:metadata:helpdesk:forumid'] = 'Das als Supportforum verwendete Forum';
+$string['privacy:metadata:helpdesk:holidaymode'] = 'Bis wann die Person abwesend ist';
+$string['privacy:metadata:helpdesk:issueid'] = 'Das Ticket';
+$string['privacy:metadata:helpdesk:issues'] = 'Supporttickets und wer sie bearbeitet';
+$string['privacy:metadata:helpdesk:priority'] = 'Die Priorität des Tickets';
+$string['privacy:metadata:helpdesk:status'] = 'Der Status des Tickets';
+$string['privacy:metadata:helpdesk:subscr'] = 'Tickets, denen eine Person folgt';
+$string['privacy:metadata:helpdesk:supporters'] = 'Personen, die Support leisten, für einen Kurs oder die ganze Plattform';
+$string['privacy:metadata:helpdesk:supportforums'] = 'Foren für Supportanfragen';
+$string['privacy:metadata:helpdesk:supportlevel'] = 'Die selbst gewählte Bezeichnung der Supportrolle';
+$string['privacy:metadata:helpdesk:timecreated'] = 'Wann das Ticket erstellt wurde';
+$string['privacy:metadata:helpdesk:timemodified'] = 'Wann das Ticket zuletzt geändert wurde';
+$string['privacy:metadata:helpdesk:userid'] = 'Die Person';
 $string['relativeurlsupportarea'] = 'Relative URL zum Supportbereich';
 $string['rolename'] = 'Rollenname';
 $string['rolename:description'] = 'Rollenname für den 1st Level Support (z.B. teacher statt editingtecher oder eine eigens erstellte Rolle)';
@@ -267,7 +264,7 @@ $string['supporters'] = 'Supportmitarbeiter/innen';
 $string['supporters:choose'] = 'Supportmitarbeiter/innen wählen';
 $string['supportforum:central:disable'] = 'deaktivieren';
 $string['supportforum:central:enable'] = 'aktivieren';
-$string['supportforum:choose'] = 'Foren für eduSupport auswählen';
+$string['supportforum:choose'] = 'Foren für Helpdesk auswählen';
 $string['supportforum:disable'] = 'deaktivieren';
 $string['supportforum:enable'] = 'aktivieren';
 $string['supportlevel'] = 'Supportlevel';

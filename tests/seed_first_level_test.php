@@ -17,13 +17,13 @@
 /**
  * Tests for filling the first level of support courses from the eligibility rule.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
@@ -31,17 +31,17 @@ use stdClass;
 /**
  * Tests for filling the first level of support courses from the eligibility rule.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::seed_first_level_from_capabilities
+ * @covers     \local_helpdesk\lib::seed_first_level_from_capabilities
  */
 final class seed_first_level_test extends advanced_testcase {
     /** @var stdClass a course holding a support forum. */
     private $course;
 
-    /** @var \local_edusupport_generator the plugin data generator. */
+    /** @var \local_helpdesk_generator the plugin data generator. */
     private $generator;
 
     /**
@@ -52,7 +52,7 @@ final class seed_first_level_test extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
-        $this->generator = $this->getDataGenerator()->get_plugin_generator('local_edusupport');
+        $this->generator = $this->getDataGenerator()->get_plugin_generator('local_helpdesk');
         $this->course = $this->getDataGenerator()->create_course();
         $forum = $this->getDataGenerator()->create_module('forum', ['course' => $this->course->id]);
         $this->generator->create_supportforum(['forumid' => $forum->id]);

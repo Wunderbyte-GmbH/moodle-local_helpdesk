@@ -17,7 +17,7 @@
 /**
  * Forward a support issue to the second level, or revoke it again.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,7 +29,7 @@ require_once('../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-/* require_once($CFG->dirroot . '/local/edusupport/classes/lib.php'); */
+/* require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php'); */
 
 $d = required_param('d', PARAM_INT);
 $revoke = optional_param('revoke', 0, PARAM_BOOL);
@@ -40,51 +40,51 @@ $context = \context_course::instance($discussion->course);
 $PAGE->set_context($context);
 require_login($discussion->course);
 
-$PAGE->set_url(new moodle_url('/local/edusupport/forward_2nd_level.php', ['d' => $d, 'revoke' => $revoke]));
+$PAGE->set_url(new moodle_url('/local/helpdesk/forward_2nd_level.php', ['d' => $d, 'revoke' => $revoke]));
 
-$title = get_string(empty($revoke) ? 'issue_assign_nextlevel' : 'issue_revoke', 'local_edusupport');
+$title = get_string(empty($revoke) ? 'issue_assign_nextlevel' : 'issue_revoke', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
 $todiscussion = new moodle_url('/mod/forum/discuss.php', ['d' => $d]);
-if (!has_capability('local/edusupport:canforward2ndlevel', $context)) {
+if (!has_capability('local/helpdesk:canforward2ndlevel', $context)) {
     echo $OUTPUT->header();
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $todiscussion->__toString(),
     ]);
 } else {
     if (empty($revoke)) {
-        if (\local_edusupport\lib::set_2nd_level($d)) {
+        if (\local_helpdesk\lib::set_2nd_level($d)) {
             redirect($todiscussion->__toString());
             echo $OUTPUT->header();
-            echo $OUTPUT->render_from_template('local_edusupport/alert', [
+            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
                 'content' => get_string('success'),
                 'type' => 'success',
                 'url' => $todiscussion->__toString(),
             ]);
         } else {
             echo $OUTPUT->header();
-            echo $OUTPUT->render_from_template('local_edusupport/alert', [
-                'content' => get_string('issue_assign_nextlevel:error', 'local_edusupport'),
+            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+                'content' => get_string('issue_assign_nextlevel:error', 'local_helpdesk'),
                 'type' => 'danger',
                 'url' => $todiscussion->__toString(),
             ]);
         }
     } else {
-        if (\local_edusupport\lib::revoke_issue($d)) {
+        if (\local_helpdesk\lib::revoke_issue($d)) {
             redirect($todiscussion->__toString());
             echo $OUTPUT->header();
-            echo $OUTPUT->render_from_template('local_edusupport/alert', [
+            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
                 'content' => get_string('success'),
                 'type' => 'success',
                 'url' => $todiscussion->__toString(),
             ]);
         } else {
             echo $OUTPUT->header();
-            echo $OUTPUT->render_from_template('local_edusupport/alert', [
-                'content' => get_string('issue_revoke:error', 'local_edusupport'),
+            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+                'content' => get_string('issue_revoke:error', 'local_helpdesk'),
                 'type' => 'danger',
                 'url' => $todiscussion->__toString(),
             ]);

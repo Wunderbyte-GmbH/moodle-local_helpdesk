@@ -17,29 +17,29 @@
 /**
  * Tests for the platform wide overview of support users.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use context_system;
 use core_reportbuilder\system_report_factory;
 use core_reportbuilder\table\system_report_table;
-use local_edusupport\reportbuilder\local\systemreports\supporters;
+use local_helpdesk\reportbuilder\local\systemreports\supporters;
 
 /**
  * Tests for the platform wide overview of support users.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\reportbuilder\local\systemreports\supporters
- * @covers     \local_edusupport\reportbuilder\local\entities\supporter
+ * @covers     \local_helpdesk\reportbuilder\local\systemreports\supporters
+ * @covers     \local_helpdesk\reportbuilder\local\entities\supporter
  */
 final class supporters_report_test extends advanced_testcase {
     /**
@@ -81,7 +81,7 @@ final class supporters_report_test extends advanced_testcase {
      * Both levels show up, each described as what it is.
      */
     public function test_both_levels_are_listed(): void {
-        $generator = $this->getDataGenerator()->get_plugin_generator('local_edusupport');
+        $generator = $this->getDataGenerator()->get_plugin_generator('local_helpdesk');
         $course = $this->getDataGenerator()->create_course(['fullname' => 'Willow School']);
 
         $platform = $this->getDataGenerator()->create_user(['lastname' => 'Platform']);
@@ -91,10 +91,10 @@ final class supporters_report_test extends advanced_testcase {
 
         $rendered = implode(' ', array_map(fn($row) => implode(' ', $row), $this->report_rows()));
 
-        $this->assertStringContainsString(get_string('level:first', 'local_edusupport'), $rendered);
-        $this->assertStringContainsString(get_string('level:second', 'local_edusupport'), $rendered);
+        $this->assertStringContainsString(get_string('level:first', 'local_helpdesk'), $rendered);
+        $this->assertStringContainsString(get_string('level:second', 'local_helpdesk'), $rendered);
         $this->assertStringContainsString('Willow School', $rendered);
-        $this->assertStringContainsString(get_string('scope:platform', 'local_edusupport'), $rendered);
+        $this->assertStringContainsString(get_string('scope:platform', 'local_helpdesk'), $rendered);
     }
 
     /**
@@ -107,12 +107,12 @@ final class supporters_report_test extends advanced_testcase {
         global $SITE;
 
         $platform = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->get_plugin_generator('local_edusupport')
+        $this->getDataGenerator()->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $platform->id]);
 
         $rendered = implode(' ', array_map(fn($row) => implode(' ', $row), $this->report_rows()));
 
-        $this->assertStringContainsString(get_string('scope:platform', 'local_edusupport'), $rendered);
+        $this->assertStringContainsString(get_string('scope:platform', 'local_helpdesk'), $rendered);
         $this->assertStringNotContainsString('/course/view.php?id=' . $SITE->id, $rendered);
     }
 
@@ -121,7 +121,7 @@ final class supporters_report_test extends advanced_testcase {
      */
     public function test_a_deleted_user_is_not_listed(): void {
         $gone = $this->getDataGenerator()->create_user(['lastname' => 'Vanished']);
-        $this->getDataGenerator()->get_plugin_generator('local_edusupport')
+        $this->getDataGenerator()->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $gone->id]);
 
         $this->assertCount(1, $this->report_rows());

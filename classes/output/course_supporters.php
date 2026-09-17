@@ -17,14 +17,14 @@
 /**
  * The people who support a single course.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\output;
+namespace local_helpdesk\output;
 
-use local_edusupport\lib;
+use local_helpdesk\lib;
 use renderable;
 use renderer_base;
 use templatable;
@@ -35,7 +35,7 @@ use templatable;
  * The page and the reply of the assignment form render the same list, so it lives here
  * rather than in either of them.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -84,7 +84,7 @@ class course_supporters implements renderable, templatable {
             'courseid' => $this->courseid,
             'supporters' => $supporters,
             'hassupporters' => !empty($supporters),
-            'issupportcourse' => $DB->record_exists('local_edusupport', ['courseid' => $this->courseid]),
+            'issupportcourse' => $DB->record_exists('local_helpdesk', ['courseid' => $this->courseid]),
         ];
     }
 }

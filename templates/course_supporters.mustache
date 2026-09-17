@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_edusupport/course_supporters
+    @template local_helpdesk/course_supporters
 
     The people who support this course.
 
@@ -35,10 +35,10 @@
         ]
     }
 }}
-<div class="local_edusupport coursesupporters" data-region="coursesupporters" data-courseid="{{courseid}}">
+<div class="local_helpdesk coursesupporters" data-region="coursesupporters" data-courseid="{{courseid}}">
     {{^issupportcourse}}
         <div class="alert alert-info" role="status">
-            {{#str}} coursesupporters:nosupportforum, local_edusupport {{/str}}
+            {{#str}} coursesupporters:nosupportforum, local_helpdesk {{/str}}
         </div>
     {{/issupportcourse}}
 
@@ -63,7 +63,7 @@
 
     {{^hassupporters}}
         <div class="alert alert-warning" role="status">
-            {{#str}} coursesupporters:none, local_edusupport {{/str}}
+            {{#str}} coursesupporters:none, local_helpdesk {{/str}}
         </div>
     {{/hassupporters}}
 </div>

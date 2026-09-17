@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event observer definitions for local_edusupport.
+ * Event observer definitions for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (https://www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -40,28 +40,28 @@ $events = [
 foreach ($events as $event) {
     $observers[] = [
             'eventname' => $event,
-            'callback' => '\local_edusupport\observer::event',
+            'callback' => '\local_helpdesk\observer::event',
         ];
 }
 
 // For new events, we do it separately.
 
 $observers[] = [
-    'eventname' => '\local_edusupport\event\supportuser_added',
-    'callback' => '\local_edusupport\observer::supportuser_added',
+    'eventname' => '\local_helpdesk\event\supportuser_added',
+    'callback' => '\local_helpdesk\observer::supportuser_added',
 ];
 
 $observers[] = [
-    'eventname' => '\local_edusupport\event\supportuser_changed',
-    'callback' => '\local_edusupport\observer::supportuser_changed',
+    'eventname' => '\local_helpdesk\event\supportuser_changed',
+    'callback' => '\local_helpdesk\observer::supportuser_changed',
 ];
 
 $observers[] = [
-    'eventname' => '\local_edusupport\event\supportuser_deleted',
-    'callback' => '\local_edusupport\observer::supportuser_deleted',
+    'eventname' => '\local_helpdesk\event\supportuser_deleted',
+    'callback' => '\local_helpdesk\observer::supportuser_deleted',
 ];
 
 $observers[] = [
     'eventname' => '\core\event\user_deleted',
-    'callback' => '\local_edusupport\observer::user_deleted',
+    'callback' => '\local_helpdesk\observer::user_deleted',
 ];

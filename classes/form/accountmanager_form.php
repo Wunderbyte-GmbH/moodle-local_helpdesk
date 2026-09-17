@@ -19,11 +19,11 @@
  * THIS IS A CLONE OF THE STANDARD FORM, THAT IS MODIFIED A LITTLE
  * FOR THIS PLUGIN.
  *
- * @package   local_edusupport
+ * @package   local_helpdesk
  * @copyright Thomas winkler
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_edusupport\form;
+namespace local_helpdesk\form;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -32,9 +32,9 @@ require_once($CFG->libdir . '/formslib.php');
 use moodleform;
 
 /**
- * Class to add an accountmanger in edusupport plugin.
+ * Class to add an accountmanger in helpdesk plugin.
  *
- * @package   local_edusupport
+ * @package   local_helpdesk
  * @copyright Thomas Winkler
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,28 +48,28 @@ class accountmanager_form extends moodleform {
         global $CFG, $OUTPUT;
 
         $mform =& $this->_form;
-        $possiblemanagers = \local_edusupport\accountmanager::get_all_category_managers_from_site();
+        $possiblemanagers = \local_helpdesk\accountmanager::get_all_category_managers_from_site();
 
         $options = [
             'multiple' => true,
-            'noselectionstring' => get_string('none', 'local_edusupport'),
+            'noselectionstring' => get_string('none', 'local_helpdesk'),
         ];
         $mform->addElement(
             'autocomplete',
             'possiblemanagers',
-            get_string('possiblemanagers', 'local_edusupport'),
+            get_string('possiblemanagers', 'local_helpdesk'),
             $possiblemanagers,
             $options
         );
         $mform->setAdvanced('autocomplete', true);
 
-        $capstocheck = \local_edusupport\accountmanager::get_capabiltities_to_check();
+        $capstocheck = \local_helpdesk\accountmanager::get_capabiltities_to_check();
 
         $options = [
             'multiple' => true,
-            'noselectionstring' => get_string('none', 'local_edusupport'),
+            'noselectionstring' => get_string('none', 'local_helpdesk'),
         ];
-        $mform->addElement('autocomplete', 'capstocheck', get_string('capstocheck', 'local_edusupport'), $capstocheck, $options);
+        $mform->addElement('autocomplete', 'capstocheck', get_string('capstocheck', 'local_helpdesk'), $capstocheck, $options);
         $mform->setAdvanced('autocomplete', true);
 
         $this->add_action_buttons();
@@ -96,9 +96,9 @@ class accountmanager_form extends moodleform {
      * @return void
      */
     public function set_data($defaults) {
-        $currentaccountmanagers = explode(',', get_config('local_edusupport', 'accountmanagers'));
+        $currentaccountmanagers = explode(',', get_config('local_helpdesk', 'accountmanagers'));
         $defaults->possiblemanagers = $currentaccountmanagers;
-        $currentcaps = explode(',', get_config('local_edusupport', 'capstocheck'));
+        $currentcaps = explode(',', get_config('local_helpdesk', 'capstocheck'));
         $defaults->capstocheck = $currentcaps;
         return parent::set_data($defaults);
     }

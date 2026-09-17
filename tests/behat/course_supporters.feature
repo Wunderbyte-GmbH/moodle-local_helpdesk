@@ -1,4 +1,4 @@
-@local @local_edusupport
+@local @local_helpdesk
 Feature: Assigning the first level support of a course
   In order to have the right people answer support requests
   As somebody who manages a course
@@ -23,7 +23,7 @@ Feature: Assigning the first level support of a course
     And the following "activities" exist:
       | activity | course | name          | intro           |
       | forum    | SUP    | Support forum | Ask us anything |
-    And the following "local_edusupport > supportforums" exist:
+    And the following "local_helpdesk > supportforums" exist:
       | forum         |
       | Support forum |
 
@@ -53,7 +53,7 @@ Feature: Assigning the first level support of a course
 
   @javascript
   Scenario: Taking the assignment away again
-    Given the following "local_edusupport > supporters" exist:
+    Given the following "local_helpdesk > supporters" exist:
       | user     | course |
       | teacher1 | SUP    |
     And I log in as "manager1"
@@ -79,7 +79,7 @@ Feature: Assigning the first level support of a course
 
   Scenario: An administrator fills the first level from the course rights
     Given I log in as "admin"
-    When I navigate to "Plugins > Local plugins > eduSupport" in site administration
+    When I navigate to "Plugins > Local plugins > Helpdesk" in site administration
     And I click on "Fill first level support from course rights" "link"
     Then I should see "Support area"
     And I should see "Assign 3 people"
@@ -88,10 +88,10 @@ Feature: Assigning the first level support of a course
     And I should see "Every eligible person is already assigned."
 
   Scenario: The overview lists both levels with where they support
-    Given the following "local_edusupport > supporters" exist:
+    Given the following "local_helpdesk > supporters" exist:
       | user     | course |
       | teacher1 | SUP    |
-    And the following "local_edusupport > supporters" exist:
+    And the following "local_helpdesk > supporters" exist:
       | user     |
       | manager1 |
     And I log in as "admin"
@@ -105,10 +105,10 @@ Feature: Assigning the first level support of a course
     # The fields of every row belong to a form outside the table, so this checks they still submit.
     # The page carries more buttons called "Remove ...", e.g. in the message drawer, so look at the table only.
     Given I log in as "admin"
-    And I visit "/local/edusupport/choosesupporters.php"
-    And "Remove" "button" should not exist in the ".local_edusupport.choosesupporters" "css_element"
+    And I visit "/local/helpdesk/choosesupporters.php"
+    And "Remove" "button" should not exist in the ".local_helpdesk.choosesupporters" "css_element"
     When I set the field "userid" to "2"
-    And I click on "Save" "button" in the ".local_edusupport.choosesupporters" "css_element"
-    Then "Remove" "button" should exist in the ".local_edusupport.choosesupporters" "css_element"
-    When I click on "Remove" "button" in the ".local_edusupport.choosesupporters" "css_element"
-    Then "Remove" "button" should not exist in the ".local_edusupport.choosesupporters" "css_element"
+    And I click on "Save" "button" in the ".local_helpdesk.choosesupporters" "css_element"
+    Then "Remove" "button" should exist in the ".local_helpdesk.choosesupporters" "css_element"
+    When I click on "Remove" "button" in the ".local_helpdesk.choosesupporters" "css_element"
+    Then "Remove" "button" should not exist in the ".local_helpdesk.choosesupporters" "css_element"

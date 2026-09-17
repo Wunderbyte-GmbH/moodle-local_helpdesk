@@ -16,7 +16,7 @@
 /**
  * Assign the first level support of a course without leaving the page.
  *
- * @module     local_edusupport/coursesupporters
+ * @module     local_helpdesk/coursesupporters
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,9 +47,9 @@ export const init = (courseid) => {
         event.preventDefault();
 
         const form = new ModalForm({
-            formClass: 'local_edusupport\\form\\course_supporters_form',
+            formClass: 'local_helpdesk\\form\\course_supporters_form',
             args: {courseid: courseid},
-            modalConfig: {title: getString('coursesupporters:assign', 'local_edusupport')},
+            modalConfig: {title: getString('coursesupporters:assign', 'local_helpdesk')},
             saveButtonText: getString('savechanges'),
             returnFocus: trigger,
         });

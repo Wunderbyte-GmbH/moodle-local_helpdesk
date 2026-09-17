@@ -17,13 +17,13 @@
 /**
  * Manage the members of the second and third level support team.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use moodle_url;
 
@@ -37,15 +37,15 @@ $autoassign = optional_param('autoassign', 0, PARAM_BOOL);
 $remove = optional_param('remove', 0, PARAM_BOOL);
 
 // This page maintains the platform wide team only. First level support of a single course is
-// assigned in that course, see /local/edusupport/coursesupporters.php.
-$courseid = \local_edusupport\lib::SYSTEM_COURSE_ID;
+// assigned in that course, see /local/helpdesk/coursesupporters.php.
+$courseid = \local_helpdesk\lib::SYSTEM_COURSE_ID;
 
 $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
-$PAGE->set_url(new \moodle_url('/local/edusupport/choosesupporters.php', ['id' => $id, 'userid' => $userid]));
+$PAGE->set_url(new \moodle_url('/local/helpdesk/choosesupporters.php', ['id' => $id, 'userid' => $userid]));
 
-$title = get_string('supporters', 'local_edusupport');
+$title = get_string('supporters', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
@@ -58,17 +58,17 @@ $PAGE->navbar->add(get_string('plugins', 'core_admin'), $url);
 $url = new \moodle_url('/admin/category.php', [ 'category' => 'localplugins']);
 $PAGE->navbar->add(get_string('localplugins'), $url);
 
-$url = new \moodle_url('/admin/settings.php', [ 'section' => 'local_edusupport_settings' ]);
-$PAGE->navbar->add(get_string('pluginname', 'local_edusupport'), $url);
+$url = new \moodle_url('/admin/settings.php', [ 'section' => 'local_helpdesk_settings' ]);
+$PAGE->navbar->add(get_string('pluginname', 'local_helpdesk'), $url);
 
-$PAGE->navbar->add(get_string('supporters', 'local_edusupport'), $PAGE->url);
+$PAGE->navbar->add(get_string('supporters', 'local_helpdesk'), $PAGE->url);
 
 echo $OUTPUT->header();
 
 if (!is_siteadmin()) {
     $tourl = new moodle_url('/my', []);
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $tourl->__toString(),
     ]);
@@ -77,11 +77,11 @@ if (!is_siteadmin()) {
         require_sesskey();
         $success = false;
         if (!empty($id)) {
-            $record = $DB->get_record('local_edusupport_supporters', ['id' => $id]);
+            $record = $DB->get_record('local_helpdesk_supporters', ['id' => $id]);
             if (!empty($remove)) {
-                $success = $DB->delete_records('local_edusupport_supporters', ['id' => $id]);
+                $success = $DB->delete_records('local_helpdesk_supporters', ['id' => $id]);
                 if ($success) {
-                    $event = \local_edusupport\event\supportuser_deleted::create(
+                    $event = \local_helpdesk\event\supportuser_deleted::create(
                         [
                             'objectid' => $id,
                             'context' => $context,
@@ -92,7 +92,7 @@ if (!is_siteadmin()) {
                     $event->trigger();
                 }
             } else {
-                $success = $DB->update_record('local_edusupport_supporters', [
+                $success = $DB->update_record('local_helpdesk_supporters', [
                     'id' => $id,
                     'courseid' => $courseid,
                     'userid' => $userid,
@@ -100,7 +100,7 @@ if (!is_siteadmin()) {
                     'autoassign' => $autoassign,
                 ]);
                 if ($success) {
-                    $event = \local_edusupport\event\supportuser_changed::create(
+                    $event = \local_helpdesk\event\supportuser_changed::create(
                         [
                             'objectid' => $id,
                             'context' => $context,
@@ -116,15 +116,15 @@ if (!is_siteadmin()) {
                     $event->trigger();
                 }
             }
-        } else if (!$DB->record_exists('local_edusupport_supporters', ['courseid' => $courseid, 'userid' => $userid])) {
-            $success = $DB->insert_record('local_edusupport_supporters', [
+        } else if (!$DB->record_exists('local_helpdesk_supporters', ['courseid' => $courseid, 'userid' => $userid])) {
+            $success = $DB->insert_record('local_helpdesk_supporters', [
                 'courseid' => $courseid,
                 'userid' => $userid,
                 'supportlevel' => $supportlevel,
                 'autoassign' => $autoassign,
             ]);
             if ($success) {
-                $event = \local_edusupport\event\supportuser_added::create(
+                $event = \local_helpdesk\event\supportuser_added::create(
                     [
                         'objectid' => $success,
                         'context' => $context,
@@ -136,17 +136,17 @@ if (!is_siteadmin()) {
             }
         }
         if ($success) {
-            \local_edusupport\lib::supportforum_rolecheck();
+            \local_helpdesk\lib::supportforum_rolecheck();
             if (!empty($remove)) {
-                $chk = $DB->get_record('local_edusupport_supporters', ['userid' => $userid]);
+                $chk = $DB->get_record('local_helpdesk_supporters', ['userid' => $userid]);
                 if (empty($chk->id)) {
                     // This supporter left the team. We remove all assignments.
-                    $DB->delete_records('local_edusupport_subscr', ['userid' => $userid]);
+                    $DB->delete_records('local_helpdesk_subscr', ['userid' => $userid]);
                 }
             } else if (empty($supportlevel)) {
-                $issues = $DB->get_records('local_edusupport_issues', ['currentsupporter' => 0]);
+                $issues = $DB->get_records('local_helpdesk_issues', ['currentsupporter' => 0]);
                 foreach ($issues as $issue) {
-                    $DB->insert_record('local_edusupport_subscr', [
+                    $DB->insert_record('local_helpdesk_subscr', [
                         'issueid' => $issue->id,
                         'discussionid' => $issue->discussionid,
                         'userid' => $userid,
@@ -154,20 +154,20 @@ if (!is_siteadmin()) {
                 }
             }
         }
-        echo $OUTPUT->render_from_template('local_edusupport/alert', [
-            'content' => get_string(($success) ? 'changes_saved_successfully' : 'changes_saved_fail', 'local_edusupport'),
+        echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+            'content' => get_string(($success) ? 'changes_saved_successfully' : 'changes_saved_fail', 'local_helpdesk'),
             'type' => ($success) ? 'success' : 'danger',
         ]);
     }
 
     $sql = "SELECT bes.*,u.firstname,u.lastname
-                FROM {local_edusupport_supporters} bes, {user} u
+                FROM {local_helpdesk_supporters} bes, {user} u
                 WHERE u.id = bes.userid
                 AND u.deleted != 1
                 ORDER BY u.lastname ASC, u.firstname ASC, bes.supportlevel ASC";
     $supporters = array_values($DB->get_records_sql($sql, []));
     echo $OUTPUT->render_from_template(
-        'local_edusupport/choosesupporters',
+        'local_helpdesk/choosesupporters',
         ['supporters' => $supporters, 'wwwroot' => $CFG->wwwroot, 'sesskey' => sesskey()]
     );
 }

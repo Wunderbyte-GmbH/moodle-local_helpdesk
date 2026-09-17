@@ -17,13 +17,13 @@
 /**
  * Tests for the protection a support forum and its course get.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
 use context_course;
@@ -33,11 +33,11 @@ use stdClass;
 /**
  * Tests for the protection a support forum and its course get.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport\lib::supportforum_managecaps
+ * @covers     \local_helpdesk\lib::supportforum_managecaps
  */
 final class supportforum_caps_test extends advanced_testcase {
     /** @var string[] each protected capability with where it is prohibited. */

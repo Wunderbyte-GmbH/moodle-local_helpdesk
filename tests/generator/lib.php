@@ -15,28 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Data generator for local_edusupport.
+ * Data generator for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Data generator for local_edusupport.
+ * Data generator for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_edusupport_generator extends component_generator_base {
+class local_helpdesk_generator extends component_generator_base {
     /**
      * Turn an existing forum into a support forum.
      *
      * @param array|stdClass|null $record needs a forumid, may carry a central flag.
-     * @return stdClass the local_edusupport record.
+     * @return stdClass the local_helpdesk record.
      */
     public function create_supportforum($record = null): stdClass {
         global $DB;
@@ -46,15 +46,15 @@ class local_edusupport_generator extends component_generator_base {
             throw new coding_exception('A support forum needs a forumid.');
         }
 
-        $supportforum = \local_edusupport\lib::supportforum_enable($record->forumid);
+        $supportforum = \local_helpdesk\lib::supportforum_enable($record->forumid);
         if (empty($supportforum->id)) {
             throw new coding_exception('Forum ' . $record->forumid . ' could not be made a support forum.');
         }
         if (!empty($record->central)) {
-            set_config('centralforum', $record->forumid, 'local_edusupport');
+            set_config('centralforum', $record->forumid, 'local_helpdesk');
         }
 
-        return $DB->get_record('local_edusupport', ['id' => $supportforum->id], '*', MUST_EXIST);
+        return $DB->get_record('local_helpdesk', ['id' => $supportforum->id], '*', MUST_EXIST);
     }
 
     /**
@@ -64,7 +64,7 @@ class local_edusupport_generator extends component_generator_base {
      * Pass a real courseid to make somebody first level support of that course.
      *
      * @param array|stdClass|null $record needs a userid.
-     * @return stdClass the local_edusupport_supporters record.
+     * @return stdClass the local_helpdesk_supporters record.
      */
     public function create_supporter($record = null): stdClass {
         global $DB;
@@ -75,16 +75,16 @@ class local_edusupport_generator extends component_generator_base {
         }
 
         $supporter = (object) [
-            'courseid' => $record->courseid ?? \local_edusupport\lib::SYSTEM_COURSE_ID,
+            'courseid' => $record->courseid ?? \local_helpdesk\lib::SYSTEM_COURSE_ID,
             'userid' => $record->userid,
             'supportlevel' => $record->supportlevel ?? '',
             'holidaymode' => $record->holidaymode ?? 0,
             'autoassign' => $record->autoassign ?? 1,
         ];
-        $supporter->id = $DB->insert_record('local_edusupport_supporters', $supporter);
+        $supporter->id = $DB->insert_record('local_helpdesk_supporters', $supporter);
 
         // Supporters hold a role in every support forum, so bring those assignments up to date.
-        \local_edusupport\lib::supportforum_rolecheck();
+        \local_helpdesk\lib::supportforum_rolecheck();
 
         return $supporter;
     }
@@ -94,7 +94,7 @@ class local_edusupport_generator extends component_generator_base {
      *
      * @param array|stdClass|null $record needs a forumid, may carry userid, subject,
      *                                    description, status, priority and currentsupporter.
-     * @return stdClass the local_edusupport_issues record, with a discussionid.
+     * @return stdClass the local_helpdesk_issues record, with a discussionid.
      */
     public function create_issue($record = null): stdClass {
         global $DB, $USER;
@@ -113,13 +113,13 @@ class local_edusupport_generator extends component_generator_base {
             'message' => $record->description ?? 'Test issue description',
         ]);
 
-        $issue = \local_edusupport\lib::get_issue($discussion->id, true);
+        $issue = \local_helpdesk\lib::get_issue($discussion->id, true);
         $issue->currentsupporter = $record->currentsupporter ?? 0;
         $issue->priority = $record->priority ?? 1;
         $issue->status = $record->status ?? ISSUE_STATUS_NOTSTARTED;
         $issue->timemodified = time();
-        $DB->update_record('local_edusupport_issues', $issue);
+        $DB->update_record('local_helpdesk_issues', $issue);
 
-        return $DB->get_record('local_edusupport_issues', ['id' => $issue->id], '*', MUST_EXIST);
+        return $DB->get_record('local_helpdesk_issues', ['id' => $issue->id], '*', MUST_EXIST);
     }
 }

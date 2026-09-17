@@ -17,31 +17,31 @@
 /**
  * Tests for handing an issue to a supporter through the external function.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport;
+namespace local_helpdesk;
 
 use advanced_testcase;
-use local_edusupport_external;
+use local_helpdesk_external;
 use moodle_exception;
 use stdClass;
 
 /**
  * Tests for handing an issue to a supporter through the external function.
  *
- * local_edusupport_external still builds on lib/externallib.php, the deprecated compatibility
+ * local_helpdesk_external still builds on lib/externallib.php, the deprecated compatibility
  * shim, which refuses to be loaded outside an isolated process. Hence the annotation below and
  * the require inside setUp() rather than at the top of this file.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_edusupport_external::set_currentsupporter
+ * @covers     \local_helpdesk_external::set_currentsupporter
  * @runTestsInSeparateProcesses
  */
 final class set_currentsupporter_test extends advanced_testcase {
@@ -67,18 +67,18 @@ final class set_currentsupporter_test extends advanced_testcase {
         global $CFG;
 
         parent::setUp();
-        require_once($CFG->dirroot . '/local/edusupport/externallib.php');
+        require_once($CFG->dirroot . '/local/helpdesk/externallib.php');
 
         $this->resetAfterTest(true);
         $this->preventResetByRollback();
         $this->redirectMessages();
 
-        set_config('sendmsgonset2ndlvl', 0, 'local_edusupport');
-        set_config('sendsupporterassignments', 0, 'local_edusupport');
+        set_config('sendmsgonset2ndlvl', 0, 'local_helpdesk');
+        set_config('sendsupporterassignments', 0, 'local_helpdesk');
 
         $this->setAdminUser();
         $datagenerator = $this->getDataGenerator();
-        $generator = $datagenerator->get_plugin_generator('local_edusupport');
+        $generator = $datagenerator->get_plugin_generator('local_helpdesk');
 
         $this->course = $datagenerator->create_course();
         $this->forum = $datagenerator->create_module('forum', ['course' => $this->course->id]);
@@ -105,7 +105,7 @@ final class set_currentsupporter_test extends advanced_testcase {
         global $DB;
 
         $this->setUser($this->supporter);
-        $result = local_edusupport_external::set_currentsupporter(
+        $result = local_helpdesk_external::set_currentsupporter(
             $this->issue->discussionid,
             $this->supporter->id
         );
@@ -113,7 +113,7 @@ final class set_currentsupporter_test extends advanced_testcase {
         $this->assertEquals(1, $result);
         $this->assertEquals(
             $this->supporter->id,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', [
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', [
                 'discussionid' => $this->issue->discussionid,
             ])
         );
@@ -135,16 +135,16 @@ final class set_currentsupporter_test extends advanced_testcase {
         $this->setUser($this->supporter);
 
         try {
-            local_edusupport_external::set_currentsupporter($this->issue->discussionid, $outsider->id);
+            local_helpdesk_external::set_currentsupporter($this->issue->discussionid, $outsider->id);
             $this->fail('Handing the issue to a non supporter should have raised an exception.');
         } catch (moodle_exception $e) {
             $this->assertSame('error:targetnotasupporter', $e->errorcode);
-            $this->assertSame('local_edusupport', $e->module);
+            $this->assertSame('local_helpdesk', $e->module);
         }
 
         $this->assertEquals(
             0,
-            $DB->get_field('local_edusupport_issues', 'currentsupporter', [
+            $DB->get_field('local_helpdesk_issues', 'currentsupporter', [
                 'discussionid' => $this->issue->discussionid,
             ])
         );
@@ -157,7 +157,7 @@ final class set_currentsupporter_test extends advanced_testcase {
         $this->setUser($this->student);
 
         try {
-            local_edusupport_external::set_currentsupporter($this->issue->discussionid, $this->supporter->id);
+            local_helpdesk_external::set_currentsupporter($this->issue->discussionid, $this->supporter->id);
             $this->fail('A non supporter should not be able to hand over an issue.');
         } catch (moodle_exception $e) {
             $this->assertSame('error:notasupporter', $e->errorcode);

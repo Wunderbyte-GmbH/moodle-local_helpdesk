@@ -17,7 +17,7 @@
 /**
  * Fill the first level of every support course from the eligibility rule.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,38 +27,38 @@ require_once($CFG->libdir . '/adminlib.php');
 
 $apply = optional_param('apply', 0, PARAM_BOOL);
 
-admin_externalpage_setup('local_edusupport_seedfirstlevel');
+admin_externalpage_setup('local_helpdesk_seedfirstlevel');
 
-$url = new moodle_url('/local/edusupport/seedfirstlevel.php');
+$url = new moodle_url('/local/helpdesk/seedfirstlevel.php');
 
 if ($apply) {
     require_sesskey();
-    $applied = \local_edusupport\lib::seed_first_level_from_capabilities(false);
+    $applied = \local_helpdesk\lib::seed_first_level_from_capabilities(false);
     $added = array_sum(array_column($applied, 'toadd'));
     redirect(
         $url,
-        get_string('seedfirstlevel:done', 'local_edusupport', $added),
+        get_string('seedfirstlevel:done', 'local_helpdesk', $added),
         null,
         \core\output\notification::NOTIFY_SUCCESS
     );
 }
 
-$report = \local_edusupport\lib::seed_first_level_from_capabilities(true);
+$report = \local_helpdesk\lib::seed_first_level_from_capabilities(true);
 $pending = array_sum(array_column($report, 'toadd'));
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('seedfirstlevel', 'local_edusupport'));
-echo html_writer::tag('p', get_string('seedfirstlevel:description', 'local_edusupport'));
+echo $OUTPUT->heading(get_string('seedfirstlevel', 'local_helpdesk'));
+echo html_writer::tag('p', get_string('seedfirstlevel:description', 'local_helpdesk'));
 
 if (empty($report)) {
-    echo $OUTPUT->notification(get_string('seedfirstlevel:nocourses', 'local_edusupport'), 'info');
+    echo $OUTPUT->notification(get_string('seedfirstlevel:nocourses', 'local_helpdesk'), 'info');
 } else {
     $table = new html_table();
     $table->head = [
         get_string('course'),
-        get_string('seedfirstlevel:assigned', 'local_edusupport'),
-        get_string('seedfirstlevel:eligible', 'local_edusupport'),
-        get_string('seedfirstlevel:toadd', 'local_edusupport'),
+        get_string('seedfirstlevel:assigned', 'local_helpdesk'),
+        get_string('seedfirstlevel:eligible', 'local_helpdesk'),
+        get_string('seedfirstlevel:toadd', 'local_helpdesk'),
     ];
     $table->attributes['class'] = 'generaltable';
     foreach ($report as $row) {
@@ -75,11 +75,11 @@ if (empty($report)) {
     if ($pending) {
         echo $OUTPUT->single_button(
             new moodle_url($url, ['apply' => 1, 'sesskey' => sesskey()]),
-            get_string('seedfirstlevel:apply', 'local_edusupport', $pending),
+            get_string('seedfirstlevel:apply', 'local_helpdesk', $pending),
             'post'
         );
     } else {
-        echo $OUTPUT->notification(get_string('seedfirstlevel:nothingtodo', 'local_edusupport'), 'info');
+        echo $OUTPUT->notification(get_string('seedfirstlevel:nothingtodo', 'local_helpdesk'), 'info');
     }
 }
 

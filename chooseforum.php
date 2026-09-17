@@ -17,7 +17,7 @@
 /**
  * Mark a forum of a course as a support forum.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -34,9 +34,9 @@ $central = optional_param('central', 0, PARAM_INT);
 $context = context_course::instance($courseid);
 $PAGE->set_context($context);
 require_login($courseid);
-$PAGE->set_url(new moodle_url('/local/edusupport/chooseforum.php', ['courseid' => $courseid]));
+$PAGE->set_url(new moodle_url('/local/helpdesk/chooseforum.php', ['courseid' => $courseid]));
 
-$title = get_string('supportforum:choose', 'local_edusupport');
+$title = get_string('supportforum:choose', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
@@ -49,17 +49,17 @@ if ($isadmin && !empty($forumid)) {
 
     $dedicatedsupporter = optional_param('dedicatedsupporter', 0, PARAM_INT);
     if (!empty($dedicatedsupporter)) {
-        if (\local_edusupport\lib::supportforum_setdedicatedsupporter($forumid, $dedicatedsupporter)) {
+        if (\local_helpdesk\lib::supportforum_setdedicatedsupporter($forumid, $dedicatedsupporter)) {
             redirect(
                 $PAGE->url,
-                get_string('dedicatedsupporter:successfully_set', 'local_edusupport'),
+                get_string('dedicatedsupporter:successfully_set', 'local_helpdesk'),
                 null,
                 \core\output\notification::NOTIFY_SUCCESS
             );
         }
         redirect(
             $PAGE->url,
-            get_string('dedicatedsupporter:not_successfully_set', 'local_edusupport'),
+            get_string('dedicatedsupporter:not_successfully_set', 'local_helpdesk'),
             null,
             \core\output\notification::NOTIFY_ERROR
         );
@@ -67,18 +67,18 @@ if ($isadmin && !empty($forumid)) {
 
     switch ($state) {
         case 1:
-            \local_edusupport\lib::supportforum_enable($forumid);
+            \local_helpdesk\lib::supportforum_enable($forumid);
             break;
         case -1:
-            \local_edusupport\lib::supportforum_disable($forumid);
+            \local_helpdesk\lib::supportforum_disable($forumid);
             break;
     }
     switch ($central) {
         case 1:
-            \local_edusupport\lib::supportforum_enablecentral($forumid);
+            \local_helpdesk\lib::supportforum_enablecentral($forumid);
             break;
         case -1:
-            \local_edusupport\lib::supportforum_disablecentral($forumid);
+            \local_helpdesk\lib::supportforum_disablecentral($forumid);
             break;
     }
 
@@ -89,18 +89,18 @@ echo $OUTPUT->header();
 
 if (!$isadmin) {
     $tocmurl = new moodle_url('/course/view.php', ['id' => $courseid]);
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $tocmurl->__toString(),
     ]);
 } else {
     // A dedicated supporter takes escalated tickets, so only the platform team qualifies.
     $sql = "SELECT userid, supportlevel
-                FROM {local_edusupport_supporters}
+                FROM {local_helpdesk_supporters}
                 WHERE courseid = :courseid
                 ORDER BY supportlevel ASC";
-    $supporters = array_values($DB->get_records_sql($sql, ['courseid' => \local_edusupport\lib::SYSTEM_COURSE_ID]));
+    $supporters = array_values($DB->get_records_sql($sql, ['courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID]));
     foreach ($supporters as &$supporter) {
         $u = $DB->get_record('user', ['id' => $supporter->userid]);
         $supporter->userfullname = fullname($u);
@@ -108,7 +108,7 @@ if (!$isadmin) {
         $supporter->lastname = $u->lastname;
         $supporter->email = $u->email;
         if (empty($supporter->supportlevel)) {
-            $supporter->supportlevel = get_string('label:2ndlevel', 'local_edusupport');
+            $supporter->supportlevel = get_string('label:2ndlevel', 'local_helpdesk');
         }
     }
 
@@ -119,10 +119,10 @@ if (!$isadmin) {
                 ORDER BY name ASC";
     $forums = array_values($DB->get_records_sql($sql, [$courseid]));
 
-    $centralforum = get_config('local_edusupport', 'centralforum');
+    $centralforum = get_config('local_helpdesk', 'centralforum');
 
     foreach ($forums as &$forum) {
-        $state = $DB->get_record('local_edusupport', ['forumid' => $forum->id]);
+        $state = $DB->get_record('local_helpdesk', ['forumid' => $forum->id]);
         $forum->state = (!empty($state->id));
         $forum->statecentral = (!empty($centralforum) && $centralforum == $forum->id);
         $forum->dedicatedsupporter = !empty($state->dedicatedsupporter) ? $state->dedicatedsupporter : 0;
@@ -135,7 +135,7 @@ if (!$isadmin) {
     }
 
     echo $OUTPUT->render_from_template(
-        'local_edusupport/chooseforum',
+        'local_helpdesk/chooseforum',
         ['forums' => $forums, 'wwwroot' => $CFG->wwwroot, 'sesskey' => sesskey()]
     );
 }

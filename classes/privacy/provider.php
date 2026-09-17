@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy provider for local_edusupport.
+ * Privacy provider for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_edusupport\privacy;
+namespace local_helpdesk\privacy;
 
 use context;
 use context_user;
@@ -33,18 +33,18 @@ use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
-use local_edusupport\accountmanager;
-use local_edusupport\lib;
+use local_helpdesk\accountmanager;
+use local_helpdesk\lib;
 
 /**
- * Privacy provider for local_edusupport.
+ * Privacy provider for local_helpdesk.
  *
  * Everything the plugin stores about a person concerns their part in the support: where they
  * support, which issues they handle or follow, and which support forums name them. None of it
  * belongs to a course, so all of it lives in the person's own user context. The requests
  * themselves are forum posts and are covered by mod_forum.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -53,55 +53,55 @@ class provider implements
     \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider {
     /**
-     * Describe the personal data local_edusupport stores.
+     * Describe the personal data local_helpdesk stores.
      *
      * @param collection $collection the collection to add the descriptions to.
      * @return collection the collection with this plugin's descriptions added.
      */
     public static function get_metadata(collection $collection): collection {
         $collection->add_database_table(
-            'local_edusupport_supporters',
+            'local_helpdesk_supporters',
             [
-                'courseid' => 'privacy:metadata:edusupport:courseid',
-                'userid' => 'privacy:metadata:edusupport:userid',
-                'supportlevel' => 'privacy:metadata:edusupport:supportlevel',
-                'holidaymode' => 'privacy:metadata:edusupport:holidaymode',
-                'autoassign' => 'privacy:metadata:edusupport:autoassign',
+                'courseid' => 'privacy:metadata:helpdesk:courseid',
+                'userid' => 'privacy:metadata:helpdesk:userid',
+                'supportlevel' => 'privacy:metadata:helpdesk:supportlevel',
+                'holidaymode' => 'privacy:metadata:helpdesk:holidaymode',
+                'autoassign' => 'privacy:metadata:helpdesk:autoassign',
             ],
-            'privacy:metadata:edusupport:supporters'
+            'privacy:metadata:helpdesk:supporters'
         );
 
         $collection->add_database_table(
-            'local_edusupport_subscr',
+            'local_helpdesk_subscr',
             [
-                'issueid' => 'privacy:metadata:edusupport:issueid',
-                'discussionid' => 'privacy:metadata:edusupport:discussionid',
-                'userid' => 'privacy:metadata:edusupport:userid',
+                'issueid' => 'privacy:metadata:helpdesk:issueid',
+                'discussionid' => 'privacy:metadata:helpdesk:discussionid',
+                'userid' => 'privacy:metadata:helpdesk:userid',
             ],
-            'privacy:metadata:edusupport:subscr'
+            'privacy:metadata:helpdesk:subscr'
         );
 
         $collection->add_database_table(
-            'local_edusupport_issues',
+            'local_helpdesk_issues',
             [
-                'discussionid' => 'privacy:metadata:edusupport:discussionid',
-                'currentsupporter' => 'privacy:metadata:edusupport:currentsupporter',
-                'accountmanager' => 'privacy:metadata:edusupport:accountmanager',
-                'priority' => 'privacy:metadata:edusupport:priority',
-                'status' => 'privacy:metadata:edusupport:status',
-                'timecreated' => 'privacy:metadata:edusupport:timecreated',
-                'timemodified' => 'privacy:metadata:edusupport:timemodified',
+                'discussionid' => 'privacy:metadata:helpdesk:discussionid',
+                'currentsupporter' => 'privacy:metadata:helpdesk:currentsupporter',
+                'accountmanager' => 'privacy:metadata:helpdesk:accountmanager',
+                'priority' => 'privacy:metadata:helpdesk:priority',
+                'status' => 'privacy:metadata:helpdesk:status',
+                'timecreated' => 'privacy:metadata:helpdesk:timecreated',
+                'timemodified' => 'privacy:metadata:helpdesk:timemodified',
             ],
-            'privacy:metadata:edusupport:issues'
+            'privacy:metadata:helpdesk:issues'
         );
 
         $collection->add_database_table(
-            'local_edusupport',
+            'local_helpdesk',
             [
-                'forumid' => 'privacy:metadata:edusupport:forumid',
-                'dedicatedsupporter' => 'privacy:metadata:edusupport:dedicatedsupporter',
+                'forumid' => 'privacy:metadata:helpdesk:forumid',
+                'dedicatedsupporter' => 'privacy:metadata:helpdesk:dedicatedsupporter',
             ],
-            'privacy:metadata:edusupport:supportforums'
+            'privacy:metadata:helpdesk:supportforums'
         );
 
         return $collection;
@@ -116,14 +116,14 @@ class provider implements
     protected static function has_data(int $userid): bool {
         global $DB;
 
-        return $DB->record_exists('local_edusupport_supporters', ['userid' => $userid])
-            || $DB->record_exists('local_edusupport_subscr', ['userid' => $userid])
+        return $DB->record_exists('local_helpdesk_supporters', ['userid' => $userid])
+            || $DB->record_exists('local_helpdesk_subscr', ['userid' => $userid])
             || $DB->record_exists_select(
-                'local_edusupport_issues',
+                'local_helpdesk_issues',
                 'currentsupporter = :supporter OR accountmanager = :manager',
                 ['supporter' => $userid, 'manager' => $userid]
             )
-            || $DB->record_exists('local_edusupport', ['dedicatedsupporter' => $userid]);
+            || $DB->record_exists('local_helpdesk', ['dedicatedsupporter' => $userid]);
     }
 
     /**
@@ -169,11 +169,11 @@ class provider implements
         }
 
         $supporter = [];
-        foreach ($DB->get_records('local_edusupport_supporters', ['userid' => $userid], 'id') as $row) {
+        foreach ($DB->get_records('local_helpdesk_supporters', ['userid' => $userid], 'id') as $row) {
             $level = $row->courseid == lib::SYSTEM_COURSE_ID ? 'level:second' : 'level:first';
             $supporter[] = [
                 'courseid' => $row->courseid,
-                'level' => get_string($level, 'local_edusupport'),
+                'level' => get_string($level, 'local_helpdesk'),
                 'supportlevel' => $row->supportlevel,
                 'holidaymode' => empty($row->holidaymode) ? null : transform::datetime($row->holidaymode),
                 'autoassign' => transform::yesno($row->autoassign),
@@ -182,7 +182,7 @@ class provider implements
         self::export_entries($context, 'privacy:export:supporter', $supporter);
 
         $subscriptions = [];
-        foreach ($DB->get_records('local_edusupport_subscr', ['userid' => $userid], 'id') as $row) {
+        foreach ($DB->get_records('local_helpdesk_subscr', ['userid' => $userid], 'id') as $row) {
             $subscriptions[] = [
                 'issueid' => $row->issueid,
                 'discussionid' => $row->discussionid,
@@ -192,7 +192,7 @@ class provider implements
 
         $issues = [];
         $rows = $DB->get_records_select(
-            'local_edusupport_issues',
+            'local_helpdesk_issues',
             'currentsupporter = :supporter OR accountmanager = :manager',
             ['supporter' => $userid, 'manager' => $userid],
             'id'
@@ -212,7 +212,7 @@ class provider implements
         self::export_entries($context, 'privacy:export:issues', $issues);
 
         $forums = [];
-        foreach ($DB->get_records('local_edusupport', ['dedicatedsupporter' => $userid], 'id') as $row) {
+        foreach ($DB->get_records('local_helpdesk', ['dedicatedsupporter' => $userid], 'id') as $row) {
             $forums[] = [
                 'forumid' => $row->forumid,
                 'courseid' => $row->courseid,
@@ -250,7 +250,7 @@ class provider implements
             return;
         }
         writer::with_context($context)->export_data(
-            [get_string('pluginname', 'local_edusupport'), get_string($identifier, 'local_edusupport')],
+            [get_string('pluginname', 'local_helpdesk'), get_string($identifier, 'local_helpdesk')],
             (object) ['entries' => $entries]
         );
     }
@@ -307,11 +307,11 @@ class provider implements
     public static function delete_user_data(int $userid): void {
         global $DB;
 
-        $DB->delete_records('local_edusupport_supporters', ['userid' => $userid]);
-        $DB->delete_records('local_edusupport_subscr', ['userid' => $userid]);
-        $DB->set_field('local_edusupport_issues', 'currentsupporter', 0, ['currentsupporter' => $userid]);
-        $DB->set_field('local_edusupport_issues', 'accountmanager', 0, ['accountmanager' => $userid]);
-        $DB->set_field('local_edusupport', 'dedicatedsupporter', 0, ['dedicatedsupporter' => $userid]);
+        $DB->delete_records('local_helpdesk_supporters', ['userid' => $userid]);
+        $DB->delete_records('local_helpdesk_subscr', ['userid' => $userid]);
+        $DB->set_field('local_helpdesk_issues', 'currentsupporter', 0, ['currentsupporter' => $userid]);
+        $DB->set_field('local_helpdesk_issues', 'accountmanager', 0, ['accountmanager' => $userid]);
+        $DB->set_field('local_helpdesk', 'dedicatedsupporter', 0, ['dedicatedsupporter' => $userid]);
         accountmanager::delete_account_manager($userid);
     }
 }

@@ -17,7 +17,7 @@
 /**
  * Defines message providers (types of messages being sent)
  *
- * @package local_edusupport
+ * @package local_helpdesk
  * @copyright 2012 NetSpot {@link http://www.netspot.com.au}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die;
 $messageproviders = [
 
     // Message to issue assigned.
-    'edusupport_issue' => [
+    'helpdesk_issue' => [
          'defaults' => [
             'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
             'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,

@@ -16,7 +16,7 @@
 /**
  * Filtering and status handling on the issue overview.
  *
- * @module     local_edusupport/issues
+ * @module     local_helpdesk/issues
  * @copyright  Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -55,7 +55,7 @@ export const init = () => {
  */
 export const setStatus = (status, issueid) => {
     Ajax.call([{
-        methodname: 'local_edusupport_set_status',
+        methodname: 'local_helpdesk_set_status',
         args: {
             status: status,
             issueid: issueid,

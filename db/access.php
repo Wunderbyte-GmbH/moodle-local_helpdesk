@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for local_edusupport.
+ * Capability definitions for local_helpdesk.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  *             2020 onwards Zentrum für Lernmanagement (http://www.lernmanagement.at)
  * @author     Robert Schrenk
@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 $capabilities = [
     // Who may decide which people support a course. The default matches what course
     // management means in Moodle: assigning roles and editing the course.
-    'local/edusupport:assignsupporters' => [
+    'local/helpdesk:assignsupporters' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -38,7 +38,7 @@ $capabilities = [
             'editingteacher' => CAP_ALLOW,
         ],
     ],
-    'local/edusupport:canforward2ndlevel' => [
+    'local/helpdesk:canforward2ndlevel' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,

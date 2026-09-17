@@ -17,18 +17,18 @@
 /**
  * Scheduled task that removes issues closed long enough ago.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\task;
+namespace local_helpdesk\task;
 
 /**
  * Scheduled task that removes issues closed long enough ago.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,7 +40,7 @@ class delete extends \core\task\scheduled_task {
      */
     public function get_name() {
         // Shown in admin screens.
-        return get_string('cron:deleteexpiredissues:title', 'local_edusupport');
+        return get_string('cron:deleteexpiredissues:title', 'local_helpdesk');
     }
 
     /**
@@ -50,9 +50,9 @@ class delete extends \core\task\scheduled_task {
      * @return void
      */
     public function execute($debug = false) {
-        $issues = \local_edusupport\lib::get_expiredissues();
+        $issues = \local_helpdesk\lib::get_expiredissues();
         foreach ($issues as $issue) {
-            \local_edusupport\lib::delete_issue($issue->discussionid);
+            \local_helpdesk\lib::delete_issue($issue->discussionid);
         }
     }
 }

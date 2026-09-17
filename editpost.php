@@ -17,7 +17,7 @@
 /**
  * Edit a post belonging to a support issue.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -33,23 +33,23 @@ $discussionid = $discussion | $d;
 
 $edit   = required_param('edit', PARAM_INT);
 
-$url = new moodle_url('/local/edusupport/editpost.php', ['discussion' => $discussionid, 'edit' => $edit]);
+$url = new moodle_url('/local/helpdesk/editpost.php', ['discussion' => $discussionid, 'edit' => $edit]);
 $PAGE->set_url($url);
 
 $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
 
-$issue = \local_edusupport\lib::get_issue($discussionid);
+$issue = \local_helpdesk\lib::get_issue($discussionid);
 $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
 $PAGE->set_title($discussion->name);
 $PAGE->set_heading($discussion->name);
 
-if (!\local_edusupport\lib::is_second_level()) {
+if (!\local_helpdesk\lib::is_second_level()) {
     echo $OUTPUT->header();
     $tocmurl = new moodle_url('/course/view.php', ['id' => $issue->courseid]);
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $tocmurl->__toString(),
     ]);
@@ -97,9 +97,9 @@ if (!\local_edusupport\lib::is_second_level()) {
     }
     $post = $DB->get_record('forum_posts', ['id' => $edit]);
 
-    require_once($CFG->dirroot . '/local/edusupport/classes/post_form.php');
+    require_once($CFG->dirroot . '/local/helpdesk/classes/post_form.php');
     $thresholdwarning = forum_check_throttling($vforum, $cm);
-    $mformpost = new \local_edusupport_post_form($CFG->wwwroot . '/local/edusupport/editpost.php?d=' .
+    $mformpost = new \local_helpdesk_post_form($CFG->wwwroot . '/local/helpdesk/editpost.php?d=' .
         $discussionid . '&edit=' . $edit, [
             'course' => $course,
             'cm' => $cm,
@@ -134,7 +134,7 @@ if (!\local_edusupport\lib::is_second_level()) {
         'mod_forum',
         'attachment',
         $post->id,
-        \local_edusupport_post_form::attachment_options($forum)
+        \local_helpdesk_post_form::attachment_options($forum)
     );
 
     $draftideditor = file_get_submitted_draft_itemid('message');
@@ -144,7 +144,7 @@ if (!\local_edusupport\lib::is_second_level()) {
         'mod_forum',
         'post',
         $post->id,
-        \local_edusupport_post_form::editor_options($modcontext, $post->id),
+        \local_helpdesk_post_form::editor_options($modcontext, $post->id),
         $post->message
     );
     $mformpost->set_data(
@@ -174,7 +174,7 @@ if (!\local_edusupport\lib::is_second_level()) {
         + (isset($discussion->id) ? ['discussion' => $discussion->id] : [])
     );
     if ($mformpost->is_cancelled()) {
-        redirect($CFG->wwwroot . '/local/edusupport/issue.php?d=' . $discussion->id);
+        redirect($CFG->wwwroot . '/local/helpdesk/issue.php?d=' . $discussion->id);
     } else if ($fromform = $mformpost->get_data()) {
         if (empty($SESSION->fromurl)) {
             $errordestination = $PAGE->url->__toString();
@@ -196,14 +196,14 @@ if (!\local_edusupport\lib::is_second_level()) {
         // Move uploaded files manually.
         // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
         /* $currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_forum', 'post', $postid,
-            \local_edusupport_post_form::editor_options($modcontext, $postid), $post->message); */
+            \local_helpdesk_post_form::editor_options($modcontext, $postid), $post->message); */
         file_save_draft_area_files(
             $fromform->attachments,
             $modcontext->id,
             'mod_forum',
             'attachment',
             $post->id,
-            \local_edusupport_post_form::editor_options($modcontext, $post->id)
+            \local_helpdesk_post_form::editor_options($modcontext, $post->id)
         );
         file_save_draft_area_files(
             $fromform->attachments,
@@ -211,7 +211,7 @@ if (!\local_edusupport\lib::is_second_level()) {
             'mod_forum',
             'post',
             $post->id,
-            \local_edusupport_post_form::editor_options($modcontext, $post->id)
+            \local_helpdesk_post_form::editor_options($modcontext, $post->id)
         );
 
         forum_trigger_post_updated_event($post, $discussion, $modcontext, $forum);
@@ -223,7 +223,7 @@ if (!\local_edusupport\lib::is_second_level()) {
             $message = get_string("editedpostupdated", "forum", fullname($realuser));
         }
 
-        $discussionurl = $CFG->wwwroot . '/local/edusupport/issue.php?d=' . $discussionid;
+        $discussionurl = $CFG->wwwroot . '/local/helpdesk/issue.php?d=' . $discussionid;
 
         redirect(
             $discussionurl,

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hooks for local_edusupport.
+ * Hooks for local_helpdesk.
  *
- * @package     local_edusupport
+ * @package     local_helpdesk
  * @author      Jacob Viertel
  * @copyright   2026 Wunderbyte GmbH
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,6 +28,6 @@ defined('MOODLE_INTERNAL') || die;
 $callbacks = [
     [
         'hook' => \core\hook\output\before_standard_head_html_generation::class,
-        'callback' => [\local_edusupport\hook_callbacks::class, 'before_standard_head_html_generation'],
+        'callback' => [\local_helpdesk\hook_callbacks::class, 'before_standard_head_html_generation'],
     ],
 ];

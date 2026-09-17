@@ -17,12 +17,12 @@
 /**
  * Ad hoc task that sends one mail belonging to a support request.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\task;
+namespace local_helpdesk\task;
 
 /**
  * Ad hoc task that sends one mail belonging to a support request.
@@ -32,7 +32,7 @@ namespace local_edusupport\task;
  * as the connection took to fail. The mails are queued here instead, so the person filing the
  * request gets their confirmation straight away and cron does the talking to the mail server.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -89,7 +89,7 @@ class send_mail extends \core\task\adhoc_task {
      * @return string
      */
     public function get_name() {
-        return get_string('cron:sendmail:title', 'local_edusupport');
+        return get_string('cron:sendmail:title', 'local_helpdesk');
     }
 
     /**
@@ -104,7 +104,7 @@ class send_mail extends \core\task\adhoc_task {
         $fromuser = self::get_user($data->fromuserid);
         if (empty($recipient) || empty($fromuser)) {
             // One of the two is gone, so there is nobody left to send this to or on behalf of.
-            mtrace('local_edusupport: dropping a mail, sender or recipient no longer exists.');
+            mtrace('local_helpdesk: dropping a mail, sender or recipient no longer exists.');
             self::remove_attachment($data->attachmentpath);
             return;
         }
@@ -126,12 +126,12 @@ class send_mail extends \core\task\adhoc_task {
         if (!$sent) {
             if ($this->get_fail_delay() >= self::GIVE_UP_DELAY) {
                 // Retried for a day already. Give up, so the queue does not fill up with it.
-                mtrace('local_edusupport: giving up on the mail "' . $data->subject . '" to ' . $recipient->email);
+                mtrace('local_helpdesk: giving up on the mail "' . $data->subject . '" to ' . $recipient->email);
                 self::remove_attachment($data->attachmentpath);
                 return;
             }
             // Let the task fail, so cron retries it with a growing delay.
-            throw new \moodle_exception('error:mailnotsent', 'local_edusupport', '', $recipient->email);
+            throw new \moodle_exception('error:mailnotsent', 'local_helpdesk', '', $recipient->email);
         }
 
         self::remove_attachment($data->attachmentpath);

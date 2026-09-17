@@ -17,7 +17,7 @@
 /**
  * Preview the reminder that is sent to supporters.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2019 Digital Education Society (http://www.dibig.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,17 +27,17 @@ require_once($CFG->libdir . '/adminlib.php');
 
 $context = context_system::instance();
 // Must pass login.
-$PAGE->set_url('/local/edusupport/testreminder.php');
+$PAGE->set_url('/local/helpdesk/testreminder.php');
 require_login();
 $PAGE->set_context($context);
-$PAGE->set_title(get_string('cron:reminder:title', 'local_edusupport'));
-$PAGE->set_heading(get_string('cron:reminder:title', 'local_edusupport'));
+$PAGE->set_title(get_string('cron:reminder:title', 'local_helpdesk'));
+$PAGE->set_heading(get_string('cron:reminder:title', 'local_helpdesk'));
 
 echo $OUTPUT->header();
 
 if (is_siteadmin()) {
-    require_once($CFG->dirroot . '/local/edusupport/classes/task/reminder.php');
-    $reminder = new \local_edusupport\task\reminder();
+    require_once($CFG->dirroot . '/local/helpdesk/classes/task/reminder.php');
+    $reminder = new \local_helpdesk\task\reminder();
     $reminder->execute(true);
 
     echo "Reminders sent";

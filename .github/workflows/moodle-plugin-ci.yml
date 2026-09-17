@@ -10,13 +10,13 @@ jobs:
       # which runs on tags starting with "v".
       disable_release: true
 
-      # local_edusupport builds on core forums only and has no plugin dependencies,
+      # local_helpdesk builds on core forums only and has no plugin dependencies,
       # so no extra_plugin_runners are needed here.
       moodle_branches: "MOODLE_405_STABLE MOODLE_500_STABLE"
       min_php: '8.1'
 
       # The plugin ships AMD sources, so the stale build file check applies. If it starts
-      # failing, rebuild amd/build with "npx grunt --root=local/edusupport" and commit.
+      # failing, rebuild amd/build with "npx grunt --root=local/helpdesk" and commit.
 
       # The plugin is clean against the Moodle standard, so keep it that way: any new
       # warning fails the build.

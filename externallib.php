@@ -15,32 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External API class for edusupport plugin.
+ * External API class for helpdesk plugin.
  * Provides web service methods for creating and managing support issues.
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 use core\message\message;
-use local_edusupport\guest_supportuser;
-use local_edusupport\lib;
-use local_edusupport\task\send_mail;
+use local_helpdesk\guest_supportuser;
+use local_helpdesk\lib;
+use local_helpdesk\task\send_mail;
 
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir . "/externallib.php");
-require_once($CFG->dirroot . '/local/edusupport/classes/lib.php');
+require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
 
 /**
- * External API class for edusupport plugin.
+ * External API class for helpdesk plugin.
  * Provides web service methods for creating and managing support issues.
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2018 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_edusupport_external extends external_api {
+class local_helpdesk_external extends external_api {
     /**
      * Returns description of method parameters.
      *
@@ -122,10 +122,10 @@ class local_edusupport_external extends external_api {
     ): array {
         global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SITE;
 
-        $protecttime = get_config('local_edusupport', 'spamprotectionthreshold');
-        $protectamount = get_config('local_edusupport', 'spamprotectionlimit');
+        $protecttime = get_config('local_helpdesk', 'spamprotectionthreshold');
+        $protectamount = get_config('local_helpdesk', 'spamprotectionlimit');
 
-        $cache = \cache::make('local_edusupport', 'spamprotect');
+        $cache = \cache::make('local_helpdesk', 'spamprotect');
         $timeoffset = time() - $protecttime;
         // An empty cache hands back false, which cannot be appended to further down.
         $log = $cache->get('log') ?: [];
@@ -139,15 +139,15 @@ class local_edusupport_external extends external_api {
             $log = array_values($log);
             $cache->set('log', $log);
             if ($protectamount <= count($log)) {
-                throw new \moodle_exception('spamprotection:exception', 'local_edusupport');
+                throw new \moodle_exception('spamprotection:exception', 'local_helpdesk');
             }
         }
         $log[] = time();
         $cache->set('log', $log);
 
-        $subjectprefixenabled = get_config('local_edusupport', 'predefined_subjects_prefix');
+        $subjectprefixenabled = get_config('local_helpdesk', 'predefined_subjects_prefix');
         $guestmodeenabled = false;
-        $guestmode = get_config('local_edusupport', 'guestmodeenabled');
+        $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
         if ($guestmode && isset($guestmail) && (isguestuser() || !isloggedin())) {
             $guestuser = new guest_supportuser();
             $user = $guestuser->get_support_guestuser();
@@ -169,8 +169,8 @@ class local_edusupport_external extends external_api {
                 'responsibles' => [],
         ];
         // Whether the person filing the request gets to see who is going to look after it.
-        $showresponsibles = !empty(get_config('local_edusupport', 'showresponsibles'));
-        if (!empty(get_config('local_edusupport', 'trackhost'))) {
+        $showresponsibles = !empty(get_config('local_helpdesk', 'showresponsibles'));
+        if (!empty(get_config('local_helpdesk', 'trackhost'))) {
             $params['webhost'] = gethostname();
         }
         $params['description'] = nl2br($params['description']);
@@ -189,7 +189,7 @@ class local_edusupport_external extends external_api {
             // Fallback and send by mail!
             $subject = $params['subject'];
             $params['includeemail'] = $user->email;
-            $messagehtml = $OUTPUT->render_from_template("local_edusupport/issue_template", $params);
+            $messagehtml = $OUTPUT->render_from_template("local_helpdesk/issue_template", $params);
             $messagetext = html_to_text($messagehtml);
 
             $supportuser = core_user::get_support_user();
@@ -209,7 +209,7 @@ class local_edusupport_external extends external_api {
                 $filename = $params['screenshotname'];
                 // Write image to a temporary file. The task deletes it once the mail has gone out.
                 $x = explode(",", $params['image']);
-                $filepath = $CFG->tempdir . '/edusupport-' . md5($user->id . microtime(true) . random_string());
+                $filepath = $CFG->tempdir . '/helpdesk-' . md5($user->id . microtime(true) . random_string());
                 file_put_contents($filepath, base64_decode($x[1]));
                 \core\antivirus\manager::scan_file($filepath, $filename, true);
                 foreach ($recipients as $index => $recipient) {
@@ -263,8 +263,8 @@ class local_edusupport_external extends external_api {
 
                 // Create group for user id firstlvlgroupmode is active.
                 if (
-                    get_config('local_edusupport', 'firstlvlgroupmode') &&
-                        $cfn = get_config('local_edusupport', 'customfieldname')
+                    get_config('local_helpdesk', 'firstlvlgroupmode') &&
+                        $cfn = get_config('local_helpdesk', 'customfieldname')
                 ) {
                     require_once("$CFG->dirroot/group/lib.php");
                     $groupname = fullname($user) . ' (' . $user->id . '-coursesupport)';
@@ -318,7 +318,7 @@ class local_edusupport_external extends external_api {
                 $thresholdwarning = forum_check_throttling($forum, $cm);
                 forum_check_blocking_threshold($thresholdwarning);
 
-                $message = $OUTPUT->render_from_template("local_edusupport/issue_template", $params);
+                $message = $OUTPUT->render_from_template("local_helpdesk/issue_template", $params);
 
                 // Create the discussion.
                 $discussion = new stdClass();
@@ -340,7 +340,7 @@ class local_edusupport_external extends external_api {
                     $discussion->name = $discussion->subject;
                 }
                 if ($subjectprefixenabled) {
-                    $discussion->subject = get_string('subject_prefix', 'local_edusupport') . " " . $discussion->subject;
+                    $discussion->subject = get_string('subject_prefix', 'local_helpdesk') . " " . $discussion->subject;
                     $discussion->name = $discussion->subject;
                 }
 
@@ -363,7 +363,7 @@ class local_edusupport_external extends external_api {
 
                         $x = explode(",", $params['image']);
                         // Write the file to a temp target.
-                        $filepath = $CFG->tempdir . '/edusupport-' . md5($user->id . date("Y-m-d H:i:s"));
+                        $filepath = $CFG->tempdir . '/helpdesk-' . md5($user->id . date("Y-m-d H:i:s"));
                         file_put_contents($filepath, base64_decode($x[1]));
 
                         $fs = get_file_storage();
@@ -400,10 +400,10 @@ class local_edusupport_external extends external_api {
                     $a->wwwroot = $CFG->wwwroot;
                     $a->cmid = $cm->id;
                     $a->sitename = $SITE->fullname;
-                    $subject = get_string('issuereceived:subject', 'local_edusupport');
-                    $mailhtml = get_string('issuereceived', 'local_edusupport', $a);
+                    $subject = get_string('issuereceived:subject', 'local_helpdesk');
+                    $mailhtml = get_string('issuereceived', 'local_helpdesk', $a);
                     $mailtext = format_text($mailhtml, FORMAT_PLAIN);
-                    if (get_config('local_edusupport', 'sendrequestreceived')) {
+                    if (get_config('local_helpdesk', 'sendrequestreceived')) {
                         // Queued, so that a slow mail server does not hold up the answer to the browser.
                         send_mail::queue($user, $user, $subject, $mailtext, $mailhtml);
                     }
@@ -420,7 +420,7 @@ class local_edusupport_external extends external_api {
                     }
 
                     // Set the forum post as already mailed if the original request should not be sent to user.
-                    $sendemail = get_config('local_edusupport', 'sendoriginalrequest');
+                    $sendemail = get_config('local_helpdesk', 'sendoriginalrequest');
                     if (!$sendemail) {
                         $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
                         $DB->set_field('forum_posts', 'mailed', 1, ['id' => $discussion->firstpost]);
@@ -435,11 +435,11 @@ class local_edusupport_external extends external_api {
                         $keyvaluepair->key = 'accountmanager';
                         $keyvaluepair->value = $params['accountmanager'];
                     }
-                    if ($postto2ndlevel && get_config('local_edusupport', 'firstlvlgroupmode')) {
+                    if ($postto2ndlevel && get_config('local_helpdesk', 'firstlvlgroupmode')) {
                         lib::set_2nd_level($discussion->id, $keyvaluepair);
                     } else if ($canpostto2ndlevel && !empty($postto2ndlevel)) {
                         lib::set_2nd_level($discussion->id, $keyvaluepair);
-                    } else if (get_config('local_edusupport', 'auto2ndlvl')) {
+                    } else if (get_config('local_helpdesk', 'auto2ndlvl')) {
                         lib::set_2nd_level($discussion->id, $keyvaluepair);
                     } else if (empty(lib::get_first_level($forum->course))) {
                         // Nobody supports this course, which is how a small organisation
@@ -451,7 +451,7 @@ class local_edusupport_external extends external_api {
                         // Post answer containing the reponsibles, unless that was turned off.
                         if ($showresponsibles) {
                             $responsibles = [];
-                            if (!get_config('local_edusupport', 'firstlvlgroupmode')) {
+                            if (!get_config('local_helpdesk', 'firstlvlgroupmode')) {
                                 foreach ($supporters as $supporter) {
                                     $responsibles[] =
                                             "<a href='{$CFG->wwwroot}/user/profile.php?id={$supporter->id}' target='_blank'>" .
@@ -460,10 +460,10 @@ class local_edusupport_external extends external_api {
                             }
                             $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
 
-                            $subject = get_string('issue_responsibles:subject', 'local_edusupport');
+                            $subject = get_string('issue_responsibles:subject', 'local_helpdesk');
                             $messagebody = get_string(
                                 'issue_responsibles:post',
-                                'local_edusupport',
+                                'local_helpdesk',
                                 [
                                     'responsibles' => implode(', ', $responsibles),
                                     'sitename' => $SITE->fullname,
@@ -477,14 +477,14 @@ class local_edusupport_external extends external_api {
                                 $messagebody,
                                 $subject,
                                 // Only send mail if setting is turned on!
-                                get_config('local_edusupport', 'sendsupporterassignments')
+                                get_config('local_helpdesk', 'sendsupporterassignments')
                             );
                         }
                         // In any case, we want to inform the supporters.
                         foreach ($supporters as $supporter) {
                             // In any case, send e-mail to the dedicated supporter.
-                            $issueurl = (new moodle_url('/local/edusupport/issue.php?d=' . $discussion->id))->out(false);
-                            $posthtml = get_string('issue:assigned', 'local_edusupport') . " " . $discussion->name . " $issueurl";
+                            $issueurl = (new moodle_url('/local/helpdesk/issue.php?d=' . $discussion->id))->out(false);
+                            $posthtml = get_string('issue:assigned', 'local_helpdesk') . " " . $discussion->name . " $issueurl";
                             $postsubject = $discussion->name;
                             $msg = new message();
                             $touser = $DB->get_record('user', ['id' => $supporter->id]);
@@ -497,8 +497,8 @@ class local_edusupport_external extends external_api {
                             $msg->smallmessage = $postsubject;
                             $msg->contexturl = $issueurl; // A relevant URL for the notification.
                             $msg->contexturlname = 'Issue'; // Link title explaining where users get to for the contexturl.
-                            $msg->name = 'edusupport_issue';
-                            $msg->component = 'local_edusupport';
+                            $msg->name = 'helpdesk_issue';
+                            $msg->component = 'local_helpdesk';
                             $msg->notification = 1;
                             message_send($msg);
                         }
@@ -574,16 +574,16 @@ class local_edusupport_external extends external_api {
 
         lib::before_popup();
 
-        require_once($CFG->dirroot . '/local/edusupport/classes/issue_create_form.php');
+        require_once($CFG->dirroot . '/local/helpdesk/classes/issue_create_form.php');
         $params['contactphone'] = $USER->phone1;
-        $form = new \issue_create_form(null, null, 'post', '_self', ['id' => 'local_edusupport_create_form'], true);
+        $form = new \issue_create_form(null, null, 'post', '_self', ['id' => 'local_helpdesk_create_form'], true);
         $form->set_data((object) $params);
-        $prepageenabled = get_config('local_edusupport', 'enableprepage');
-        $prepage = get_config('local_edusupport', 'prepage');
+        $prepageenabled = get_config('local_helpdesk', 'enableprepage');
+        $prepage = get_config('local_helpdesk', 'prepage');
         if ($prepageenabled && $prepage) {
             $templatedata['prepage'] = format_text($prepage, FORMAT_HTML);
             $templatedata['form'] = $form->render();
-            $output = $OUTPUT->render_from_template('local_edusupport/prepageenabled', $templatedata);
+            $output = $OUTPUT->render_from_template('local_helpdesk/prepageenabled', $templatedata);
         } else {
             $output = $form->render();
         }
@@ -628,14 +628,14 @@ class local_edusupport_external extends external_api {
         // A ticket is handed over inside the platform team, so only that team is offered.
         $sql = "SELECT s.userid, u.firstname, u.lastname, s.supportlevel
                     FROM {user} u
-                    JOIN {local_edusupport_supporters} s ON s.userid = u.id
+                    JOIN {local_helpdesk_supporters} s ON s.userid = u.id
                     WHERE s.courseid = :courseid
                         AND u.deleted = 0
                     ORDER BY u.lastname ASC, u.firstname ASC";
         $supporters = $DB->get_records_sql($sql, ['courseid' => lib::SYSTEM_COURSE_ID]);
         foreach ($supporters as $supporter) {
             if (empty($supporter->supportlevel)) {
-                $supporter->supportlevel = get_string('label:2ndlevel', 'local_edusupport');
+                $supporter->supportlevel = get_string('label:2ndlevel', 'local_helpdesk');
             }
             if (!isset($reply['supporters'][$supporter->supportlevel])) {
                 $reply['supporters'][$supporter->supportlevel] = [];
@@ -696,7 +696,7 @@ class local_edusupport_external extends external_api {
         // Report a refusal as an exception, so the caller gets the reason instead of a bare failure.
         $error = lib::validate_supporter_assignment($params['discussionid'], $params['supporterid']);
         if ($error !== null) {
-            throw new \moodle_exception($error, 'local_edusupport');
+            throw new \moodle_exception($error, 'local_helpdesk');
         }
         lib::set_current_supporter($params['discussionid'], $params['supporterid']);
         return 1;

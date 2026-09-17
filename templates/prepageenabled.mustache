@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_edusupport/prepageenabled
+    @template local_helpdesk/prepageenabled
 
     A page shown before the support form, with buttons to switch between the two.
 
@@ -29,9 +29,9 @@
         "form": "<form method=\"post\" action=\"#\"><p>The support form</p></form>"
     }
 }}
-<div id="edusupport-prepage">{{{prepage}}}<br>
-    <a class="btn btn-primary" data-toggle="edusupport-prepage" id="edusupport-form-toggle">{{#str}} continue {{/str}}</a>
+<div id="helpdesk-prepage">{{{prepage}}}<br>
+    <a class="btn btn-primary" data-toggle="helpdesk-prepage" id="helpdesk-form-toggle">{{#str}} continue {{/str}}</a>
 </div>
-<div id="edusupport-form" style="display: none">{{{form}}}
-    <a class="btn btn-primary" data-toggle="edusupport-prepage" id="edusupport-prepage-toggle">{{#str}} back {{/str}}</a>
+<div id="helpdesk-form" style="display: none">{{{form}}}
+    <a class="btn btn-primary" data-toggle="helpdesk-prepage" id="helpdesk-prepage-toggle">{{#str}} back {{/str}}</a>
 </div>

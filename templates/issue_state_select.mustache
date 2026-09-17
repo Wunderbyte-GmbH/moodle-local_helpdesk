@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-   @template local_edusupport/issue_state_select
+   @template local_helpdesk/issue_state_select
 
-   The select to change the status of an issue, used inside local_edusupport/issue_options.
+   The select to change the status of an issue, used inside local_helpdesk/issue_options.
 
    Classes required for JS:
    * changeStatusSelect
@@ -34,10 +34,10 @@
    }
  }}
 
-<select id="local_edusupport_issue_state_select_{{id}}" class="changeStatusSelect form-select form-select-lg custom-select" data-issueid="{{id}}">
+<select id="local_helpdesk_issue_state_select_{{id}}" class="changeStatusSelect form-select form-select-lg custom-select" data-issueid="{{id}}">
     <option selected disabled class="hideoption">-</option>
-    <option value="1">{{#str}}status:notstarted, local_edusupport{{/str}}</option>
-    <option value="2">{{#str}}status:awaitinguserreply, local_edusupport{{/str}}</option>
-    <option value="3">{{#str}}status:ongoing, local_edusupport{{/str}}</option>
-    <option value="4">{{#str}}status:awaitingsupportaction, local_edusupport{{/str}}</option>
+    <option value="1">{{#str}}status:notstarted, local_helpdesk{{/str}}</option>
+    <option value="2">{{#str}}status:awaitinguserreply, local_helpdesk{{/str}}</option>
+    <option value="3">{{#str}}status:ongoing, local_helpdesk{{/str}}</option>
+    <option value="4">{{#str}}status:awaitingsupportaction, local_helpdesk{{/str}}</option>
 </select>

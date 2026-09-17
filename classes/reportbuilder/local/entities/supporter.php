@@ -17,12 +17,12 @@
 /**
  * Report builder entity for the supporter registry.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edusupport\reportbuilder\local\entities;
+namespace local_helpdesk\reportbuilder\local\entities;
 
 use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\filters\boolean_select;
@@ -32,7 +32,7 @@ use core_reportbuilder\local\helpers\format;
 use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
 use lang_string;
-use local_edusupport\lib;
+use local_helpdesk\lib;
 use stdClass;
 
 /**
@@ -40,7 +40,7 @@ use stdClass;
  *
  * One row is one person supporting either a single course or the whole platform.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -52,7 +52,7 @@ class supporter extends base {
      */
     protected function get_default_tables(): array {
         return [
-            'local_edusupport_supporters',
+            'local_helpdesk_supporters',
         ];
     }
 
@@ -62,7 +62,7 @@ class supporter extends base {
      * @return lang_string
      */
     protected function get_default_entity_title(): lang_string {
-        return new lang_string('supporters', 'local_edusupport');
+        return new lang_string('supporters', 'local_helpdesk');
     }
 
     /**
@@ -88,8 +88,8 @@ class supporter extends base {
      */
     public static function get_level_options(): array {
         return [
-            0 => get_string('level:first', 'local_edusupport'),
-            1 => get_string('level:second', 'local_edusupport'),
+            0 => get_string('level:first', 'local_helpdesk'),
+            1 => get_string('level:second', 'local_helpdesk'),
         ];
     }
 
@@ -99,13 +99,13 @@ class supporter extends base {
      * @return column[]
      */
     protected function get_all_columns(): array {
-        $alias = $this->get_table_alias('local_edusupport_supporters');
+        $alias = $this->get_table_alias('local_helpdesk_supporters');
         $columns = [];
 
         // Which level the row belongs to, derived from the course it points at.
         $columns[] = (new column(
             'level',
-            new lang_string('level', 'local_edusupport'),
+            new lang_string('level', 'local_helpdesk'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -122,7 +122,7 @@ class supporter extends base {
         // would point at the front page.
         $columns[] = (new column(
             'scope',
-            new lang_string('scope', 'local_edusupport'),
+            new lang_string('scope', 'local_helpdesk'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -131,7 +131,7 @@ class supporter extends base {
             ->set_is_sortable(true)
             ->add_callback(static function ($value, stdClass $row): string {
                 if ($row->scopecourseid == lib::SYSTEM_COURSE_ID) {
-                    return get_string('scope:platform', 'local_edusupport');
+                    return get_string('scope:platform', 'local_helpdesk');
                 }
                 $course = get_course($row->scopecourseid);
                 return \html_writer::link(
@@ -143,7 +143,7 @@ class supporter extends base {
         // The free text label people fill in as they please.
         $columns[] = (new column(
             'supportlevel',
-            new lang_string('supportlevel', 'local_edusupport'),
+            new lang_string('supportlevel', 'local_helpdesk'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -153,7 +153,7 @@ class supporter extends base {
 
         $columns[] = (new column(
             'autoassign',
-            new lang_string('autoassign', 'local_edusupport'),
+            new lang_string('autoassign', 'local_helpdesk'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -164,7 +164,7 @@ class supporter extends base {
 
         $columns[] = (new column(
             'holidaymode',
-            new lang_string('holidaymode', 'local_edusupport'),
+            new lang_string('holidaymode', 'local_helpdesk'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -184,13 +184,13 @@ class supporter extends base {
      * @return filter[]
      */
     protected function get_all_filters(): array {
-        $alias = $this->get_table_alias('local_edusupport_supporters');
+        $alias = $this->get_table_alias('local_helpdesk_supporters');
         $filters = [];
 
         $filters[] = (new filter(
             select::class,
             'level',
-            new lang_string('level', 'local_edusupport'),
+            new lang_string('level', 'local_helpdesk'),
             $this->get_entity_name(),
             "CASE WHEN {$alias}.courseid = " . lib::SYSTEM_COURSE_ID . " THEN 1 ELSE 0 END"
         ))
@@ -202,7 +202,7 @@ class supporter extends base {
         $filters[] = (new filter(
             text::class,
             'supportlevel',
-            new lang_string('supportlevel', 'local_edusupport'),
+            new lang_string('supportlevel', 'local_helpdesk'),
             $this->get_entity_name(),
             "{$alias}.supportlevel"
         ))
@@ -211,7 +211,7 @@ class supporter extends base {
         $filters[] = (new filter(
             boolean_select::class,
             'autoassign',
-            new lang_string('autoassign', 'local_edusupport'),
+            new lang_string('autoassign', 'local_helpdesk'),
             $this->get_entity_name(),
             "{$alias}.autoassign"
         ))

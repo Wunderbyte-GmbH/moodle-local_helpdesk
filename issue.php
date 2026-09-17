@@ -17,7 +17,7 @@
 /**
  * Show a single support issue and let the support team act on it.
  *
- * @package    local_edusupport
+ * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -40,7 +40,7 @@ $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin
 $edit   = optional_param('edit', 0, PARAM_INT);
 $delete   = optional_param('delete', 0, PARAM_INT);
 
-$url = new moodle_url('/local/edusupport/issue.php', ['discussion' => $discussionid,
+$url = new moodle_url('/local/helpdesk/issue.php', ['discussion' => $discussionid,
     'replyto' => $replyto, 'delete' => $delete]);
 if ($parent !== 0) {
     $url->param('parent', $parent);
@@ -51,27 +51,27 @@ $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
 
-$issue = \local_edusupport\lib::get_issue($discussionid, false);
+$issue = \local_helpdesk\lib::get_issue($discussionid, false);
 $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
 $PAGE->set_title($discussion->name);
 $PAGE->set_heading($discussion->name);
-$issueslinkname = get_string('issues', 'local_edusupport');
+$issueslinkname = get_string('issues', 'local_helpdesk');
 
-if (!\local_edusupport\lib::can_view_issues()) {
+if (!\local_helpdesk\lib::can_view_issues()) {
     echo $OUTPUT->header();
     $cm = \get_coursemodule_from_instance('forum', $discussion->forum);
     $tocmurl = new moodle_url('/mod/forum/view.php', ['id' => $cm->id]);
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('missing_permission', 'local_edusupport'),
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('missing_permission', 'local_helpdesk'),
         'type' => 'danger',
         'url' => $tocmurl->__toString(),
     ]);
 } else if (empty($issue->id)) {
     echo $OUTPUT->header();
-    $toissuesurl = new moodle_url('/local/edusupport/issues.php', []);
+    $toissuesurl = new moodle_url('/local/helpdesk/issues.php', []);
     $todiscussionurl = new moodle_url('/mod/forum/discuss.php', ['d' => $discussionid]);
-    echo $OUTPUT->render_from_template('local_edusupport/alert', [
-        'content' => get_string('no_such_issue', 'local_edusupport', [
+    echo $OUTPUT->render_from_template('local_helpdesk/alert', [
+        'content' => get_string('no_such_issue', 'local_helpdesk', [
             'todiscussionurl' => $todiscussionurl->__toString(),
             'toissuesurl' => $toissuesurl->__toString(),
         ]),
@@ -87,9 +87,9 @@ if (!\local_edusupport\lib::can_view_issues()) {
 
     $PAGE->set_title("$course->shortname: " . format_string($discussion->name));
     $PAGE->set_heading($course->fullname);
-    $PAGE->navbar->add($issueslinkname, new moodle_url('/local/edusupport/issues.php'));
+    $PAGE->navbar->add($issueslinkname, new moodle_url('/local/helpdesk/issues.php'));
     $PAGE->navbar->add($course->shortname, new moodle_url('/mod/forum/view.php', ['id' => $cm->id]));
-    $PAGE->navbar->add(get_string('issue', 'local_edusupport') . ": {$discussion->name}", new moodle_url($url));
+    $PAGE->navbar->add(get_string('issue', 'local_helpdesk') . ": {$discussion->name}", new moodle_url($url));
 
     $vaultfactory = \mod_forum\local\container::get_vault_factory();
     $discussionvault = $vaultfactory->get_discussion_vault();
@@ -111,10 +111,10 @@ if (!\local_edusupport\lib::can_view_issues()) {
     $cm = get_coursemodule_from_instance('forum', $forum->id, 0, false, MUST_EXIST);
 
     if (!empty($replyto)) {
-        require_once($CFG->dirroot . '/local/edusupport/classes/post_form.php');
+        require_once($CFG->dirroot . '/local/helpdesk/classes/post_form.php');
         $thresholdwarning = forum_check_throttling($forum->id, $cm);
-        $mformpost = new \local_edusupport_post_form(
-            $CFG->wwwroot . '/local/edusupport/issue.php?d=' .
+        $mformpost = new \local_helpdesk_post_form(
+            $CFG->wwwroot . '/local/helpdesk/issue.php?d=' .
             $discussionid . '&replyto=' . $replyto,
             [
                 'course' => $course,
@@ -155,7 +155,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
             'mod_forum',
             'attachment',
             null,
-            \local_edusupport_post_form::attachment_options($forum)
+            \local_helpdesk_post_form::attachment_options($forum)
         );
         $draftideditor = file_get_submitted_draft_itemid('message');
         $currenttext = file_prepare_draft_area(
@@ -164,7 +164,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
             'mod_forum',
             'post',
             $postid,
-            \local_edusupport_post_form::editor_options($modcontext, $postid),
+            \local_helpdesk_post_form::editor_options($modcontext, $postid),
             $post->message
         );
 
@@ -194,7 +194,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
             + (isset($discussion->id) ? ['discussion' => $discussion->id] : [])
         );
         if ($mformpost->is_cancelled()) {
-            redirect('/local/edusupport/issue.php?d=' . $discussion->id);
+            redirect('/local/helpdesk/issue.php?d=' . $discussion->id);
         } else if ($fromform = $mformpost->get_data()) {
             $fromform->itemid        = $fromform->message['itemid'];
             $fromform->messageformat = $fromform->message['format'];
@@ -250,7 +250,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
                     }
 
                     $message = get_string("postaddedsuccess", "forum", fullname($USER));
-                    $discussionurl = $CFG->wwwroot . '/local/edusupport/issue.php?d=' . $discussionid;
+                    $discussionurl = $CFG->wwwroot . '/local/helpdesk/issue.php?d=' . $discussionid;
 
                     redirect(
                         $discussionurl,
@@ -259,7 +259,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
                         \core\output\notification::NOTIFY_SUCCESS
                     );
                 } else {
-                    $errordestination = $CFG->wwwroot . '/local/edusupport/issue.php?d=' . $discussionid;
+                    $errordestination = $CFG->wwwroot . '/local/helpdesk/issue.php?d=' . $discussionid;
                     throw new moodle_exception("couldnotadd", "forum", $errordestination);
                 }
             }
@@ -274,43 +274,43 @@ if (!\local_edusupport\lib::can_view_issues()) {
     // row at all any more if they left the team while the issue was still assigned to them.
     $user = empty($issue->currentsupporter) ? false : \core_user::get_user($issue->currentsupporter);
     if ($user && empty($user->deleted)) {
-        $supportlevel = $DB->get_field('local_edusupport_supporters', 'supportlevel', [
-            'courseid' => \local_edusupport\lib::SYSTEM_COURSE_ID,
+        $supportlevel = $DB->get_field('local_helpdesk_supporters', 'supportlevel', [
+            'courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID,
             'userid' => $user->id,
         ]);
 
         $options[] = [
             "title" => \fullname($user) . ' (' . (!empty($supportlevel) ? $supportlevel :
-                get_string('label:2ndlevel', 'local_edusupport')) . ')',
+                get_string('label:2ndlevel', 'local_helpdesk')) . ')',
             "class" => '',
             // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
             /* "icon" => 'i/checkpermissions', */
             "href" => (new moodle_url('/user/profile.php', ['id' => $user->id]))->out(false),
         ];
     }
-    $status = \local_edusupport\lib::status_to_template($issue->status);
+    $status = \local_helpdesk\lib::status_to_template($issue->status);
     $options[] = [
         "title" => $status['status'],
         "class" => $status['class'],
     ];
     $options[] = [
-        "title" => get_string('issue_assign', 'local_edusupport'),
+        "title" => get_string('issue_assign', 'local_helpdesk'),
         "class" => 'btn-secondary',
         "icon" => 'i/assignroles',
         "href" => '#',
-        "onclick" => "require(['local_edusupport/main'], function(MAIN){ MAIN.assignSupporter($discussionid); }); return false;",
+        "onclick" => "require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter($discussionid); }); return false;",
     ];
     $options[] = [
-        "title" => get_string('issue_close', 'local_edusupport'),
+        "title" => get_string('issue_close', 'local_helpdesk'),
         "class" => 'btn-primary',
         "icon" => 't/approve',
         "href" => '#',
-        "onclick" => "require(['local_edusupport/main'], function(MAIN){ MAIN.closeIssue($discussionid); }); return false;",
+        "onclick" => "require(['local_helpdesk/main'], function(MAIN){ MAIN.closeIssue($discussionid); }); return false;",
     ];
     $changestatus = true;
     $id = $issue->id;
     echo $OUTPUT->render_from_template(
-        'local_edusupport/issue_options',
+        'local_helpdesk/issue_options',
         [
                 'options' => $options,
                 'changestatus' => $changestatus,
@@ -337,7 +337,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
                 $vforum->get_course_module_record(),
                 $forumdatamapper->to_legacy_object($vforum)
             );
-            echo $OUTPUT->render_from_template('local_edusupport/alert', [
+            echo $OUTPUT->render_from_template('local_helpdesk/alert', [
                 'content' => get_string('deletedpost', 'mod_forum'),
                 'type' => 'success',
             ]);
@@ -396,7 +396,7 @@ if (!\local_edusupport\lib::can_view_issues()) {
     $user = $DB->get_record('user', ['id' => $admins[0]]);
     echo $discussionrenderer->render($user, $vpost, $replies);
 
-    $PAGE->requires->js_call_amd("local_edusupport/main", "injectReplyButtons", [$discussionid]);
+    $PAGE->requires->js_call_amd("local_helpdesk/main", "injectReplyButtons", [$discussionid]);
 
     // Now catch the output from the renderer and modify some parts.
     $out = ob_get_contents();
@@ -408,22 +408,22 @@ if (!\local_edusupport\lib::can_view_issues()) {
 
     $out = str_replace(
         $CFG->wwwroot . '/mod/forum/discuss.php',
-        $CFG->wwwroot . '/local/edusupport/issue.php',
+        $CFG->wwwroot . '/local/helpdesk/issue.php',
         $out
     );
     $out = str_replace(
         $CFG->wwwroot . '/mod/forum/post.php?reply=',
-        $CFG->wwwroot . '/local/edusupport/issue.php?discussion=' . $discussionid . '&parent=',
+        $CFG->wwwroot . '/local/helpdesk/issue.php?discussion=' . $discussionid . '&parent=',
         $out
     );
     $out = str_replace(
         $CFG->wwwroot . '/mod/forum/post.php?edit=',
-        $CFG->wwwroot . '/local/edusupport/editpost.php?discussion=' . $discussionid . '&edit=',
+        $CFG->wwwroot . '/local/helpdesk/editpost.php?discussion=' . $discussionid . '&edit=',
         $out
     );
     $out = str_replace(
         $CFG->wwwroot . '/mod/forum/post.php?delete=',
-        $CFG->wwwroot . '/local/edusupport/issue.php?discussion=' . $discussionid . '&delete=',
+        $CFG->wwwroot . '/local/helpdesk/issue.php?discussion=' . $discussionid . '&delete=',
         $out
     );
 
