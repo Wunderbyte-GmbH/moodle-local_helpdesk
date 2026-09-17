@@ -102,7 +102,7 @@ final class close_issue_test extends advanced_testcase {
         );
 
         $closed = $DB->get_record('local_helpdesk_issues', ['discussionid' => $issue->discussionid]);
-        $this->assertEquals(ISSUE_STATUS_CLOSED, $closed->status);
+        $this->assertEquals(LOCAL_HELPDESK_ISSUE_STATUS_CLOSED, $closed->status);
         $this->assertEquals(0, $closed->priority);
     }
 
@@ -228,7 +228,7 @@ final class close_issue_test extends advanced_testcase {
         );
 
         $reopened = $DB->get_record('local_helpdesk_issues', ['discussionid' => $issue->discussionid]);
-        $this->assertEquals(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $reopened->status);
+        $this->assertEquals(LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $reopened->status);
         $this->assertEquals(1, $reopened->priority);
     }
 

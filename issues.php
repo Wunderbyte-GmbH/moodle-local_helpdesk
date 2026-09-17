@@ -205,10 +205,10 @@ if (!$issupportteam) {
         } else if (!empty($assigned->id)) {
             $params['assigned'][] = $issue;
             $params['count']['assigned'] = $params['count']['assigned'] + 1;
-        } else if ($issue->status != ISSUE_STATUS_CLOSED) {
+        } else if ($issue->status != LOCAL_HELPDESK_ISSUE_STATUS_CLOSED) {
             $params['other'][] = $issue;
             $params['count']['other'] = $params['count']['other'] + 1;
-        } else if ($issue->status == ISSUE_STATUS_CLOSED) {
+        } else if ($issue->status == LOCAL_HELPDESK_ISSUE_STATUS_CLOSED) {
             $params['closed'][] = $issue;
             $params['count']['closed'] = $params['count']['closed'] + 1;
         }

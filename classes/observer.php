@@ -116,13 +116,13 @@ class observer {
             if ($morethanoneuser->count > 1) {
                 if ($post->userid == $discussion->userid) {
                     // If the user posted, we are waiting for a support action.
-                    \local_helpdesk\lib::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+                    \local_helpdesk\lib::set_status(LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
                 } else {
                     // If the supporter posted, we are waiting for a user reply.
-                    \local_helpdesk\lib::set_status(ISSUE_STATUS_AWAITING_USER_REPLY, $issue->id);
+                    \local_helpdesk\lib::set_status(LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_USER_REPLY, $issue->id);
                 }
             } else {
-                \local_helpdesk\lib::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+                \local_helpdesk\lib::set_status(LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
             }
             // Enhance post data.
             $post->wwwroot = $CFG->wwwroot;

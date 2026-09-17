@@ -38,11 +38,11 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/mod/forum/lib.php');
 
-define("ISSUE_STATUS_NOTSTARTED", 1);
-define("ISSUE_STATUS_AWAITING_USER_REPLY", 2);
-define("ISSUE_STATUS_ONGOING", 3);
-define("ISSUE_STATUS_AWAITING_SUPPORT_ACTION", 4);
-define("ISSUE_STATUS_CLOSED", 5);
+define("LOCAL_HELPDESK_ISSUE_STATUS_NOTSTARTED", 1);
+define("LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_USER_REPLY", 2);
+define("LOCAL_HELPDESK_ISSUE_STATUS_ONGOING", 3);
+define("LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION", 4);
+define("LOCAL_HELPDESK_ISSUE_STATUS_CLOSED", 5);
 
 /**
  * Core library of the Helpdesk plugin.
@@ -348,7 +348,7 @@ class lib {
         $issue = self::get_issue($discussionid);
 
         $issue->priority = 1;
-        $issue->status = ISSUE_STATUS_AWAITING_SUPPORT_ACTION;
+        $issue->status = LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION;
         $issue->discussionid = $discussionid;
         $issue->timemodified = time();
 
@@ -1260,7 +1260,7 @@ class lib {
             $msg->notification = 1;
             message_send($msg);
         } else {
-            self::set_status(ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+            self::set_status(LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
         }
 
         return true;
@@ -1712,7 +1712,7 @@ class lib {
 
         $DB->update_record('local_helpdesk_issues', $issue);
 
-        if ($status == ISSUE_STATUS_AWAITING_SUPPORT_ACTION && get_config('local_helpdesk', 'sendreminders')) {
+        if ($status == LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION && get_config('local_helpdesk', 'sendreminders')) {
             self::send_reminder($issueid);
         }
     }
@@ -1775,25 +1775,25 @@ class lib {
      */
     public static function status_to_template(int $status): array {
         switch ($status) {
-            case ISSUE_STATUS_NOTSTARTED:
+            case LOCAL_HELPDESK_ISSUE_STATUS_NOTSTARTED:
                 return ['status' => get_string('status:notstarted', 'local_helpdesk'), 'class' => 'badge badge-danger',
                     'stateclass' => 'notstarted'];
                 break;
-            case ISSUE_STATUS_AWAITING_USER_REPLY:
+            case LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_USER_REPLY:
                 return ['status' => get_string('status:awaitinguserreply', 'local_helpdesk'),
                     'class' => 'badge badge-brown',
                     'stateclass' => 'awaiting'];
                 break;
-            case ISSUE_STATUS_ONGOING:
+            case LOCAL_HELPDESK_ISSUE_STATUS_ONGOING:
                 return ['status' => get_string('status:ongoing', 'local_helpdesk'), 'class' => 'badge badge-success',
                     'stateclass' => 'ongoing'];
                 break;
-            case ISSUE_STATUS_AWAITING_SUPPORT_ACTION:
+            case LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION:
                 return ['status' => get_string('status:awaitingsupportaction', 'local_helpdesk'),
                     'class' => 'badge badge-orange',
                     'stateclass' => 'awaitingsupportaction'];
                 break;
-            case ISSUE_STATUS_CLOSED:
+            case LOCAL_HELPDESK_ISSUE_STATUS_CLOSED:
                 return ['status' => get_string('status:closed', 'local_helpdesk'), 'class' => 'badge badge-success',
                     'stateclass' => 'closed'];
                 break;
