@@ -271,21 +271,21 @@
                     <td>
                     {{> local_helpdesk/issue_state_select }}
                     <br>
-                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?asignto={{discussionid}}" onclick="require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter({{discussionid}}); }); return false;" data-toggle="tooltip" data-placement="top" title="assign someone">
+                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?asignto={{discussionid}}" onclick="require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter({{discussionid}}); }); return false;" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_assign, local_helpdesk {{/str}}">
                             {{#pix}} i/enrolusers, core {{/pix}}
                         </a>
                         <a class="btn btn-outline-danger" href="{{wwwroot}}/local/helpdesk/issues.php?close={{discussionid}}&amp;sesskey={{sesskey}}">
-                            <i class="fa fa-window-close" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="close issue"></i>
+                            <i class="fa fa-window-close" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_close, local_helpdesk {{/str}}"></i>
                         </a>
                         {{#hasprio}}
                         <div class="mt-2">
-                         <a class="btn btn-outline-info {{priolow}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=1&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="priortiy low">
+                         <a class="btn btn-outline-info {{priolow}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=1&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:low, local_helpdesk {{/str}}">
                             !
                         </a>
-                        <a class="btn btn-outline-warning {{priomid}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=2&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy mid">
+                        <a class="btn btn-outline-warning {{priomid}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=2&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:mid, local_helpdesk {{/str}}">
                             !!
                         </a>
-                        <a class="btn btn-outline-danger {{priohigh}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=3&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy high">
+                        <a class="btn btn-outline-danger {{priohigh}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=3&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:high, local_helpdesk {{/str}}">
                             !!!
                         </a>
                         </div>
@@ -362,27 +362,27 @@
                             <br> {{#userdate}} {{lastmodified}}, %F %X {{/userdate}}
                     </td>
                     <td>
-                        <a class="btn btn-outline-secondary" href="{{wwwroot}}/local/helpdesk/issues.php?unassign={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="unsubscribe">
+                        <a class="btn btn-outline-secondary" href="{{wwwroot}}/local/helpdesk/issues.php?unassign={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_unwatch, local_helpdesk {{/str}}">
                             {{#pix}} i/show, core {{/pix}}
                         </a>
-                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?take={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="assign myself">
+                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?take={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_assign_me, local_helpdesk {{/str}}">
                             <i class="fa fa-plus" aria-hidden="true"></i>
                         </a>
-                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?asignto={{discussionid}}" onclick="require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter({{discussionid}}); }); return false;" data-toggle="tooltip" data-placement="top" title="assign someone">
+                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?asignto={{discussionid}}" onclick="require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter({{discussionid}}); }); return false;" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_assign, local_helpdesk {{/str}}">
                             {{#pix}} i/enrolusers, core {{/pix}}
                         </a>
-                        <a class="btn btn-outline-danger" href="{{wwwroot}}/local/helpdesk/issues.php?close={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="close issue">
+                        <a class="btn btn-outline-danger" href="{{wwwroot}}/local/helpdesk/issues.php?close={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_close, local_helpdesk {{/str}}">
                             <i class="fa fa-window-close" aria-hidden="true"></i>
                         </a>
                         {{#hasprio}}
                         <div class="mt-2">
-                        <a class="btn btn-outline-primary  {{priolow}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=1&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="priortiy low">
+                        <a class="btn btn-outline-primary  {{priolow}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=1&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:low, local_helpdesk {{/str}}">
                         !
                         </a>
-                        <a class="btn btn-outline-warning {{priomid}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=2&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy mid">
+                        <a class="btn btn-outline-warning {{priomid}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=2&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:mid, local_helpdesk {{/str}}">
                         !!
                         </a>
-                        <a class="btn btn-outline-danger {{priohigh}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=3&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy high">
+                        <a class="btn btn-outline-danger {{priohigh}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=3&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:high, local_helpdesk {{/str}}">
                         !!!
                         </a>
                         </div>
@@ -458,27 +458,27 @@
                             <br> {{#userdate}} {{lastmodified}}, %F %X {{/userdate}}
                     </td>
                     <td>
-                        <a class="btn btn-outline-secondary" href="{{wwwroot}}/local/helpdesk/issues.php?assign={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="watch">
+                        <a class="btn btn-outline-secondary" href="{{wwwroot}}/local/helpdesk/issues.php?assign={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_watch, local_helpdesk {{/str}}">
                             {{#pix}} i/hide, core {{/pix}}
                         </a>
-                        <a class="btn btn-outline-secondary" href="{{wwwroot}}/local/helpdesk/issues.php?take={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="assign myself">
+                        <a class="btn btn-outline-secondary" href="{{wwwroot}}/local/helpdesk/issues.php?take={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_assign_me, local_helpdesk {{/str}}">
                             <i class="fa fa-plus" aria-hidden="true"></i>
                         </a>
-                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?asignto={{discussionid}}" onclick="require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter({{discussionid}}); }); return false;" data-toggle="tooltip" data-placement="top" title="assign someone">
+                        <a class="btn btn-outline-info" href="{{wwwroot}}/local/helpdesk/issues.php?asignto={{discussionid}}" onclick="require(['local_helpdesk/main'], function(MAIN){ MAIN.assignSupporter({{discussionid}}); }); return false;" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_assign, local_helpdesk {{/str}}">
                             {{#pix}} i/enrolusers, core {{/pix}}
                         </a>
-                        <a class="btn btn-outline-danger" href="{{wwwroot}}/local/helpdesk/issues.php?close={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="close issue">
+                        <a class="btn btn-outline-danger" href="{{wwwroot}}/local/helpdesk/issues.php?close={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_close, local_helpdesk {{/str}}">
                             <i class="fa fa-window-close" aria-hidden="true"></i>
                         </a>
                         {{#hasprio}}
                         <div class="mt-2">
-                        <a class="btn btn-outline-primary {{priolow}}"  href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=1&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy low">
+                        <a class="btn btn-outline-primary {{priolow}}"  href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=1&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:low, local_helpdesk {{/str}}">
                             !
                         </a>
-                        <a class="btn btn-outline-warning {{priomid}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=2&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy mid">
+                        <a class="btn btn-outline-warning {{priomid}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=2&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:mid, local_helpdesk {{/str}}">
                             !!
                         </a>
-                        <a class="btn btn-outline-danger {{priohigh}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=3&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="priortiy high">
+                        <a class="btn btn-outline-danger {{priohigh}}" href="{{wwwroot}}/local/helpdesk/issues.php?prio={{discussionid}}&amp;lvl=3&amp;sesskey={{sesskey}}"  data-toggle="tooltip" data-placement="top" title="{{#str}} prioritylvl:high, local_helpdesk {{/str}}">
                             !!!
                         </a>
                         </div>
@@ -549,7 +549,7 @@
                             <br> {{#userdate}} {{lastmodified}}, %F %X {{/userdate}}
                     </td>
                     <td>
-                        <a class="btn btn-outline-success" href="{{wwwroot}}/local/helpdesk/issues.php?reopen={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="reopen">
+                        <a class="btn btn-outline-success" href="{{wwwroot}}/local/helpdesk/issues.php?reopen={{discussionid}}&amp;sesskey={{sesskey}}" data-toggle="tooltip" data-placement="top" title="{{#str}} issue_reopen, local_helpdesk {{/str}}">
                             <i class="fa fa-refresh" aria-hidden="true"></i>
                         </a>
                     </td>

@@ -29,21 +29,16 @@
  * @return void
  */
 function xmldb_local_helpdesk_install() {
-    global $DB, $CFG;
+    global $DB;
 
     $role = $DB->get_record('role', ['shortname' => 'local_helpdesk']);
     if (empty($role->id)) {
-        $sql = "SELECT MAX(sortorder)+1 AS id FROM {role}";
-        $max = $DB->get_record_sql($sql, []);
-
-        $role = (object) [
-            'name' => 'Helpdesk Team',
-            'shortname' => 'local_helpdesk',
-            'description' => 'This role was automatically created by the local_helpdesk Plugin',
-            'sortorder' => $max->id,
-            'archetype' => '',
-        ];
-        $role->id = $DB->insert_record('role', $role);
+        $roleid = create_role(
+            'Helpdesk Team',
+            'local_helpdesk',
+            'This role was automatically created by the local_helpdesk Plugin'
+        );
+        $role = $DB->get_record('role', ['id' => $roleid], '*', MUST_EXIST);
     }
 
     set_config('supportteamrole', $role->id, 'local_helpdesk');
@@ -57,9 +52,9 @@ function xmldb_local_helpdesk_install() {
     }
 
     // Ensure, that this role is assigned in the required context levels.
-    $chk = $DB->get_record('role_context_levels', ['roleid' => $role->id, 'contextlevel' => CONTEXT_MODULE]);
-    if (empty($chk->id)) {
-        $DB->insert_record('role_context_levels', ['roleid' => $role->id, 'contextlevel' => CONTEXT_MODULE]);
+    $levels = get_role_contextlevels($role->id);
+    if (!in_array(CONTEXT_MODULE, $levels)) {
+        set_role_contextlevels($role->id, array_merge($levels, [CONTEXT_MODULE]));
     }
 
     // Ensure, that this role has the required capabilities.
@@ -102,15 +97,8 @@ function xmldb_local_helpdesk_install() {
         'moodle/user:readuserposts',
     ];
     foreach ($caps as $cap) {
-        $params = [
-            'contextid' => $ctx->id,
-            'roleid' => $role->id,
-            'capability' => $cap,
-            'permission' => 1,
-        ];
-        $chk = $DB->get_record('role_capabilities', $params);
-        if (empty($chk->id)) {
-            $DB->insert_record('role_capabilities', $params + ['timemodified' => time(), 'modifierid' => 2]);
+        if (get_capability_info($cap)) {
+            assign_capability($cap, CAP_ALLOW, $role->id, $ctx->id);
         }
     }
 }

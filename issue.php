@@ -111,9 +111,8 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     $cm = get_coursemodule_from_instance('forum', $forum->id, 0, false, MUST_EXIST);
 
     if (!empty($replyto)) {
-        require_once($CFG->dirroot . '/local/helpdesk/classes/post_form.php');
         $thresholdwarning = forum_check_throttling($forum->id, $cm);
-        $mformpost = new \local_helpdesk_post_form(
+        $mformpost = new \local_helpdesk\form\post_form(
             $CFG->wwwroot . '/local/helpdesk/issue.php?d=' .
             $discussionid . '&replyto=' . $replyto,
             [
@@ -155,7 +154,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
             'mod_forum',
             'attachment',
             null,
-            \local_helpdesk_post_form::attachment_options($forum)
+            \local_helpdesk\form\post_form::attachment_options($forum)
         );
         $draftideditor = file_get_submitted_draft_itemid('message');
         $currenttext = file_prepare_draft_area(
@@ -164,7 +163,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
             'mod_forum',
             'post',
             $postid,
-            \local_helpdesk_post_form::editor_options($modcontext, $postid),
+            \local_helpdesk\form\post_form::editor_options($modcontext, $postid),
             $post->message
         );
 

@@ -26,7 +26,7 @@
 namespace local_helpdesk;
 
 use advanced_testcase;
-use local_helpdesk_external;
+use local_helpdesk\external\create_issue;
 use local_helpdesk\lib;
 use local_helpdesk\task\send_mail;
 use moodle_exception;
@@ -35,16 +35,11 @@ use stdClass;
 /**
  * Tests for creating a support issue through the external function.
  *
- * local_helpdesk_external still builds on lib/externallib.php, the deprecated compatibility
- * shim, which refuses to be loaded outside an isolated process. Hence the annotation below and
- * the require inside setUp() rather than at the top of this file.
- *
  * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk_external::create_issue
- * @runTestsInSeparateProcesses
+ * @covers     \local_helpdesk\external\create_issue
  */
 final class create_issue_test extends advanced_testcase {
     /** @var stdClass the course holding the support forum. */
@@ -63,11 +58,7 @@ final class create_issue_test extends advanced_testcase {
      * Set up a support forum with a student who may post into it.
      */
     protected function setUp(): void {
-        global $CFG;
-
         parent::setUp();
-        require_once($CFG->dirroot . '/local/helpdesk/externallib.php');
-
         $this->resetAfterTest(true);
 
         // Without an explicit limit the spam check compares against an empty setting.
@@ -105,7 +96,7 @@ final class create_issue_test extends advanced_testcase {
         if ($forumgroup === '') {
             $forumgroup = $this->forum->id . '_0';
         }
-        return local_helpdesk_external::create_issue(
+        return create_issue::execute(
             $subject,
             'Beschreibung des Problems',
             $forumgroup,

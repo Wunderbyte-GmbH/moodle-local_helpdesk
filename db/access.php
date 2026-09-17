@@ -39,7 +39,7 @@ $capabilities = [
         ],
     ],
     'local/helpdesk:canforward2ndlevel' => [
-        'riskbitmask' => RISK_XSS,
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [

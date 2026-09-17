@@ -116,7 +116,7 @@ class local_helpdesk_generator extends component_generator_base {
         $issue = \local_helpdesk\lib::get_issue($discussion->id, true);
         $issue->currentsupporter = $record->currentsupporter ?? 0;
         $issue->priority = $record->priority ?? 1;
-        $issue->status = $record->status ?? LOCAL_HELPDESK_ISSUE_STATUS_NOTSTARTED;
+        $issue->status = $record->status ?? \local_helpdesk\lib::STATUS_NOTSTARTED;
         $issue->timemodified = time();
         $DB->update_record('local_helpdesk_issues', $issue);
 

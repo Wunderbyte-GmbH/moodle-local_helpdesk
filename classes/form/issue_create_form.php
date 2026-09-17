@@ -24,11 +24,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_helpdesk\accountmanager;
+namespace local_helpdesk\form;
 
 defined('MOODLE_INTERNAL') || die;
 
+global $CFG;
+
 require_once($CFG->libdir . "/formslib.php");
+
+use local_helpdesk\accountmanager;
+use moodleform;
 
 /**
  * Form used to file a support request.

@@ -104,9 +104,8 @@ if (!$editable) {
     }
     $post = $DB->get_record('forum_posts', ['id' => $edit]);
 
-    require_once($CFG->dirroot . '/local/helpdesk/classes/post_form.php');
     $thresholdwarning = forum_check_throttling($vforum, $cm);
-    $mformpost = new \local_helpdesk_post_form($CFG->wwwroot . '/local/helpdesk/editpost.php?d=' .
+    $mformpost = new \local_helpdesk\form\post_form($CFG->wwwroot . '/local/helpdesk/editpost.php?d=' .
         $discussionid . '&edit=' . $edit, [
             'course' => $course,
             'cm' => $cm,
@@ -141,7 +140,7 @@ if (!$editable) {
         'mod_forum',
         'attachment',
         $post->id,
-        \local_helpdesk_post_form::attachment_options($forum)
+        \local_helpdesk\form\post_form::attachment_options($forum)
     );
 
     $draftideditor = file_get_submitted_draft_itemid('message');
@@ -151,7 +150,7 @@ if (!$editable) {
         'mod_forum',
         'post',
         $post->id,
-        \local_helpdesk_post_form::editor_options($modcontext, $post->id),
+        \local_helpdesk\form\post_form::editor_options($modcontext, $post->id),
         $post->message
     );
     $mformpost->set_data(
@@ -203,14 +202,14 @@ if (!$editable) {
         // Move uploaded files manually.
         // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
         /* $currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_forum', 'post', $postid,
-            \local_helpdesk_post_form::editor_options($modcontext, $postid), $post->message); */
+            \local_helpdesk\form\post_form::editor_options($modcontext, $postid), $post->message); */
         file_save_draft_area_files(
             $fromform->attachments,
             $modcontext->id,
             'mod_forum',
             'attachment',
             $post->id,
-            \local_helpdesk_post_form::editor_options($modcontext, $post->id)
+            \local_helpdesk\form\post_form::editor_options($modcontext, $post->id)
         );
         file_save_draft_area_files(
             $fromform->attachments,
@@ -218,7 +217,7 @@ if (!$editable) {
             'mod_forum',
             'post',
             $post->id,
-            \local_helpdesk_post_form::editor_options($modcontext, $post->id)
+            \local_helpdesk\form\post_form::editor_options($modcontext, $post->id)
         );
 
         forum_trigger_post_updated_event($post, $discussion, $modcontext, $forum);

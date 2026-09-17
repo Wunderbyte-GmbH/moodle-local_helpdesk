@@ -26,23 +26,18 @@
 namespace local_helpdesk;
 
 use advanced_testcase;
-use local_helpdesk_external;
+use local_helpdesk\external\set_currentsupporter;
 use moodle_exception;
 use stdClass;
 
 /**
  * Tests for handing an issue to a supporter through the external function.
  *
- * local_helpdesk_external still builds on lib/externallib.php, the deprecated compatibility
- * shim, which refuses to be loaded outside an isolated process. Hence the annotation below and
- * the require inside setUp() rather than at the top of this file.
- *
  * @package    local_helpdesk
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk_external::set_currentsupporter
- * @runTestsInSeparateProcesses
+ * @covers     \local_helpdesk\external\set_currentsupporter
  */
 final class set_currentsupporter_test extends advanced_testcase {
     /** @var stdClass the course holding the support forum. */
@@ -64,11 +59,7 @@ final class set_currentsupporter_test extends advanced_testcase {
      * Set up a support forum holding one issue.
      */
     protected function setUp(): void {
-        global $CFG;
-
         parent::setUp();
-        require_once($CFG->dirroot . '/local/helpdesk/externallib.php');
-
         $this->resetAfterTest(true);
         $this->preventResetByRollback();
         $this->redirectMessages();
@@ -105,7 +96,7 @@ final class set_currentsupporter_test extends advanced_testcase {
         global $DB;
 
         $this->setUser($this->supporter);
-        $result = local_helpdesk_external::set_currentsupporter(
+        $result = set_currentsupporter::execute(
             $this->issue->discussionid,
             $this->supporter->id
         );
@@ -135,7 +126,7 @@ final class set_currentsupporter_test extends advanced_testcase {
         $this->setUser($this->supporter);
 
         try {
-            local_helpdesk_external::set_currentsupporter($this->issue->discussionid, $outsider->id);
+            set_currentsupporter::execute($this->issue->discussionid, $outsider->id);
             $this->fail('Handing the issue to a non supporter should have raised an exception.');
         } catch (moodle_exception $e) {
             $this->assertSame('error:targetnotasupporter', $e->errorcode);
@@ -157,7 +148,7 @@ final class set_currentsupporter_test extends advanced_testcase {
         $this->setUser($this->student);
 
         try {
-            local_helpdesk_external::set_currentsupporter($this->issue->discussionid, $this->supporter->id);
+            set_currentsupporter::execute($this->issue->discussionid, $this->supporter->id);
             $this->fail('A non supporter should not be able to hand over an issue.');
         } catch (moodle_exception $e) {
             $this->assertSame('error:notasupporter', $e->errorcode);

@@ -94,7 +94,7 @@ if ($issupportteam) {
         ];
         $supporter = $DB->get_record('local_helpdesk_supporters', $supporterconditions);
         if (!empty($supporter->id)) {
-            $holidaymodeform = new \local_helpdesk\holidaymode_form();
+            $holidaymodeform = new \local_helpdesk\form\holidaymode_form();
             $holidaymodeend = optional_param('holidaymodeend', 0, PARAM_INT);
             if (!empty($holidaymodeend)) {
                 require_sesskey();
@@ -206,10 +206,10 @@ if (!$issupportteam) {
         } else if (!empty($assigned->id)) {
             $params['assigned'][] = $issue;
             $params['count']['assigned'] = $params['count']['assigned'] + 1;
-        } else if ($issue->status != LOCAL_HELPDESK_ISSUE_STATUS_CLOSED) {
+        } else if ($issue->status != \local_helpdesk\lib::STATUS_CLOSED) {
             $params['other'][] = $issue;
             $params['count']['other'] = $params['count']['other'] + 1;
-        } else if ($issue->status == LOCAL_HELPDESK_ISSUE_STATUS_CLOSED) {
+        } else if ($issue->status == \local_helpdesk\lib::STATUS_CLOSED) {
             $params['closed'][] = $issue;
             $params['count']['closed'] = $params['count']['closed'] + 1;
         }

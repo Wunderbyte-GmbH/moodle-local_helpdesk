@@ -18,7 +18,7 @@
  * Defines message providers (types of messages being sent)
  *
  * @package local_helpdesk
- * @copyright 2012 NetSpot {@link http://www.netspot.com.au}
+ * @copyright  2019 Digital Education Society (http://www.dibig.at)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

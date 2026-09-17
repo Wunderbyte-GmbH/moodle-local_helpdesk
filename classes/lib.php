@@ -35,14 +35,9 @@ use stdClass;
 
 defined('MOODLE_INTERNAL') || die;
 
+global $CFG;
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/mod/forum/lib.php');
-
-define("LOCAL_HELPDESK_ISSUE_STATUS_NOTSTARTED", 1);
-define("LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_USER_REPLY", 2);
-define("LOCAL_HELPDESK_ISSUE_STATUS_ONGOING", 3);
-define("LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION", 4);
-define("LOCAL_HELPDESK_ISSUE_STATUS_CLOSED", 5);
 
 /**
  * Core library of the Helpdesk plugin.
@@ -52,6 +47,21 @@ define("LOCAL_HELPDESK_ISSUE_STATUS_CLOSED", 5);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class lib {
+    /** @var int Nobody has looked at the issue yet. */
+    const STATUS_NOTSTARTED = 1;
+
+    /** @var int The support team answered, now the person asking has to. */
+    const STATUS_AWAITING_USER_REPLY = 2;
+
+    /** @var int Somebody is working on the issue. */
+    const STATUS_ONGOING = 3;
+
+    /** @var int The person asking answered, now the support team has to. */
+    const STATUS_AWAITING_SUPPORT_ACTION = 4;
+
+    /** @var int The issue is closed. */
+    const STATUS_CLOSED = 5;
+
     /** @var int Course id standing for the site wide support team rather than a single course. */
     const SYSTEM_COURSE_ID = 1;
 
@@ -251,7 +261,7 @@ class lib {
 
         $issue->priority = 0;
         $issue->discussionid = $discussionid;
-        $issue->status = 5;
+        $issue->status = self::STATUS_CLOSED;
         $issue->timemodified = time();
         // 4.) remove issue-link from database
         $DB->update_record('local_helpdesk_issues', $issue);
@@ -286,8 +296,9 @@ class lib {
     public static function get_supportmenu() {
         global $CFG, $OUTPUT, $USER;
         $cache = \cache::make('local_helpdesk', 'supportmenu');
-        if (!empty($cache->get($USER->id))) {
-            return $cache->get($USER->id);
+        $cachekey = \local_helpdesk\local\supportmenu_cache::key();
+        if (!empty($cache->get($cachekey))) {
+            return $cache->get($cachekey);
         }
 
         $extralinksfromconfig = get_config('local_helpdesk', 'extralinks');
@@ -333,7 +344,7 @@ class lib {
             'issuesurl' => $issuesurl,
             ]
         );
-        $cache->set($USER->id, $nav);
+        $cache->set($cachekey, $nav);
         return $nav;
     }
 
@@ -348,7 +359,7 @@ class lib {
         $issue = self::get_issue($discussionid);
 
         $issue->priority = 1;
-        $issue->status = LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION;
+        $issue->status = self::STATUS_AWAITING_SUPPORT_ACTION;
         $issue->discussionid = $discussionid;
         $issue->timemodified = time();
 
@@ -600,15 +611,16 @@ class lib {
         }
 
         $forums = [];
-        $courseids = implode(',', array_keys(enrol_get_all_users_courses($userid)));
-        if (strlen($courseids) > 0) {
+        $courseids = array_keys(enrol_get_all_users_courses($userid));
+        if (!empty($courseids)) {
+            [$insql, $inparams] = $DB->get_in_or_equal($courseids);
             $sql = " SELECT f.id,f.name,f.course
                         FROM {local_helpdesk} be, {forum} f, {course} c
                         WHERE f.course=c.id
                             AND be.forumid=f.id
-                            AND c.id IN ($courseids)
+                            AND c.id $insql
                         ORDER BY c.fullname ASC, f.name ASC";
-            $forumsfromdb = $DB->get_records_sql($sql, []);
+            $forumsfromdb = $DB->get_records_sql($sql, $inparams);
             $delimiter = ' > ';
             foreach ($forumsfromdb as &$forum) {
                 $course = $DB->get_record('course', ['id' => $forum->course], 'id,fullname');
@@ -651,8 +663,8 @@ class lib {
                 JOIN {forum_discussions} f
                     ON edu.discussionid = f.id
                 WHERE edu.priority = 0
-                AND f.timemodified < {$expirationtime}";
-        $records = $DB->get_records_sql($sql);
+                AND f.timemodified < :expirationtime";
+        $records = $DB->get_records_sql($sql, ['expirationtime' => $expirationtime]);
         return $records;
     }
 
@@ -1254,13 +1266,14 @@ class lib {
             $msg->fullmessagehtml = $posthtml;
             $msg->smallmessage = $postsubject;
             $msg->contexturl = $issueurl; // A relevant URL for the notification.
-            $msg->contexturlname = 'Issue'; // Link title explaining where users get to for the contexturl.
+            // Link title explaining where users get to for the contexturl.
+            $msg->contexturlname = get_string('issue', 'local_helpdesk');
             $msg->name = 'helpdesk_issue';
             $msg->component = 'local_helpdesk';
             $msg->notification = 1;
             message_send($msg);
         } else {
-            self::set_status(LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+            self::set_status(self::STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
         }
 
         return true;
@@ -1366,7 +1379,8 @@ class lib {
         $msg->fullmessagehtml = $posthtml;
         $msg->smallmessage = $postsubject;
         $msg->contexturl = $issueurl; // A relevant URL for the notification.
-        $msg->contexturlname = 'Issue'; // Link title explaining where users get to for the contexturl.
+        // Link title explaining where users get to for the contexturl.
+            $msg->contexturlname = get_string('issue', 'local_helpdesk');
         $msg->name = 'helpdesk_issue';
         $msg->component = 'local_helpdesk';
         $msg->notification = 1;
@@ -1712,7 +1726,7 @@ class lib {
 
         $DB->update_record('local_helpdesk_issues', $issue);
 
-        if ($status == LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION && get_config('local_helpdesk', 'sendreminders')) {
+        if ($status == self::STATUS_AWAITING_SUPPORT_ACTION && get_config('local_helpdesk', 'sendreminders')) {
             self::send_reminder($issueid);
         }
     }
@@ -1749,20 +1763,11 @@ class lib {
      * @param int $issueid
      */
     public static function issue_already_has_reminder(int $issueid) {
-        global $DB;
-
-        $sql =
-            "SELECT COUNT(*) AS cnt
-            FROM {task_adhoc}
-            WHERE component = 'local_helpdesk'
-            AND classname = '\\local_helpdesk\\task\\reminder'
-            AND customdata LIKE '{_issueid_:" . $issueid . "}%'";
-
-        $record = $DB->get_record_sql($sql);
-        $futurereminderscount = $record->cnt;
-
-        if ($futurereminderscount > 0) {
-            return true;
+        foreach (\core\task\manager::get_adhoc_tasks(task\reminder::class) as $task) {
+            $data = $task->get_custom_data();
+            if (!empty($data->issueid) && (int) $data->issueid === $issueid) {
+                return true;
+            }
         }
         return false;
     }
@@ -1775,25 +1780,25 @@ class lib {
      */
     public static function status_to_template(int $status): array {
         switch ($status) {
-            case LOCAL_HELPDESK_ISSUE_STATUS_NOTSTARTED:
+            case self::STATUS_NOTSTARTED:
                 return ['status' => get_string('status:notstarted', 'local_helpdesk'), 'class' => 'badge badge-danger',
                     'stateclass' => 'notstarted'];
                 break;
-            case LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_USER_REPLY:
+            case self::STATUS_AWAITING_USER_REPLY:
                 return ['status' => get_string('status:awaitinguserreply', 'local_helpdesk'),
                     'class' => 'badge badge-brown',
                     'stateclass' => 'awaiting'];
                 break;
-            case LOCAL_HELPDESK_ISSUE_STATUS_ONGOING:
+            case self::STATUS_ONGOING:
                 return ['status' => get_string('status:ongoing', 'local_helpdesk'), 'class' => 'badge badge-success',
                     'stateclass' => 'ongoing'];
                 break;
-            case LOCAL_HELPDESK_ISSUE_STATUS_AWAITING_SUPPORT_ACTION:
+            case self::STATUS_AWAITING_SUPPORT_ACTION:
                 return ['status' => get_string('status:awaitingsupportaction', 'local_helpdesk'),
                     'class' => 'badge badge-orange',
                     'stateclass' => 'awaitingsupportaction'];
                 break;
-            case LOCAL_HELPDESK_ISSUE_STATUS_CLOSED:
+            case self::STATUS_CLOSED:
                 return ['status' => get_string('status:closed', 'local_helpdesk'), 'class' => 'badge badge-success',
                     'stateclass' => 'closed'];
                 break;

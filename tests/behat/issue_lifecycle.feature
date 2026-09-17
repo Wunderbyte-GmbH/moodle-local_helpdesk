@@ -37,15 +37,15 @@ Feature: Handling a support issue from creation to closing
   Scenario: Closing an issue from the issue list marks it as closed
     Given I log in as "supporter1"
     And I visit "/local/helpdesk/issues.php"
-    When I click on "close issue" "link"
+    When I click on "Close issue" "link"
     Then I should see "🔒 Printer is broken"
 
   Scenario: A closed issue can be reopened from the issue list
     Given I log in as "supporter1"
     And I visit "/local/helpdesk/issues.php"
-    And I click on "close issue" "link"
+    And I click on "Close issue" "link"
     And I should see "🔒 Printer is broken"
-    When I click on "reopen" "link"
+    When I click on "Reopen issue" "link"
     Then I should see "Printer is broken"
     And I should not see "🔒 Printer is broken"
 

@@ -25,6 +25,9 @@
 
 $string['accountmanager'] = 'Dein Account Manager';
 $string['accountmanagers'] = 'Account Manager';
+$string['accountmanagertitle'] = 'Account Manager';
+$string['allowguesttickets'] = 'Anfragen von Gästen zulassen.';
+$string['allowguesttickets:description'] = 'Gäste können eine Anfrage stellen und erhalten Neuigkeiten dazu per E-Mail.';
 $string['archive'] = 'Archiv';
 $string['assigned'] = 'Zugeordnet';
 $string['auto2ndlvl'] = 'Automatische Weiterleitung zum 2nd Level Support';
@@ -53,6 +56,7 @@ $string['coursesupporters:nosupportforum'] = 'Dieser Kurs enthält kein Supportf
 $string['create_issue'] = 'Support kontaktieren';
 $string['create_issue_error_description'] = 'Die Anfrage konnte nicht gespeichert werden!';
 $string['create_issue_error_title'] = 'Fehler';
+$string['create_issue_mail_success_description'] = 'Ihre Anfrage wurde gespeichert. Wir helfen Ihnen so bald wie möglich!';
 $string['create_issue_success_close'] = 'Schließen';
 $string['create_issue_success_description'] = 'Ihre Anfrage wurde gespeichert. Wir kümmern uns darum so rasch wie möglich!';
 $string['create_issue_success_description_mail'] = 'Ihre Anfrage wurde per e-Mail gesendet. Wir kümmern uns darum so rasch wie möglich!';
@@ -68,6 +72,8 @@ $string['customfieldname:description'] = 'Profilfeldname für den Gruppenmodus';
 $string['dedicatedsupporter'] = 'Zugewiesen';
 $string['dedicatedsupporter:not_successfully_set'] = 'Konnte bevorzugte/n Supportmitarbeiter/in nicht auswählen.';
 $string['dedicatedsupporter:successfully_set'] = 'Erfolgreich eine/n bevorzugte/n Supportmitarbeiter/in ausgewählt.';
+$string['deletethreshhold'] = 'Geschlossene Anfragen löschen nach';
+$string['deletethreshhold:description'] = 'Legt fest, nach welcher Zeit geschlossene Anfragen aus der Anfragenliste gelöscht werden. Das betrifft nur die Anfragenliste, nicht die Forumsbeiträge. 0 bedeutet, dass geschlossene Anfragen für immer behalten werden (derzeit nicht empfohlen).';
 $string['description'] = 'Beschreiben Sie das Problem und posten Sie den Link zur Seite oder zum Kurs wo das Problem auftrat';
 $string['description_missing'] = 'Bitte geben Sie eine detaillierte Beschreibung an!';
 $string['email_to_xyz'] = 'Sende e-Mail an {$a->email}';
@@ -102,13 +108,14 @@ $string['holidaymode_is_on_descr'] = 'Bei aktiviertem Urlaubsmodus werden Ihnen 
 $string['holidaymodeenabled'] = "Urlaubsmodus aktivieren";
 $string['holidaymodeenabled:description'] = "Urlaubsmodus: Supporter bekommen bis zu einem bestimmten Datum keine Tickets.";
 $string['invalidmail'] = 'Bitte tragen Sie eine richtige E-Mail Adresse ein.';
-$string['issue'] = 'Ticket';
+$string['issue'] = 'Anfrage';
 $string['issue:assigned'] = 'Sie wurden folgendem Ticket zugewiesen:';
 $string['issue:countassigned'] = 'verfolgte Tickets';
 $string['issue:countclosed'] = 'geschlossene Tickets';
 $string['issue:countcurrent'] = 'offene Tickets';
 $string['issue:countother'] = 'andere Tickets';
 $string['issue_assign'] = 'Zuordnen';
+$string['issue_assign_me'] = 'Mir zuweisen';
 $string['issue_assign_nextlevel'] = 'Dieses Ticket dem Plattform-Support zuweisen';
 $string['issue_assign_nextlevel:error'] = 'Entschuldigung, das Ticket konnte nicht dem Plattform Support Team zugewiesen werden.';
 $string['issue_assign_nextlevel:msgtosupporter'] = '<p>Ihnen wurde ein neuer Support-Request zugewiesen. Die folgende Nachricht wurde NICHT an den Benutzer gesendet,
@@ -127,6 +134,7 @@ $string['issue_assigned:subject'] = 'Supportanfrage zugeordnet';
 $string['issue_close'] = 'Anfrage schließen';
 $string['issue_closed:post'] = 'Dieses Ticket wurde von <a href="{$a->wwwroot}/user/view.php?id={$a->fromuserid}">{$a->fromuserfullname}</a> geschlossen. Falls Sie weitere Unterstützung benötigen, fordern Sie bitte wieder das Plattform Support Team an!';
 $string['issue_closed:subject'] = 'Anfrage wurde geschlossen';
+$string['issue_reopen'] = 'Anfrage wieder öffnen';
 $string['issue_responsibles:post'] = '
     <p>
         Die Verantwortung für dieses Ticket liegt bei: {$a->responsibles}!
@@ -140,6 +148,8 @@ $string['issue_revoke'] = 'Ticket vom höheren Supportlevel zurücknehmen';
 $string['issue_revoke:error'] = 'Entschuldigung, dieses Ticket konnte vom höheren Supportlevel nicht zurückgeholt werden!';
 $string['issue_revoke:post'] = '<a href="{$a->wwwroot}/user/view.php?id={$a->fromuserid}">{$a->fromuserfullname}</a> hat dieses Ticket vom höheren Supportlevel zurückgenommen';
 $string['issue_revoke:subject'] = 'Ticket storniert';
+$string['issue_unwatch'] = 'Nicht mehr beobachten';
+$string['issue_watch'] = 'Beobachten';
 $string['issuereceived'] = '<p>Danke, dass Sie sich gemeldet haben. Ihre Supportanfrage ist eingelangt.</p>
 <p>Sie werden in Kürze eine Antwort auf Ihre Frage erhalten. Bitte haben Sie Verständnis dafür, dass die Lösung einiger Probleme mehr Zeit beansprucht und es einige Tage dauern kann, bis wir Ihnen eine Lösung anbieten können.</p>
 <p>Sie erhalten diese E-Mail, weil Sie das Team über eine Support-Anfrage um Hilfe gebeten haben. Sie finden alle Ihre Anfragen im <a href="{$a->wwwroot}/mod/forum/view.php?id={$a->cmid}">Support-Forum</a> auf {$a ->Sitename}.';
@@ -155,6 +165,7 @@ $string['issues:openmine'] = '{$a} für mich';
 $string['issues:opennosupporter'] = '{$a} nicht zugeordnet';
 $string['issues:other'] = 'Andere Anfragen';
 $string['issues:other:none'] = 'Super, auf diesem Planeten gibt es keine Probleme mehr, oder doch?';
+$string['issues:show'] = 'Helpdesk-Anfragen anzeigen';
 $string['label:2ndlevel'] = 'Plattform Support Team';
 $string['level'] = 'Ebene';
 $string['level:first'] = '1st Level, ein Kurs';
@@ -271,6 +282,11 @@ $string['sendsupporterassignments:description'] = 'Benachrichtigen Sie den Benut
 $string['setaccountmanager'] = 'Setze Account Manager';
 $string['showresponsibles'] = 'Ansprechpersonen der anfragenden Person anzeigen';
 $string['showresponsibles:description'] = 'Nach dem Abschicken einer Supportanfrage anzeigen, wer sich darum kümmert - namentlich, im Bestätigungsdialog und in einem automatischen Beitrag im Ticket. Abschalten, wenn die Ansprechpersonen eines Kurses ungenannt bleiben sollen. Die Supporter werden in jedem Fall über neue Tickets benachrichtigt.';
+$string['spamprotection:exception'] = 'Die maximale Anzahl an Anfragen wurde leider überschritten. Bitte versuchen Sie es in ein paar Minuten noch einmal.';
+$string['spamprotection:limit'] = 'Spamschutz > Limit';
+$string['spamprotection:limit:description'] = 'Wie viele Anfragen innerhalb des Zeitraums höchstens erstellt werden können.';
+$string['spamprotection:threshold'] = 'Spamschutz > Minuten';
+$string['spamprotection:threshold:description'] = 'Der Zeitraum, der für den Spamschutz herangezogen wird.';
 $string['startedby'] = 'Gestartet von';
 $string['status'] = 'Status';
 $string['status:awaitingsupportaction'] = 'Erwarte Bearbeitung durch Supporter:in';

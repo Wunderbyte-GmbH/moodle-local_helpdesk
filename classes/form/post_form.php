@@ -25,18 +25,27 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_helpdesk\form;
+
 defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
+
+use context_module;
+use core_tag_tag;
+use moodleform;
+use stdClass;
 
 /**
  * Class to post in a forum.
  *
- * @package   mod_forum
+ * @package   local_helpdesk
  * @copyright Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_helpdesk_post_form extends moodleform {
+class post_form extends moodleform {
     /**
      * Returns the options array to use in filemanager for forum attachments
      *

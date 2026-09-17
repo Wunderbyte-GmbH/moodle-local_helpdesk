@@ -24,9 +24,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_helpdesk;
+namespace local_helpdesk\form;
 
 defined('MOODLE_INTERNAL') || die;
+
+global $CFG;
 
 require_once($CFG->libdir . "/formslib.php");
 

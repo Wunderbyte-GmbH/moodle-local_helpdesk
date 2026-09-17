@@ -61,11 +61,12 @@ class reminder extends \core\task\adhoc_task {
                 FROM {local_helpdesk_issues}
                 WHERE priority > 0
                 AND currentsupporter > 0
-                AND status = 4 -- Awaiting support action status.
+                AND status = :status
                 AND id = :issueid
                 ORDER BY currentsupporter ASC";
 
         $params = [
+            'status' => \local_helpdesk\lib::STATUS_AWAITING_SUPPORT_ACTION,
             'issueid' => $taskdata->issueid,
         ];
 

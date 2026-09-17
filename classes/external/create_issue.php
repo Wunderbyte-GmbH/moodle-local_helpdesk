@@ -15,66 +15,47 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External API class for helpdesk plugin.
- * Provides web service methods for creating and managing support issues.
+ * Web service to file a support request.
+ *
  * @package    local_helpdesk
- * @copyright  2018 Digital Education Society (http://www.dibig.at)
+ * @copyright  2019 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace local_helpdesk\external;
+
+use completion_info;
+use context_module;
+use context_system;
 use core\message\message;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+use core_user;
 use local_helpdesk\guest_supportuser;
 use local_helpdesk\lib;
 use local_helpdesk\task\send_mail;
-
-defined('MOODLE_INTERNAL') || die;
-
-require_once($CFG->libdir . "/externallib.php");
-require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
+use moodle_exception;
+use moodle_url;
+use stdClass;
 
 /**
- * External API class for helpdesk plugin.
- * Provides web service methods for creating and managing support issues.
+ * Web service to file a support request.
+ *
  * @package    local_helpdesk
- * @copyright  2018 Digital Education Society (http://www.dibig.at)
+ * @copyright  2019 Digital Education Society (http://www.dibig.at)
  * @author     Robert Schrenk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_helpdesk_external extends external_api {
-    /**
-     * Returns description of method parameters.
-     *
-     * @return external_function_parameters
-     */
-    public static function close_issue_parameters() {
-        return new external_function_parameters([
-            'discussionid' => new external_value(PARAM_INT, 'discussionid'),
-        ]);
-    }
-    /**
-     * Close a support issue (discussion).
-     *
-     * @param int $discussionid The discussion ID to close
-     * @return mixed Result of closing the issue
-     */
-    public static function close_issue($discussionid) {
-        global $CFG;
-        $params = self::validate_parameters(self::close_issue_parameters(), ['discussionid' => $discussionid]);
-        return lib::close_issue($params['discussionid']);
-    }
-    /**
-     * Returns description of the return value for close_issue.
-     *
-     * @return external_value
-     */
-    public static function close_issue_returns() {
-        return new external_value(PARAM_RAW, 'Returns 1 if successful, or error message.');
-    }
+class create_issue extends external_api {
     /**
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function create_issue_parameters() {
+    public static function execute_parameters() {
         return new external_function_parameters([
             'subject' => new external_value(PARAM_TEXT, 'subject of this issue'),
             'description' => new external_value(PARAM_RAW, 'default for whole package otherwise channel name'),
@@ -108,7 +89,7 @@ class local_helpdesk_external extends external_api {
      * @param int|null $accountmanager Account manager ID (optional).
      * @return array Array containing discussionid and responsibles.
      */
-    public static function create_issue(
+    public static function execute(
         $subject,
         $description,
         $forumgroup,
@@ -121,6 +102,7 @@ class local_helpdesk_external extends external_api {
         $accountmanager = null
     ): array {
         global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SITE;
+        require_once($CFG->dirroot . '/mod/forum/lib.php');
 
         // Counted per person, or per address for somebody who is not logged in.
         \local_helpdesk\local\rate_limiter::register_ticket();
@@ -137,7 +119,7 @@ class local_helpdesk_external extends external_api {
         }
 
         $params = self::validate_parameters(
-            self::create_issue_parameters(),
+            self::execute_parameters(),
             ['subject' => $subject, 'description' => $description, 'forum_group' => $forumgroup,
                         'postto2ndlevel' => $postto2ndlevel, 'image' => $image, 'screenshotname' => $screenshotname, 'url' => $url,
             'contactphone' => $contactphone,
@@ -170,7 +152,12 @@ class local_helpdesk_external extends external_api {
             $groupid = $tmp[1];
         }
 
-        $PAGE->set_context(context_system::instance());
+        if (isloggedin() && !isguestuser()) {
+            self::validate_context(context_system::instance());
+        } else {
+            // Requests can be filed without logging in, if the guest mode is on.
+            $PAGE->set_context(context_system::instance());
+        }
 
         if ($forumgroup == 'mail' || empty($forumid)) {
             // Fallback and send by mail!
@@ -236,8 +223,6 @@ class local_helpdesk_external extends external_api {
                 }
 
                 $context = context_module::instance($cm->id);
-                // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-                /* self::validate_context($context); */
 
                 // Validate options.
                 $options = [
@@ -490,7 +475,8 @@ class local_helpdesk_external extends external_api {
                             $msg->fullmessagehtml = $posthtml;
                             $msg->smallmessage = $postsubject;
                             $msg->contexturl = $issueurl; // A relevant URL for the notification.
-                            $msg->contexturlname = 'Issue'; // Link title explaining where users get to for the contexturl.
+                            // Link title explaining where users get to for the contexturl.
+                            $msg->contexturlname = get_string('issue', 'local_helpdesk');
                             $msg->name = 'helpdesk_issue';
                             $msg->component = 'local_helpdesk';
                             $msg->notification = 1;
@@ -503,8 +489,6 @@ class local_helpdesk_external extends external_api {
                 } else {
                     throw new moodle_exception('couldnotadd', 'forum');
                 }
-                $reply['discussionid'] = -2;
-                return $reply;
             } else {
                 $reply['discussionid'] = -1;
                 return $reply;
@@ -516,235 +500,23 @@ class local_helpdesk_external extends external_api {
      * Return definition.
      * @return external_single_structure
      */
-    public static function create_issue_returns() {
-        return new \external_single_structure(
+    public static function execute_returns() {
+        return new external_single_structure(
             [
-                'discussionid' => new \external_value(
+                'discussionid' => new external_value(
                     PARAM_INT,
                     'Returns the discussion id of the created issue, -999 when mail was sent, or -1 on error'
                 ),
-                'responsibles' => new \external_multiple_structure(
-                    new \external_single_structure(
+                'responsibles' => new external_multiple_structure(
+                    new external_single_structure(
                         [
-                            'userid' => new \external_value(PARAM_INT, 'UserID of person or entity'),
-                            'name' => new \external_value(PARAM_TEXT, 'Name of person or entity'),
-                            'email' => new \external_value(PARAM_EMAIL, 'e-Mail of person or entity'),
+                            'userid' => new external_value(PARAM_INT, 'UserID of person or entity'),
+                            'name' => new external_value(PARAM_TEXT, 'Name of person or entity'),
+                            'email' => new external_value(PARAM_EMAIL, 'e-Mail of person or entity'),
                         ]
                     )
                 ),
             ]
         );
-    }
-
-    /**
-     * Returns description of method parameters
-     * @return external_function_parameters
-     */
-    public static function create_form_parameters() {
-        return new external_function_parameters([
-            'url' => new external_value(PARAM_TEXT, 'subject of this issue'),
-            'image' => new external_value(PARAM_RAW, 'base64 encoded image or empty'),
-            'forumid' => new external_value(PARAM_INT, 'forumid the form is for'),
-        ]);
-    }
-
-    /**
-     * Create the form for submitting support requests. The form will be displayed in a modal.
-     *
-     * @param string $url The URL where the error happened
-     * @param string $image Base64 encoded image or empty string
-     * @param int $forumid The forum ID the form is for
-     * @return string The rendered form HTML
-     */
-    public static function create_form($url, $image, $forumid): string {
-        global $CFG, $PAGE, $USER, $OUTPUT;
-
-        $params = self::validate_parameters(
-            self::create_form_parameters(),
-            ['url' => $url, 'image' => $image, 'forumid' => $forumid]
-        );
-
-        $PAGE->set_context(context_system::instance());
-
-        lib::before_popup();
-
-        require_once($CFG->dirroot . '/local/helpdesk/classes/issue_create_form.php');
-        $params['contactphone'] = $USER->phone1;
-        $form = new \issue_create_form(null, null, 'post', '_self', ['id' => 'local_helpdesk_create_form'], true);
-        $form->set_data((object) $params);
-        $prepageenabled = get_config('local_helpdesk', 'enableprepage');
-        $prepage = get_config('local_helpdesk', 'prepage');
-        if ($prepageenabled && $prepage) {
-            $templatedata['prepage'] = format_text($prepage, FORMAT_HTML);
-            $templatedata['form'] = $form->render();
-            $output = $OUTPUT->render_from_template('local_helpdesk/prepageenabled', $templatedata);
-        } else {
-            $output = $form->render();
-        }
-        return $output;
-    }
-    /**
-     * Return definition.
-     * @return external_value
-     */
-    public static function create_form_returns() {
-        return new external_value(PARAM_RAW, 'Returns the form as html');
-    }
-
-    /**
-     * Returns description of method parameters for get_potentialsupporters.
-     *
-     * @return external_function_parameters
-     */
-    public static function get_potentialsupporters_parameters() {
-        return new external_function_parameters(
-            [
-                'discussionid' => new external_value(PARAM_INT, 'discussionid'),
-            ]
-        );
-    }
-
-    /**
-     * Get potential supporters for a discussion.
-     *
-     * @param int $discussionid The discussion ID
-     * @return string JSON encoded array of potential supporters grouped by support level
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws invalid_parameter_exception
-     */
-    public static function get_potentialsupporters(int $discussionid) {
-        global $DB, $USER;
-        $params = self::validate_parameters(self::get_potentialsupporters_parameters(), ['discussionid' => $discussionid]);
-        $reply['supporters'] = [];
-
-        $discussion = $DB->get_record('forum_discussions', ['id' => $params['discussionid']]);
-        // A ticket is handed over inside the platform team, so only that team is offered.
-        $sql = "SELECT s.userid, u.firstname, u.lastname, s.supportlevel
-                    FROM {user} u
-                    JOIN {local_helpdesk_supporters} s ON s.userid = u.id
-                    WHERE s.courseid = :courseid
-                        AND u.deleted = 0
-                    ORDER BY u.lastname ASC, u.firstname ASC";
-        $supporters = $DB->get_records_sql($sql, ['courseid' => lib::SYSTEM_COURSE_ID]);
-        foreach ($supporters as $supporter) {
-            if (empty($supporter->supportlevel)) {
-                $supporter->supportlevel = get_string('label:2ndlevel', 'local_helpdesk');
-            }
-            if (!isset($reply['supporters'][$supporter->supportlevel])) {
-                $reply['supporters'][$supporter->supportlevel] = [];
-            }
-            if (isset($supporter->userid) && $supporter->userid == $USER->id) {
-                $supporter->selected = true;
-            }
-
-            // Todo: @dasistwas This code makes no sense becuase $issue is never assigned!
-            // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-            /* if (empty($issue->currentsupporter) && $supporter->userid == $USER->id) {
-                $supporter->selected = true;
-            } else if ($issue->currentsupporter == $supporter->userid) {
-                $supporter->selected = true;
-            }*/
-            $reply['supporters'][$supporter->supportlevel][] = $supporter;
-        }
-
-        return json_encode($reply, JSON_NUMERIC_CHECK);
-    }
-
-    /**
-     * Returns description of the return value for get_potentialsupporters.
-     *
-     * @return external_value
-     */
-    public static function get_potentialsupporters_returns() {
-        return new external_value(PARAM_RAW, 'Returns a json encoded array containing potential supporters.');
-    }
-
-    /**
-     * Returns description of method parameters for set_currentsupporter.
-     *
-     * @return external_function_parameters
-     */
-    public static function set_currentsupporter_parameters() {
-        return new external_function_parameters(
-            [
-                'discussionid' => new external_value(PARAM_INT, 'discussionid'),
-                'supporterid' => new external_value(PARAM_INT, 'supporterid (userid)'),
-            ]
-        );
-    }
-    /**
-     * Set the current supporter for a discussion.
-     *
-     * @param int $discussionid The discussion ID
-     * @param int $supporterid The supporter user ID to assign
-     * @return int 1 when the issue was handed over.
-     * @throws \moodle_exception when the assignment is not allowed.
-     */
-    public static function set_currentsupporter($discussionid, $supporterid) {
-        global $CFG, $DB, $USER;
-        $params = self::validate_parameters(
-            self::set_currentsupporter_parameters(),
-            ['discussionid' => $discussionid, 'supporterid' => $supporterid]
-        );
-        // Report a refusal as an exception, so the caller gets the reason instead of a bare failure.
-        $error = lib::validate_supporter_assignment($params['discussionid'], $params['supporterid']);
-        if ($error !== null) {
-            throw new \moodle_exception($error, 'local_helpdesk');
-        }
-        lib::set_current_supporter($params['discussionid'], $params['supporterid']);
-        return 1;
-    }
-    /**
-     * Returns description of the return value for set_currentsupporter.
-     *
-     * @return external_value
-     */
-    public static function set_currentsupporter_returns() {
-        return new external_value(PARAM_RAW, 'Returns 1 if successful.');
-    }
-
-
-    /**
-     * Returns description of method parameters for set_status.
-     *
-     * @return external_function_parameters
-     */
-    public static function set_status_parameters() {
-        return new external_function_parameters([
-            'status' => new external_value(PARAM_INT, 'status'),
-            'issueid' => new external_value(PARAM_INT, 'issueid'),
-        ]);
-    }
-
-    /**
-     * Set the status of a support issue.
-     *
-     * @param int $status The status value to set
-     * @param int $issueid The issue (discussion) ID
-     * @return int Returns 1 if successful, 0 if no permissions
-     * @throws coding_exception
-     * @throws invalid_parameter_exception
-     * @throws moodle_exception
-     * @throws require_login_exception
-     */
-    public static function set_status(int $status, int $issueid) {
-        global $USER;
-        require_login();
-        $params = self::validate_parameters(self::set_status_parameters(), ['status' => $status, 'issueid' => $issueid]);
-        if (lib::can_view_issues($USER->id)) {
-            lib::set_status($params['status'], $params['issueid']);
-            return 1;
-        }
-        return 0;
-    }
-
-    /**
-     * Returns description of the return value for set_status.
-     *
-     * @return external_value
-     */
-    public static function set_status_returns() {
-        return new external_value(PARAM_INT, 'Returns 1 if successful');
     }
 }

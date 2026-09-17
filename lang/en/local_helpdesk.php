@@ -115,6 +115,7 @@ $string['issue:countclosed'] = 'Closed issues';
 $string['issue:countcurrent'] = 'Open issues';
 $string['issue:countother'] = 'Other issues';
 $string['issue_assign'] = 'Assign issue';
+$string['issue_assign_me'] = 'Assign to me';
 $string['issue_assign_nextlevel'] = 'Forward to the platform-support team';
 $string['issue_assign_nextlevel:error'] = 'Sorry, this issue could not be forwarded to the platform support team';
 $string['issue_assign_nextlevel:msgtosupporter'] = '<p>You have been assigned a new support request. The following message has NOT been sent to the user who made the support request
@@ -137,6 +138,7 @@ $string['issue_assigned:subject'] = 'Support request has been assigned';
 $string['issue_close'] = 'Close issue';
 $string['issue_closed:post'] = 'This issue closed was closed by <a href="{$a->wwwroot}/user/view.php?id={$a->fromuserid}">{$a->fromuserfullname}</a>. If you need further assistance please forward this issue again to the platform support team.';
 $string['issue_closed:subject'] = 'Issue closed';
+$string['issue_reopen'] = 'Reopen issue';
 $string['issue_responsibles:post'] = '<p>We are happy to inform you that your support request has been assigned to {$a->responsibles} from the {$a->sitename} support team!</p>
 
    <p>You will receive an answer to your question shortly. Please understand that some issues take longer to resolve and it might take a few days before we can provide you with a solution.</p>
@@ -152,6 +154,8 @@ $string['issue_revoke'] = 'Revoke this issue from higher support level';
 $string['issue_revoke:error'] = 'Sorry, this issue could not be revoked from the higher support levels';
 $string['issue_revoke:post'] = '<a href="{$a->wwwroot}/user/view.php?id={$a->fromuserid}">{$a->fromuserfullname}</a> revoked this issue from the higher support level';
 $string['issue_revoke:subject'] = 'Supportissue revoked';
+$string['issue_unwatch'] = 'Stop watching';
+$string['issue_watch'] = 'Watch';
 $string['issuereceived'] = '<p>Thank you for reaching out, your support request has been received.</p>
 
 <p>You will receive an answer to your question shortly. Please understand that some issues take longer to resolve and it might take a few days before we can provide you with a solution.</p>
@@ -170,6 +174,7 @@ $string['issues:openmine'] = '{$a} for me';
 $string['issues:opennosupporter'] = '{$a} unassigned';
 $string['issues:other'] = 'Other issues';
 $string['issues:other:none'] = 'Great, there seem to be no more problems on that planet!';
+$string['issues:show'] = 'Show Helpdesk issues';
 $string['label:2ndlevel'] = 'Platform support team';
 $string['level'] = 'Level';
 $string['level:first'] = 'First level, one course';
