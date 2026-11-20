@@ -79,7 +79,7 @@ if (!$editable) {
     $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
 
     if (!$vdiscussion) {
-        throw new \moodle_exception('Unable to find discussion with id ' . $discussionid);
+        throw new \moodle_exception('invaliddiscussionid', 'forum');
     }
 
     $forumvault = $vaultfactory->get_forum_vault();
@@ -87,7 +87,7 @@ if (!$editable) {
     $forum = $DB->get_record('forum', ['id' => $vdiscussion->get_forum_id()]);
 
     if (!$forum) {
-        throw new \moodle_exception('Unable to find forum with id ' . $vdiscussion->get_forum_id());
+        throw new \moodle_exception('invalidforumid', 'forum');
     }
 
     $course = get_course($forum->course);
@@ -150,7 +150,7 @@ if (!$editable) {
         [
             'attachments' => $draftitemid,
             'general' => $heading,
-            'subject' => 'Re: ' . $post->subject,
+            'subject' => $post->subject,
             'message' => [
                 'text' => $currenttext,
                 'format' => editors_get_preferred_format(),

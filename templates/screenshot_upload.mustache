@@ -1,0 +1,39 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_helpdesk/screenshot_upload
+
+    The file input of the support form a screenshot is chosen with. local_helpdesk/main reads
+    the file and sends it along with the request.
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div class="form-group row fitem">
+    <div class="col-md-3">
+        <label for="local_helpdesk_screenshot_input">{{#str}} screenshot, local_helpdesk {{/str}}</label>
+    </div>
+    <div class="col-md-9" id="helpdesk_screenshot">
+        <input type="file" id="local_helpdesk_screenshot_input" accept="image/*" data-action="local_helpdesk-uploadscreenshot">
+        <div class="alert alert-danger hidden mt-2">{{#str}} screenshot:upload:failed, local_helpdesk {{/str}}</div>
+        <div class="alert alert-success hidden mt-2">{{#str}} screenshot:upload:successful, local_helpdesk {{/str}}</div>
+    </div>
+</div>

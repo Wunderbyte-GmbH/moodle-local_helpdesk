@@ -97,7 +97,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
 
     if (!$vdiscussion) {
-        throw new \moodle_exception('Unable to find discussion with id ' . $discussionid);
+        throw new \moodle_exception('invaliddiscussionid', 'forum');
     }
 
     $forumvault = $vaultfactory->get_forum_vault();
@@ -105,7 +105,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     $forum = $DB->get_record('forum', ['id' => $vdiscussion->get_forum_id()]);
 
     if (!$forum) {
-        throw new \moodle_exception('Unable to find forum with id ' . $vdiscussion->get_forum_id());
+        throw new \moodle_exception('invalidforumid', 'forum');
     }
 
     $cm = get_coursemodule_from_instance('forum', $forum->id, 0, false, MUST_EXIST);
@@ -144,6 +144,12 @@ if (!\local_helpdesk\lib::can_view_issues()) {
         }
 
         $postid = empty($post->id) ? null : $post->id;
+        // Like mod_forum: a reply carries the subject of the post, prefixed once.
+        $replysubject = $post->subject;
+        $strre = get_string('re', 'forum');
+        if (!str_starts_with($replysubject, $strre)) {
+            $replysubject = $strre . ' ' . $replysubject;
+        }
         $draftitemid = \file_get_submitted_draft_itemid('attachments');
         \file_prepare_draft_area(
             $draftitemid,
@@ -168,7 +174,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
             [
                 'attachments' => $draftitemid,
                 'general' => $heading,
-                'subject' => 'Re: ' . $post->subject,
+                'subject' => $replysubject,
                 'message' => [
                     'text' => '',
                     'format' => editors_get_preferred_format(),
@@ -383,7 +389,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     $discussionrenderer = $rendererfactory->get_discussion_renderer($vforum, $vdiscussion, $displaymode);
     $orderpostsby = $displaymode == FORUM_MODE_FLATNEWEST ? 'created DESC' : 'created ASC';
     $replies = $postvault->get_replies_to_post($USER, $vpost, true, $orderpostsby);
-    $postids = array_map(function ($vpost) {
+    $postids = array_map(function (\mod_forum\local\entities\post $vpost): int {
         return $vpost->get_id();
     }, array_merge([$vpost], array_values($replies)));
 
@@ -399,9 +405,8 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     $out = ob_get_contents();
     ob_end_clean();
 
-    $out = str_replace("class=\"discussion-settings-menu\"", "class=\"discussion-settings-menu\" style=\"display: none;\"", $out);
-    $out = str_replace("class=\"next-discussion\"", "class=\"next-discussion\" style=\"display: none;\"", $out);
-    $out = str_replace("class=\"prev-discussion\"", "class=\"prev-discussion\" style=\"display: none;\"", $out);
+    // The forum's own tools (moving, pinning, locking, neighbour discussions) are hidden by styles.css:
+    // they act on the forum, not on the issue, and would lead out of the helpdesk.
 
     $out = str_replace(
         $CFG->wwwroot . '/mod/forum/discuss.php',

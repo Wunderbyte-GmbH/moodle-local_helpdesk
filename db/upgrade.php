@@ -29,7 +29,7 @@
  * @param int $oldversion the version the site is upgrading from.
  * @return bool
  */
-function xmldb_local_helpdesk_upgrade($oldversion) {
+function xmldb_local_helpdesk_upgrade(int $oldversion): bool {
     global $DB;
     $dbman = $DB->get_manager();
 

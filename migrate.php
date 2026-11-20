@@ -72,13 +72,11 @@ if ($blocker === 'migrate:nosource') {
     die;
 }
 
-$table = new html_table();
-$table->head = [get_string('migrate:what', 'local_helpdesk'), get_string('migrate:records', 'local_helpdesk')];
-$table->attributes['class'] = 'generaltable';
+$rows = [];
 foreach (edusupport_migrator::get_summary() as $identifier => $count) {
-    $table->data[] = [get_string($identifier, 'local_helpdesk'), $count];
+    $rows[] = ['label' => get_string($identifier, 'local_helpdesk'), 'count' => $count];
 }
-echo html_writer::table($table);
+echo $OUTPUT->render_from_template('local_helpdesk/migrate_summary', ['rows' => $rows]);
 
 if ($blocker) {
     echo $OUTPUT->notification(get_string($blocker, 'local_helpdesk'), 'error');

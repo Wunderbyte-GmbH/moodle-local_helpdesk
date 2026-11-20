@@ -52,17 +52,13 @@ class post_form extends moodleform {
      * @param stdClass $forum
      * @return array
      */
-    public static function attachment_options($forum) {
+    public static function attachment_options(stdClass $forum): array {
         global $COURSE, $PAGE, $CFG;
-        // We use the global variable discussion to load the forum from database.
-        // All the fields of the forum variable are protected!
-        global $DB, $discussion;
-        $dbforum = $DB->get_record('forum', ['id' => $discussion->forum]);
-        $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes, $dbforum->maxbytes);
+        $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes, $forum->maxbytes);
         return [
             'subdirs' => 0,
             'maxbytes' => $maxbytes,
-            'maxfiles' => $dbforum->maxattachments,
+            'maxfiles' => $forum->maxattachments,
             'accepted_types' => '*',
             'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK,
         ];
@@ -72,10 +68,10 @@ class post_form extends moodleform {
      * Returns the options array to use in forum text editor
      *
      * @param context_module $context
-     * @param int $postid post id, use null when adding new post
+     * @param int|null $postid post id, null when adding a new post
      * @return array
      */
-    public static function editor_options(context_module $context, $postid) {
+    public static function editor_options(context_module $context, ?int $postid): array {
         global $COURSE, $PAGE, $CFG;
         // We use the global variable discussion to load the forum from database.
         // All the fields of the forum variable are protected!
@@ -98,22 +94,16 @@ class post_form extends moodleform {
      *
      * @return void
      */
-    public function definition() {
-        global $CFG, $OUTPUT;
+    public function definition(): void {
+        global $OUTPUT;
 
         $mform =& $this->_form;
 
-        $course = $this->_customdata['course'];
-        $cm = $this->_customdata['cm'];
-        $coursecontext = $this->_customdata['coursecontext'];
         $modcontext = $this->_customdata['modcontext'];
         $forum = $this->_customdata['forum'];
         $post = $this->_customdata['post'];
-        $subscribe = $this->_customdata['subscribe'];
         $edit = $this->_customdata['edit'];
         $thresholdwarning = $this->_customdata['thresholdwarning'];
-        $canreplyprivately = array_key_exists('canreplyprivately', $this->_customdata) ?
-            $this->_customdata['canreplyprivately'] : false;
         $inpagereply = $this->_customdata['inpagereply'] ?? false;
 
         if (!$inpagereply) {
@@ -146,8 +136,6 @@ class post_form extends moodleform {
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
         if (!$inpagereply) {
-            $manageactivities = has_capability('moodle/course:manageactivities', $coursecontext);
-
             $mform->addElement('hidden', 'discussionsubscribe');
             $mform->setType('discussionsubscribe', PARAM_INT);
             $mform->setDefaults('discussionsubscribe', 0);
@@ -252,7 +240,7 @@ class post_form extends moodleform {
      * @param array $files files uploaded.
      * @return array of errors.
      */
-    public function validation($data, $files) {
+    public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         if (($data['timeend'] != 0) && ($data['timestart'] != 0) && $data['timeend'] <= $data['timestart']) {
             $errors['timeend'] = get_string('timestartenderror', 'forum');

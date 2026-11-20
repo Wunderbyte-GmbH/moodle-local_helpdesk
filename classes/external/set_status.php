@@ -45,7 +45,7 @@ class set_status extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'status' => new external_value(PARAM_INT, 'status'),
             'issueid' => new external_value(PARAM_INT, 'issueid'),
@@ -63,7 +63,7 @@ class set_status extends external_api {
      * @throws moodle_exception
      * @throws require_login_exception
      */
-    public static function execute(int $status, int $issueid) {
+    public static function execute(int $status, int $issueid): int {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['status' => $status, 'issueid' => $issueid]);
         self::validate_context(context_system::instance());
@@ -86,7 +86,7 @@ class set_status extends external_api {
      *
      * @return external_value
      */
-    public static function execute_returns() {
+    public static function execute_returns(): external_value {
         return new external_value(PARAM_INT, 'Returns 1 if successful');
     }
 }

@@ -55,7 +55,7 @@ if ($issupportteam) {
         require_sesskey();
 
         // Only act on discussions that actually are registered as an issue.
-        $isissue = function ($discussionid) use ($DB) {
+        $isissue = function (int $discussionid) use ($DB): bool {
             return !empty($discussionid)
                 && $DB->record_exists('local_helpdesk_issues', ['discussionid' => $discussionid]);
         };

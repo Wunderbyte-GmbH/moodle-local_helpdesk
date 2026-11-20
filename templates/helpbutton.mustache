@@ -24,7 +24,6 @@
     * extralinks The extra links: id, name, url, faicon and target.
     * showissues Whether to show the button leading to the issue list.
     * issuesurl The address of the issue list.
-    * prepageenabled Whether the support form is preceded by a page of its own.
 
     Example context (json):
     {
@@ -39,8 +38,7 @@
             }
         ],
         "showissues": true,
-        "issuesurl": "https://example.com/local/helpdesk/issues.php",
-        "prepageenabled": false
+        "issuesurl": "https://example.com/local/helpdesk/issues.php"
     }
 }}
 {{#hasextralinks}}
@@ -99,28 +97,3 @@
     </div>
 {{/showissues}}
 
-{{#prepageenabled}}
-<script>
-    if(typeof prepageinitialized == 'undefined') {
-    let prepageinitialized = true;
-        document.addEventListener('click', function (e) {
-            console.log("initclick");
-            console.log(e.target);
-            if (e.target.dataset.toggle == 'helpdesk-prepage') {
-                toggle('#helpdesk-form');
-                toggle('#helpdesk-prepage');
-            }
-        });
-    }
-
-
-    function toggle(selector) {
-        let x = document.querySelector(selector);
-        if (x.style.display === "none") {
-            x.style.display = "block";
-        } else {
-            x.style.display = "none";
-        }
-    }
-</script>
-{{/prepageenabled}}

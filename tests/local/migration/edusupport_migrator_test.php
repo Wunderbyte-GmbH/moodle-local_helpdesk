@@ -213,7 +213,7 @@ final class edusupport_migrator_test extends advanced_testcase {
         // The old role is ours now, with its assignments; the unused one from our install is gone.
         $role = $DB->get_record('role', ['shortname' => 'local_helpdesk'], '*', MUST_EXIST);
         $this->assertEquals($this->oldrole->id, $role->id);
-        $this->assertSame('Helpdesk Team', $role->name);
+        $this->assertSame(get_string('supportteamrole:name', 'local_helpdesk'), $role->name);
         $this->assertEquals($role->id, get_config('local_helpdesk', 'supportteamrole'));
         $this->assertTrue(user_has_role_assignment(
             $this->supporter->id,

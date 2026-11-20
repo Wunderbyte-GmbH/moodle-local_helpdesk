@@ -55,7 +55,7 @@ class create_issue extends external_api {
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'subject' => new external_value(PARAM_TEXT, 'subject of this issue'),
             'description' => new external_value(PARAM_RAW, 'default for whole package otherwise channel name'),
@@ -90,16 +90,16 @@ class create_issue extends external_api {
      * @return array Array containing discussionid and responsibles.
      */
     public static function execute(
-        $subject,
-        $description,
-        $forumgroup,
-        $postto2ndlevel,
-        $image,
-        $screenshotname,
-        $url,
-        $contactphone,
-        $guestmail,
-        $accountmanager = null
+        string $subject,
+        string $description,
+        string $forumgroup,
+        int $postto2ndlevel,
+        string $image,
+        string $screenshotname,
+        string $url,
+        string $contactphone,
+        ?string $guestmail = null,
+        ?int $accountmanager = null
     ): array {
         global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SITE;
         require_once($CFG->dirroot . '/mod/forum/lib.php');
@@ -205,7 +205,6 @@ class create_issue extends external_api {
             if (lib::is_supportforum($forumid) && !empty($potentialtargets[$forumid]->id)) {
                 $canpostto2ndlevel = $potentialtargets[$forumid]->postto2ndlevel;
                 // Mainly copied from mod/forum/externallib.php > add_discussion().
-                $warnings = [];
 
                 // Request and permission validation.
                 $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
@@ -235,7 +234,7 @@ class create_issue extends external_api {
                 // Create group for user id firstlvlgroupmode is active.
                 if (
                     get_config('local_helpdesk', 'firstlvlgroupmode') &&
-                        $cfn = get_config('local_helpdesk', 'customfieldname')
+                        get_config('local_helpdesk', 'customfieldname')
                 ) {
                     require_once("$CFG->dirroot/group/lib.php");
                     $groupname = fullname($user) . ' (' . $user->id . '-coursesupport)';
@@ -254,16 +253,18 @@ class create_issue extends external_api {
                     }
                     if (!empty($group->id)) {
                         // Find support users.
-                        $groupusers = lib::get_support_user_by_matching_customfield($forum->course, $cfn);
+                        $groupusers = lib::get_support_user_by_matching_customfield($forum->course);
                         groups_add_member($group->id, $user);
                         if ($groupusers) {
                             $responsibles = [];
                             // Not $user: that is the person filing the request, and is needed below.
                             foreach ($groupusers as $groupuser) {
                                 groups_add_member($group->id, $groupuser->userid);
-                                $responsibles[] =
-                                    "<a href='{$CFG->wwwroot}/user/profile.php?id={$groupuser->userid}' target='_blank'>" .
-                                        s("{$groupuser->firstname} {$groupuser->lastname}") . "</a>";
+                                $responsibles[] = \html_writer::link(
+                                    new \moodle_url('/user/profile.php', ['id' => $groupuser->userid]),
+                                    s("{$groupuser->firstname} {$groupuser->lastname}"),
+                                    ['target' => '_blank']
+                                );
                             }
                         } else {
                             $postto2ndlevel = true;
@@ -425,9 +426,11 @@ class create_issue extends external_api {
                             $responsibles = [];
                             if (!get_config('local_helpdesk', 'firstlvlgroupmode')) {
                                 foreach ($supporters as $supporter) {
-                                    $responsibles[] =
-                                            "<a href='{$CFG->wwwroot}/user/profile.php?id={$supporter->id}' target='_blank'>" .
-                                                "{$supporter->firstname} {$supporter->lastname}</a>";
+                                    $responsibles[] = \html_writer::link(
+                                        new \moodle_url('/user/profile.php', ['id' => $supporter->id]),
+                                        s("{$supporter->firstname} {$supporter->lastname}"),
+                                        ['target' => '_blank']
+                                    );
                                 }
                             }
                             $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
@@ -493,7 +496,7 @@ class create_issue extends external_api {
      * Return definition.
      * @return external_single_structure
      */
-    public static function execute_returns() {
+    public static function execute_returns(): external_single_structure {
         return new external_single_structure(
             [
                 'discussionid' => new external_value(

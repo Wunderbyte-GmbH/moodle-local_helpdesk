@@ -36,6 +36,8 @@ $PAGE->set_context($context);
 require_login($courseid);
 $PAGE->set_url(new moodle_url('/local/helpdesk/chooseforum.php', ['courseid' => $courseid]));
 
+$PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
+
 $title = get_string('supportforum:choose', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);

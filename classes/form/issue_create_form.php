@@ -60,18 +60,13 @@ class issue_create_form extends moodleform {
      *
      * @return void
      */
-    public function definition() {
-        global $CFG, $COURSE, $SITE;
+    public function definition(): void {
+        global $CFG, $COURSE, $SITE, $OUTPUT;
 
         $faqread = get_config('local_helpdesk', 'faqread');
         $faqlink = get_config('local_helpdesk', 'faqlink');
-        $prioritylvl = get_config('local_helpdesk', 'prioritylvl');
         $disablephonefield = get_config('local_helpdesk', 'phonefield');
         $guestuserallowed = true; // Do we need 'guestuserallowed' from get_config?
-
-        $editoroptions = ['subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0,
-                               'changeformat' => 0, 'context' => null, 'noclean' => 0,
-                               'trusttext' => 0, 'enable_filemanagement' => false];
 
         $mform = $this->_form;
 
@@ -93,12 +88,7 @@ class issue_create_form extends moodleform {
             $mform->addElement('checkbox', 'faqread', '', get_string('faqread:description', 'local_helpdesk', $faqlink));
             $mform->setType('faqread', PARAM_BOOL);
             $mform->addRule('faqread', get_string('subject_missing', 'local_helpdesk'), 'required', true, 'server');
-        } else {
-            $mform->addElement('html', '<input type="checkbox" id="id_faqread" class="autochecked" ' .
-                'style="display: none;" checked="checked" />');
         }
-
-        $mform->addElement('html', '<div id="create_issue_input">');
 
         require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
 
@@ -128,24 +118,13 @@ class issue_create_form extends moodleform {
             $options['mail'] = get_string('email_to_xyz', 'local_helpdesk', (object) ['email' => $supportuser->email]);
         }
 
-        $hideifs = '["' . implode('","', $hideifs) . '"]';
-        $postto2ndlevelhideshow = [
-            'require([\'jquery\'], function($) {',
-                'var val = $(\'#id_forum_group\').val();',
-                '$(\'.helpdesk_label\').addClass(\'hidden\');',
-                '$(\'#helpdesk_label_\' + val).removeClass(\'hidden\');',
-                'var hide = (' . $hideifs . '.indexOf(val) > -1);',
-                'var pt2 = $(\'#id_postto2ndlevel\');',
-                '$(pt2).prop(\'checked\', false);',
-                '$(pt2).closest(\'div.form-group\').css(\'display\', hide ? \'none\' : \'block\');',
-            '});',
-        ];
+        // The targets that cannot forward to the 2nd level. local_helpdesk/main hides the checkbox for them.
         $mform->addElement(
             'select',
             'forum_group',
             get_string('to_group', 'local_helpdesk'),
             $options,
-            ['onchange' => implode("", $postto2ndlevelhideshow)]
+            ['data-no2ndlevel' => json_encode($hideifs)]
         );
         $mform->setType('forum_group', PARAM_INT);
 
@@ -212,22 +191,7 @@ class issue_create_form extends moodleform {
         $mform->setType('postto2ndlevel', PARAM_BOOL);
         $mform->setDefault('postto2ndlevel', 0);
 
-        $fileupload = [
-            '<div class="form-group row fitem">',
-            ' <div class="col-md-3">' . get_string('screenshot', 'local_helpdesk') . '</div>',
-            ' <div class="col-md-9" id="helpdesk_screenshot">',
-            '  <input type="file" data-action="local_helpdesk-uploadscreenshot" /><br />',
-            '  <div class="alert alert-danger hidden">' . get_string('screenshot:upload:failed', 'local_helpdesk') . '</div>',
-            '  <div class="alert alert-success hidden">' . get_string('screenshot:upload:successful', 'local_helpdesk') .
-                '</div>',
-            ' </div>',
-            '</div>',
-        ];
-        $mform->addElement('html', implode("\n", $fileupload));
-        $mform->addElement('html', '<script> setTimeout(function() { ' . implode('', $postto2ndlevelhideshow) .
-            ' }, 100);</script>');
-
-        $mform->addElement('html', '</div>');
+        $mform->addElement('html', $OUTPUT->render_from_template('local_helpdesk/screenshot_upload', []));
     }
 
     /**
@@ -237,7 +201,7 @@ class issue_create_form extends moodleform {
      * @param array $files the submitted files.
      * @return array of errors, keyed by element name.
      */
-    public function validation($data, $files) {
+    public function validation($data, $files): array {
         $errors = [];
         return $errors;
     }
@@ -247,7 +211,7 @@ class issue_create_form extends moodleform {
      *
      * @return array of prefix => label.
      */
-    public function return_priority_options() {
+    public function return_priority_options(): array {
         return [
             "" => get_string('prioritylvl:low', 'local_helpdesk'),
             "!" => get_string('prioritylvl:mid', 'local_helpdesk'),

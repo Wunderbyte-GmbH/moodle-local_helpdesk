@@ -119,17 +119,13 @@ class edusupport_migrator {
             return [];
         }
         [$insql, $inparams] = $DB->get_in_or_equal(array_keys(self::ADHOC_TASKS));
-        [$skipsql, $skipparams] = $DB->get_in_or_equal(self::CONFIG_SKIP, SQL_PARAMS_QM, 'param', false);
+        $settings = array_diff_key((array) get_config(self::SOURCE), array_flip(self::CONFIG_SKIP));
         return [
             'migrate:count:supportforums' => $DB->count_records('local_edusupport'),
             'migrate:count:issues' => $DB->count_records('local_edusupport_issues'),
             'migrate:count:supporters' => $DB->count_records('local_edusupport_supporters'),
             'migrate:count:subscriptions' => $DB->count_records('local_edusupport_subscr'),
-            'migrate:count:settings' => $DB->count_records_select(
-                'config_plugins',
-                "plugin = ? AND name $skipsql",
-                array_merge([self::SOURCE], $skipparams)
-            ),
+            'migrate:count:settings' => count($settings),
             'migrate:count:adhoctasks' => $DB->count_records_select('task_adhoc', "classname $insql", $inparams),
             'migrate:count:preferences' => $DB->count_records_select(
                 'user_preferences',
@@ -243,7 +239,7 @@ class edusupport_migrator {
         }
         $oldrole->shortname = self::TARGET;
         if ($oldrole->name === 'eduSupport Team') {
-            $oldrole->name = 'Helpdesk Team';
+            $oldrole->name = get_string('supportteamrole:name', self::TARGET);
         }
         $DB->update_record('role', $oldrole);
         set_config('supportteamrole', $oldrole->id, self::TARGET);
@@ -285,12 +281,8 @@ class edusupport_migrator {
     protected static function take_over_adhoc_tasks(): void {
         global $DB;
         foreach (self::ADHOC_TASKS as $old => $new) {
-            $tasks = $DB->get_records('task_adhoc', ['classname' => $old], '', 'id');
-            foreach ($tasks as $task) {
-                $task->classname = $new;
-                $task->component = self::TARGET;
-                $DB->update_record('task_adhoc', $task);
-            }
+            $DB->set_field('task_adhoc', 'component', self::TARGET, ['classname' => $old]);
+            $DB->set_field('task_adhoc', 'classname', $new, ['classname' => $old]);
         }
     }
 

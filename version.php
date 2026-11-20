@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2026091900;
+$plugin->version = 2026112000;
 $plugin->requires = 2024100700; // Requires Moodle 4.5.
 $plugin->component = 'local_helpdesk';
 $plugin->release = '1.0.0';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->supported = [405, 500];
+$plugin->supported = [405, 503];

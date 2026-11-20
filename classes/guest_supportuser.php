@@ -90,8 +90,13 @@ class guest_supportuser {
     public function create_guestuser_if_inextistant(): void {
         global $CFG;
         if (!$this->guestuser_exists()) {
-            require_once($CFG->dirroot . '/user/lib.php');
-            $userid = user_create_user($this->user, false, true);
+            if (method_exists(\core\user::class, 'create_user')) {
+                // Moodle 5.3 and later.
+                $userid = \core\user::create_user($this->user, false, true);
+            } else {
+                require_once($CFG->dirroot . '/user/lib.php');
+                $userid = user_create_user($this->user, false, true);
+            }
             // The whole record, as it is for an account that exists already: names are built from it.
             $this->user = \core_user::get_user($userid, '*', MUST_EXIST);
         }

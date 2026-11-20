@@ -58,5 +58,6 @@ echo $OUTPUT->render(new single_button(
     single_button::BUTTON_PRIMARY,
     ['data-action' => 'assign-coursesupporters']
 ));
+echo $OUTPUT->help_icon('coursesupporters:assign', 'local_helpdesk');
 
 echo $OUTPUT->footer();

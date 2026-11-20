@@ -53,24 +53,18 @@ echo html_writer::tag('p', get_string('seedfirstlevel:description', 'local_helpd
 if (empty($report)) {
     echo $OUTPUT->notification(get_string('seedfirstlevel:nocourses', 'local_helpdesk'), 'info');
 } else {
-    $table = new html_table();
-    $table->head = [
-        get_string('course'),
-        get_string('seedfirstlevel:assigned', 'local_helpdesk'),
-        get_string('seedfirstlevel:eligible', 'local_helpdesk'),
-        get_string('seedfirstlevel:toadd', 'local_helpdesk'),
-    ];
-    $table->attributes['class'] = 'generaltable';
+    $rows = [];
     foreach ($report as $row) {
-        $names = empty($row['names']) ? '-' : implode(', ', $row['names']);
-        $table->data[] = [
-            html_writer::link(new moodle_url('/course/view.php', ['id' => $row['courseid']]), $row['coursename']),
-            $row['assigned'],
-            $row['eligible'],
-            $row['toadd'] . ($row['toadd'] ? ' (' . $names . ')' : ''),
+        $rows[] = [
+            'courseurl' => (new moodle_url('/course/view.php', ['id' => $row['courseid']]))->out(false),
+            'coursename' => $row['coursename'],
+            'assigned' => $row['assigned'],
+            'eligible' => $row['eligible'],
+            'toadd' => $row['toadd'],
+            'names' => $row['toadd'] ? implode(', ', $row['names'] ?? []) : '',
         ];
     }
-    echo html_writer::table($table);
+    echo $OUTPUT->render_from_template('local_helpdesk/seedfirstlevel_report', ['rows' => $rows]);
 
     if ($pending) {
         echo $OUTPUT->single_button(

@@ -29,9 +29,13 @@
         "form": "<form method=\"post\" action=\"#\"><p>The support form</p></form>"
     }
 }}
-<div id="helpdesk-prepage">{{{prepage}}}<br>
-    <a class="btn btn-primary" data-toggle="helpdesk-prepage" id="helpdesk-form-toggle">{{#str}} continue {{/str}}</a>
-</div>
-<div id="helpdesk-form" style="display: none">{{{form}}}
-    <a class="btn btn-primary" data-toggle="helpdesk-prepage" id="helpdesk-prepage-toggle">{{#str}} back {{/str}}</a>
+<div data-region="local_helpdesk-prepagecontainer">
+    <div id="helpdesk-prepage" data-region="local_helpdesk-prepage">
+        {{{prepage}}}
+        <a href="#" role="button" class="btn btn-primary mt-2" data-action="local_helpdesk-toggleprepage">{{#str}} continue {{/str}}</a>
+    </div>
+    <div id="helpdesk-form" class="d-none" data-region="local_helpdesk-form">
+        {{{form}}}
+        <a href="#" role="button" class="btn btn-secondary" data-action="local_helpdesk-toggleprepage">{{#str}} back {{/str}}</a>
+    </div>
 </div>

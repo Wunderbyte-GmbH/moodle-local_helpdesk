@@ -157,7 +157,7 @@ class provider implements
      * @param userlist $userlist the list to add the users to.
      * @return void
      */
-    public static function get_users_in_context(userlist $userlist) {
+    public static function get_users_in_context(userlist $userlist): void {
         $context = $userlist->get_context();
         if ($context instanceof context_user && self::has_data($context->instanceid)) {
             $userlist->add_user($context->instanceid);
@@ -170,7 +170,7 @@ class provider implements
      * @param approved_contextlist $contextlist The approved contexts to export information for.
      * @return void
      */
-    public static function export_user_data(approved_contextlist $contextlist) {
+    public static function export_user_data(approved_contextlist $contextlist): void {
         global $DB;
 
         $userid = (int) $contextlist->get_user()->id;
@@ -180,7 +180,8 @@ class provider implements
         }
 
         $supporter = [];
-        foreach ($DB->get_records('local_helpdesk_supporters', ['userid' => $userid], 'id') as $row) {
+        $rows = $DB->get_recordset('local_helpdesk_supporters', ['userid' => $userid], 'id');
+        foreach ($rows as $row) {
             $level = $row->courseid == lib::SYSTEM_COURSE_ID ? 'level:second' : 'level:first';
             $supporter[] = [
                 'courseid' => $row->courseid,
@@ -190,19 +191,22 @@ class provider implements
                 'autoassign' => transform::yesno($row->autoassign),
             ];
         }
+        $rows->close();
         self::export_entries($context, 'privacy:export:supporter', $supporter);
 
         $subscriptions = [];
-        foreach ($DB->get_records('local_helpdesk_subscr', ['userid' => $userid], 'id') as $row) {
+        $rows = $DB->get_recordset('local_helpdesk_subscr', ['userid' => $userid], 'id', 'id, issueid, discussionid');
+        foreach ($rows as $row) {
             $subscriptions[] = [
                 'issueid' => $row->issueid,
                 'discussionid' => $row->discussionid,
             ];
         }
+        $rows->close();
         self::export_entries($context, 'privacy:export:subscriptions', $subscriptions);
 
         $issues = [];
-        $rows = $DB->get_records_select(
+        $rows = $DB->get_recordset_select(
             'local_helpdesk_issues',
             'currentsupporter = :supporter OR accountmanager = :manager',
             ['supporter' => $userid, 'manager' => $userid],
@@ -220,15 +224,18 @@ class provider implements
                 'timemodified' => empty($row->timemodified) ? null : transform::datetime($row->timemodified),
             ];
         }
+        $rows->close();
         self::export_entries($context, 'privacy:export:issues', $issues);
 
         $forums = [];
-        foreach ($DB->get_records('local_helpdesk', ['dedicatedsupporter' => $userid], 'id') as $row) {
+        $rows = $DB->get_recordset('local_helpdesk', ['dedicatedsupporter' => $userid], 'id', 'id, forumid, courseid');
+        foreach ($rows as $row) {
             $forums[] = [
                 'forumid' => $row->forumid,
                 'courseid' => $row->courseid,
             ];
         }
+        $rows->close();
         self::export_entries($context, 'privacy:export:dedicated', $forums);
     }
 
@@ -272,7 +279,7 @@ class provider implements
      * @param context $context The context to delete data for.
      * @return void
      */
-    public static function delete_data_for_all_users_in_context(context $context) {
+    public static function delete_data_for_all_users_in_context(context $context): void {
         if ($context instanceof context_user) {
             static::delete_user_data($context->instanceid);
         }
@@ -284,7 +291,7 @@ class provider implements
      * @param approved_userlist $userlist The approved context and user information to delete information for.
      * @return void
      */
-    public static function delete_data_for_users(approved_userlist $userlist) {
+    public static function delete_data_for_users(approved_userlist $userlist): void {
         $context = $userlist->get_context();
         if ($context instanceof context_user && in_array($context->instanceid, $userlist->get_userids())) {
             static::delete_user_data($context->instanceid);
@@ -297,7 +304,7 @@ class provider implements
      * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
      * @return void
      */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
+    public static function delete_data_for_user(approved_contextlist $contextlist): void {
         $userid = (int) $contextlist->get_user()->id;
         if (self::own_context($contextlist, $userid)) {
             static::delete_user_data($userid);

@@ -38,7 +38,7 @@ class delete extends \core\task\scheduled_task {
      *
      * @return string
      */
-    public function get_name() {
+    public function get_name(): string {
         // Shown in admin screens.
         return get_string('cron:deleteexpiredissues:title', 'local_helpdesk');
     }
@@ -46,13 +46,11 @@ class delete extends \core\task\scheduled_task {
     /**
      * Delete every issue whose retention time has passed.
      *
-     * @param bool $debug whether to report what is being done.
      * @return void
      */
-    public function execute($debug = false) {
-        $issues = \local_helpdesk\lib::get_expiredissues();
-        foreach ($issues as $issue) {
-            \local_helpdesk\lib::delete_issue($issue->discussionid);
+    public function execute(): void {
+        foreach (\local_helpdesk\lib::get_expired_discussionids() as $discussionid) {
+            \local_helpdesk\lib::delete_issue($discussionid);
         }
     }
 }

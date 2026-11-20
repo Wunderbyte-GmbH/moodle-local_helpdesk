@@ -107,15 +107,24 @@
                             -
                         {{/state}}
                         {{#state}}
-                        <select name="setsupporter_{{uniqid}}_{{id}}" onchange="top.location.href='{{wwwroot}}/local/helpdesk/chooseforum.php?courseid={{course}}&amp;forumid={{id}}&amp;dedicatedsupporter=' + this.value + '&amp;sesskey={{sesskey}}';">
-                            <option value="-1">{{#str}} none {{/str}}</option>
-                            {{#supporters}}
-                            <option value="{{userid}}"{{#selected}} selected="selected" {{/selected}}>
-                                {{supportlevel}}:
-                                {{userfullname}} ({{email}})
-                            </option>
-                            {{/supporters}}
-                        </select>
+                        <form method="post" action="{{wwwroot}}/local/helpdesk/chooseforum.php">
+                            <input type="hidden" name="courseid" value="{{course}}">
+                            <input type="hidden" name="forumid" value="{{id}}">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <label class="visually-hidden sr-only" for="local_helpdesk_dedicatedsupporter_{{id}}">
+                                {{#str}} dedicatedsupporter, local_helpdesk {{/str}}
+                            </label>
+                            <select name="dedicatedsupporter" id="local_helpdesk_dedicatedsupporter_{{id}}"
+                                class="form-select custom-select" data-action="local_helpdesk-autosubmit">
+                                <option value="-1">{{#str}} none {{/str}}</option>
+                                {{#supporters}}
+                                <option value="{{userid}}"{{#selected}} selected{{/selected}}>
+                                    {{supportlevel}}:
+                                    {{userfullname}} ({{email}})
+                                </option>
+                                {{/supporters}}
+                            </select>
+                        </form>
                         {{/state}}
                     </td>
                 </tr>

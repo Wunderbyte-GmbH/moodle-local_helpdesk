@@ -45,7 +45,7 @@ class holidaymode_form extends \moodleform {
      *
      * @return void
      */
-    public function definition() {
+    public function definition(): void {
         $mform = $this->_form;
         $mform->addElement('date_time_selector', 'holidaymode', '');
         $mform->disable_form_change_checker();
@@ -58,7 +58,7 @@ class holidaymode_form extends \moodleform {
      * @param array $files the submitted files.
      * @return array of errors, keyed by element name.
      */
-    public function validation($data, $files) {
+    public function validation($data, $files): array {
         $errors = [];
         return $errors;
     }

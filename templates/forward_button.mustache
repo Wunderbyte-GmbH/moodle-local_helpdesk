@@ -1,0 +1,37 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_helpdesk/forward_button
+
+    The button next to the title of a discussion that forwards it to the platform support team,
+    or takes it back from there.
+
+    Context variables required for this template:
+    * discussionid The discussion.
+    * revoke Whether the button takes the issue back.
+
+    Example context (json):
+    {
+        "discussionid": 12,
+        "revoke": false
+    }
+}}
+<a href="#" class="btn btn-secondary mx-2 text-nowrap" data-action="local_helpdesk-forward"
+    data-discussionid="{{discussionid}}" data-revoke="{{#revoke}}1{{/revoke}}{{^revoke}}0{{/revoke}}">
+    {{#revoke}}{{#str}} issue_revoke, local_helpdesk {{/str}}{{/revoke}}
+    {{^revoke}}{{#str}} issue_assign_nextlevel, local_helpdesk {{/str}}{{/revoke}}
+</a>

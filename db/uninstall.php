@@ -29,7 +29,7 @@
  *
  * @return bool
  */
-function xmldb_local_helpdesk_uninstall() {
+function xmldb_local_helpdesk_uninstall(): bool {
     global $DB;
 
     // Without this nobody but an administrator could ever delete or hide these courses again.

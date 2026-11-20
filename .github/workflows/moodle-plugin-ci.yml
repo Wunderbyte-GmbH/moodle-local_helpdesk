@@ -3,7 +3,7 @@ name: Moodle Plugin CI
 on: [push, pull_request]
 
 jobs:
-  moodle405to500:
+  moodle405to503:
     uses: Wunderbyte-GmbH/catalyst-moodle-workflows/.github/workflows/ci.yml@main
     with:
       # Releasing to the Moodle Plugins directory is handled by moodle-release.yml,
@@ -12,8 +12,10 @@ jobs:
 
       # local_helpdesk builds on core forums only and has no plugin dependencies,
       # so no extra_plugin_runners are needed here.
-      moodle_branches: "MOODLE_405_STABLE MOODLE_500_STABLE"
+      moodle_branches: "MOODLE_405_STABLE MOODLE_500_STABLE MOODLE_501_STABLE MOODLE_502_STABLE MOODLE_503_STABLE"
       min_php: '8.1'
+      # main is the next major release (6.0dev), which the plugin does not claim to support yet.
+      disable_master: true
 
       # The plugin ships AMD sources, so the stale build file check applies. If it starts
       # failing, rebuild amd/build with "npx grunt --root=local/helpdesk" and commit.

@@ -38,7 +38,7 @@ class reminder extends \core\task\adhoc_task {
      *
      * @return string
      */
-    public function get_name() {
+    public function get_name(): string {
         // Shown in admin screens.
         return get_string('cron:reminder:title', 'local_helpdesk');
     }
@@ -48,7 +48,7 @@ class reminder extends \core\task\adhoc_task {
      *
      * @return void
      */
-    public function execute() {
+    public function execute(): void {
         global $DB;
 
         $taskdata = $this->get_custom_data();
@@ -81,11 +81,11 @@ class reminder extends \core\task\adhoc_task {
     /**
      * Send one reminder message to a supporter.
      *
-     * @param object $supporter the user to remind.
+     * @param \stdClass $supporter the user to remind.
      * @param array $reminders the discussions to remind them of.
      * @return void
      */
-    private function send($supporter, $reminders = []) {
+    private function send(\stdClass $supporter, array $reminders = []): void {
         global $CFG, $OUTPUT;
         if (!empty($supporter->id) && $supporter->id > 0 && count($reminders) > 0) {
             $subject = $this->get_name();

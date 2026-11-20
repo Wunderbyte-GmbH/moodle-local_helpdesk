@@ -43,8 +43,9 @@ class observer {
      * Observer for the supportuser_added event
      *
      * @param supportuser_added $event
+     * @return void
      */
-    public static function supportuser_added(supportuser_added $event) {
+    public static function supportuser_added(supportuser_added $event): void {
         // When a support user gets added, changed or deleted, we need to purge the navbar menu cache.
         // The navbar only shows issues if a user is a support user (or an admin).
         cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
@@ -54,8 +55,9 @@ class observer {
      * Observer for the supportuser_changed event
      *
      * @param supportuser_changed $event
+     * @return void
      */
-    public static function supportuser_changed(supportuser_changed $event) {
+    public static function supportuser_changed(supportuser_changed $event): void {
         // When a support user gets added, changed or deleted, we need to purge the navbar menu cache.
         // The navbar only shows issues if a user is a support user (or an admin).
         cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
@@ -65,8 +67,9 @@ class observer {
      * Observer for the supportuser_deleted event
      *
      * @param supportuser_deleted $event
+     * @return void
      */
-    public static function supportuser_deleted(supportuser_deleted $event) {
+    public static function supportuser_deleted(supportuser_deleted $event): void {
         // When a support user gets added, changed or deleted, we need to purge the navbar menu cache.
         // The navbar only shows issues if a user is a support user (or an admin).
         cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
@@ -78,7 +81,7 @@ class observer {
      * @param \core\event\base $event the event that was triggered.
      * @return void
      */
-    public static function event($event) {
+    public static function event(\core\event\base $event): void {
 
         // We should have separate functions for different event types for better readability!
 
@@ -88,7 +91,8 @@ class observer {
         if ($entry->eventname == '\mod_forum\event\discussion_deleted') {
             $discussionid = $entry->objectid;
             \local_helpdesk\local\guest_ticket::delete($discussionid);
-            return \local_helpdesk\lib::delete_issue($discussionid);
+            \local_helpdesk\lib::delete_issue($discussionid);
+            return;
         } else {
             if (substr($entry->eventname, 0, strlen("\\mod_forum\\event\\post_")) == "\\mod_forum\\event\\post_") {
                 $post = $DB->get_record("forum_posts", ["id" => $entry->objectid]);
@@ -177,7 +181,6 @@ class observer {
                 // Queued, so that a slow mail server does not hold up the request that posted this.
                 send_mail::queue($touser, $author, $subject, $mailtext, $mailhtml);
             }
-            return true;
         }
     }
 
@@ -194,7 +197,7 @@ class observer {
      * @param \core\event\user_deleted $event
      * @return void
      */
-    public static function user_deleted(\core\event\user_deleted $event) {
+    public static function user_deleted(\core\event\user_deleted $event): void {
         \local_helpdesk\privacy\provider::delete_user_data($event->objectid);
     }
 }

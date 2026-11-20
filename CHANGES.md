@@ -1,4 +1,17 @@
-## Version 1.0.0 (2026091700)
+## Version 1.0.0 (2026112000)
+* Compatibility: Supports Moodle 4.5 to 5.3. The guest ticket user is created with \core\user::create_user() on Moodle 5.3. CI tests Moodle 4.5, 5.0, 5.1, 5.2 and 5.3.
+* Bugfix: On the issue page of Moodle 4.5 and later, the forum's own controls covered the buttons of the helpdesk. The forum tools are hidden by the stylesheet now instead of by rewriting the markup, and the helpdesk actions have a row of their own.
+* Bugfix: Deleting a course unregistered the wrong support forum (the registry id was passed as forum id).
+* Bugfix: The supporters page listed the first level support of courses too, and saving such a row turned the person into platform support. It shows and edits the platform team only.
+* Bugfix: Editing a post added another "Re:" to its subject every time.
+* Release: The release workflow builds the package with git archive and the root directory "helpdesk", so it can be installed from the ZIP file, and hands that package to the Plugins directory.
+* Standards: No inline JavaScript any more: the request form, the page before it and the choice of the dedicated supporter use AMD modules and data attributes. Markup built in JavaScript (supporter selection, contact list, buttons, spinner) and the tables of the migration and first level pages come from Mustache templates.
+* Standards: All texts come from language strings, including the support team role and error messages, in English and German. Missing and unused strings fixed.
+* Standards: The edusupport migrator reads the old settings with get_config() instead of querying config_plugins; recordsets for the privacy export, the cleanup task and other potentially large reads.
+* Tests: Every global function has the frankenstyle prefix (checked by a test), deleting a course.
+* Standards: Every parameter and return value has a type declaration; a return value has one type ("nothing" is null, no more false|object or bool|int). Only the parameters of moodleform overrides stay untyped, as their core parents are. A test checks this for all classes and functions. close_issue returns a boolean.
+* Cleanup: Unused variables, globals and a forum lookup through a global variable removed, as found by PHP Mess Detector.
+* Documentation: README rewritten with installation, configuration and use, new screenshots.
 * Security: Only site administrators can save the account manager settings.
 * Security: Supporters can only edit and delete posts that belong to the issue they are looking at, forwarding, revoking and deleting need a session key, names are escaped in the dialogues.
 * Bugfix: Attachments are served again, tickets keep their author in group mode, hidden course categories stay hidden unless they hold a support forum.

@@ -1,0 +1,4 @@
+# Left out of the release package built by .github/workflows/moodle-release.yml (git archive).
+/.github export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore

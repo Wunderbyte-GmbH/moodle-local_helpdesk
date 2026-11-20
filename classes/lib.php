@@ -73,8 +73,9 @@ class lib {
 
     /**
      * Perform some actions before the popup is rendered.
+     * @return void
      */
-    public static function before_popup() {
+    public static function before_popup(): void {
         global $CFG, $DB, $USER;
         $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
         if ($guestmode && (isguestuser() || !isloggedin())) {
@@ -185,7 +186,8 @@ class lib {
                       JOIN {local_helpdesk_issues} lei ON lei.discussionid = fd.id
                      WHERE $like";
             $params = ['prefix' => $DB->sql_like_escape($legacyprefix) . '%'];
-            foreach ($DB->get_records_sql($sql, $params) as $discussion) {
+            $discussions = $DB->get_recordset_sql($sql, $params);
+            foreach ($discussions as $discussion) {
                 // The sql_like() match is case insensitive on most databases, so confirm it here.
                 if (!str_starts_with($discussion->name, $legacyprefix)) {
                     continue;
@@ -198,6 +200,7 @@ class lib {
                 );
                 $changed++;
             }
+            $discussions->close();
         }
         return $changed;
     }
@@ -206,13 +209,14 @@ class lib {
      * Close an issue.
      *
      * @param int $discussionid the discussion of the issue.
-     **/
-    public static function close_issue($discussionid) {
+     * @return bool true if the issue was closed.
+     */
+    public static function close_issue(int $discussionid): bool {
         global $CFG, $DB, $USER;
 
         $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
         $issue = self::get_issue($discussionid);
-        if (!self::is_supportforum($discussion->forum)) {
+        if (!$discussion || !$issue || !self::is_supportforum($discussion->forum)) {
             return false;
         }
         // The ticket system is the platform team's tool.
@@ -256,9 +260,10 @@ class lib {
      * Delete an issue of which the discussion has been deleted.
      *
      * @param int $discussionid the discussion of the issue.
-     **/
-    public static function delete_issue($discussionid) {
-        global $CFG, $DB, $USER;
+     * @return void
+     */
+    public static function delete_issue(int $discussionid): void {
+        global $DB;
 
         $issue = $DB->get_record('local_helpdesk_issues', ['discussionid' => $discussionid]);
         if (!empty($issue->id)) {
@@ -267,14 +272,14 @@ class lib {
             // Delete issue.
             $DB->delete_records('local_helpdesk_issues', ['discussionid' => $discussionid]);
         }
-        return true;
     }
 
     /**
      * Get the helpbutton menu from cache or generate it.
+     * @return string the markup of the help button.
      */
-    public static function get_supportmenu() {
-        global $CFG, $OUTPUT, $USER;
+    public static function get_supportmenu(): string {
+        global $CFG, $OUTPUT;
         $cache = \cache::make('local_helpdesk', 'supportmenu');
         $cachekey = \local_helpdesk\local\supportmenu_cache::key();
         if (!empty($cache->get($cachekey))) {
@@ -285,7 +290,8 @@ class lib {
         $extralinks = [];
         if (!empty($extralinksfromconfig)) {
             $extralinksfromconfig = explode("\n", $extralinksfromconfig);
-            for ($a = 0; $a < count($extralinksfromconfig); $a++) {
+            $count = count($extralinksfromconfig);
+            for ($a = 0; $a < $count; $a++) {
                 $tmp = explode('|', $extralinksfromconfig[$a]);
                 $extralink = (object) ['id' => $a];
                 if (!empty($tmp[0])) {
@@ -313,13 +319,11 @@ class lib {
             $issuesurl = new moodle_url('/local/helpdesk/issues.php');
         }
 
-        $prepageenabled = get_config('local_helpdesk', 'enableprepage');
         $nav = $OUTPUT->render_from_template(
             'local_helpdesk/helpbutton',
             [
             'extralinks' => $extralinks,
             'hasextralinks' => count($extralinks) > 0,
-            'prepageenabled' => $prepageenabled,
             'showissues' => $showissues,
             'issuesurl' => $issuesurl,
             ]
@@ -332,7 +336,7 @@ class lib {
      * Close an issue.
      *
      * @param int $discussionid the discussion of the issue.
-     **/
+     */
     public static function reopen_issue(int $discussionid): bool {
         global $DB;
         $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
@@ -467,7 +471,7 @@ class lib {
      *
      * @param int $forumid the forum.
      * @return array of groups.
-     **/
+     */
     public static function get_groups_for_user(int $forumid): array {
         // Store rating if we are permitted to.
         global $CFG, $DB, $USER;
@@ -520,17 +524,17 @@ class lib {
      *
      * @param int $discussionid the discussion of the issue.
      * @param bool $createifnotexist whether to create the issue when there is none yet.
-     * @param \stdClass|null $keyvaluepair a field to set on a newly created issue, with key and value.
-     * @return false|mixed|object|stdClass|void
+     * @param stdClass|null $keyvaluepair a field to set on a newly created issue, with key and value.
+     * @return stdClass|null the issue, null if there is none (and none was to be created).
      * @throws \dml_exception
      */
-    public static function get_issue(int $discussionid, bool $createifnotexist = false, $keyvaluepair = null) {
+    public static function get_issue(int $discussionid, bool $createifnotexist = false, ?stdClass $keyvaluepair = null): ?stdClass {
         global $DB;
         if (empty($discussionid)) {
-            return;
+            return null;
         }
-        $issue = $DB->get_record('local_helpdesk_issues', ['discussionid' => $discussionid]);
-        if (empty($issue->id) && !empty($createifnotexist)) {
+        $issue = $DB->get_record('local_helpdesk_issues', ['discussionid' => $discussionid]) ?: null;
+        if ($issue === null && $createifnotexist) {
             $issue = (object) [
                 'discussionid' => $discussionid,
                 'currentsupporter' => 0,
@@ -601,11 +605,13 @@ class lib {
     }
 
     /**
-     * Get issues closed a month ago
+     * The discussions of closed issues whose retention time has passed.
      *
-     * @return array containing discussionids of closed and expired issues.
+     * Only the ids are fetched, so this stays small even on sites with many old issues.
+     *
+     * @return int[] discussion ids.
      */
-    public static function get_expiredissues() {
+    public static function get_expired_discussionids(): array {
         global $DB;
         $time = get_config('local_helpdesk', 'deletethreshhold');
         $expirationtime = time() - $time;
@@ -613,14 +619,12 @@ class lib {
             $expirationtime = 0;
         }
 
-        $sql = "SELECT edu.id, edu.discussionid, edu.priority, f.id, f.timemodified
-                FROM {local_helpdesk_issues} edu
-                JOIN {forum_discussions} f
-                    ON edu.discussionid = f.id
-                WHERE edu.priority = 0
-                AND f.timemodified < :expirationtime";
-        $records = $DB->get_records_sql($sql, ['expirationtime' => $expirationtime]);
-        return $records;
+        $sql = "SELECT edu.discussionid
+                  FROM {local_helpdesk_issues} edu
+                  JOIN {forum_discussions} f ON edu.discussionid = f.id
+                 WHERE edu.priority = 0
+                   AND f.timemodified < :expirationtime";
+        return array_map('intval', $DB->get_fieldset_sql($sql, ['expirationtime' => $expirationtime]));
     }
 
     /**
@@ -881,7 +885,7 @@ class lib {
      * @return array with the keys added, removed and refused, each holding user ids.
      */
     public static function assign_first_level(int $courseid, array $userids, bool $replace = true): array {
-        global $DB, $USER;
+        global $DB;
 
         $result = ['added' => [], 'removed' => [], 'refused' => []];
         if ($courseid == self::SYSTEM_COURSE_ID) {
@@ -986,7 +990,7 @@ class lib {
                 'eligible' => count($eligible),
                 'assigned' => count($assigned),
                 'toadd' => count($missing),
-                'names' => array_values(array_map(fn($user) => fullname($user), $missing)),
+                'names' => array_values(array_map(fn(stdClass $user): string => fullname($user), $missing)),
             ];
 
             if (!$dryrun && !empty($missing)) {
@@ -1001,9 +1005,9 @@ class lib {
      * Checks if a given forum is used as support-forum.
      *
      * @param int $forumid the forum.
-     * @return true or false.
+     * @return bool
      */
-    public static function is_supportforum($forumid) {
+    public static function is_supportforum(int $forumid): bool {
         global $DB;
         $chk = $DB->get_record('local_helpdesk', ['forumid' => $forumid]);
         return !empty($chk->id);
@@ -1019,10 +1023,10 @@ class lib {
      *
      * An empty result means nobody was named, and requests escalate straight away.
      *
-     * @param object $forum the support forum.
+     * @param stdClass $forum the support forum.
      * @return array of user records, keyed by user id.
      */
-    public static function get_course_supporters($forum) {
+    public static function get_course_supporters(stdClass $forum): array {
         global $DB;
 
         $rows = self::get_first_level($forum->course);
@@ -1039,9 +1043,9 @@ class lib {
      * Get the enrol instance for manual enrolments of a course, or create one.
      *
      * @param int $courseid the course.
-     * @return \stdClass|null the instance, null if the course has none and none could be added.
+     * @return stdClass|null the instance, null if the course has none and none could be added.
      */
-    private static function get_enrol_instance($courseid) {
+    private static function get_enrol_instance(int $courseid): ?stdClass {
         // Check manual enrolment plugin instance is enabled/exist.
         $enrol = enrol_get_plugin('manual');
         if (empty($enrol)) {
@@ -1065,13 +1069,14 @@ class lib {
      * Similar to close_issue, but can be done by a trainer in the supportforum.
      *
      * @param int $discussionid the discussion of the issue.
-     **/
-    public static function revoke_issue($discussionid): bool {
+     * @return bool true if the issue was taken back.
+     */
+    public static function revoke_issue(int $discussionid): bool {
         global $CFG, $DB, $USER;
 
         $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
         $issue = self::get_issue($discussionid);
-        if (!self::is_supportforum($discussion->forum)) {
+        if (!$discussion || !$issue || !self::is_supportforum($discussion->forum)) {
             return false;
         }
         // Check if the user taking the action has trainer permissions.
@@ -1109,10 +1114,10 @@ class lib {
      * Send an issue to 2nd level support.
      *
      * @param int $discussionid the discussion of the issue.
-     * @param \stdClass|null $keyvaluepair a field to set if the issue has to be created, with key and value.
-     * @return true or false.
+     * @param stdClass|null $keyvaluepair a field to set if the issue has to be created, with key and value.
+     * @return bool true if the issue is with the platform team now.
      */
-    public static function set_2nd_level(int $discussionid, $keyvaluepair = null): bool {
+    public static function set_2nd_level(int $discussionid, ?stdClass $keyvaluepair = null): bool {
         global $CFG, $DB, $USER, $PAGE, $SITE;
 
         if (!isset($PAGE->context)) {
@@ -1120,6 +1125,9 @@ class lib {
         }
 
         $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
+        if (!$discussion) {
+            return false;
+        }
         $issue = self::get_issue($discussionid, true, $keyvaluepair);
         if (!self::is_supportforum($discussion->forum)) {
             return false;
@@ -1161,7 +1169,6 @@ class lib {
             );
             self::subscription_add($discussionid, $dedicated->userid);
         }
-        $centralforumid = get_config('local_helpdesk', 'centralforum');
         $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
 
         if (!empty($dedicated->userid) && get_config('local_helpdesk', 'sendmsgonset2ndlvl')) {
@@ -1259,7 +1266,6 @@ class lib {
 
         $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
         $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
-        $issue = self::get_issue($discussionid);
 
         // Set currentsupporter and add to subscribed users.
         $DB->set_field('local_helpdesk_issues', 'currentsupporter', $userid, ['discussionid' => $discussion->id]);
@@ -1322,13 +1328,16 @@ class lib {
      *
      * @param int $discussionid
      * @param int $priority
-     * @return bool
+     * @return bool false if the discussion is no issue.
      * @throws \dml_exception
      */
-    public static function set_prioritylvl($discussionid, $priority): bool {
+    public static function set_prioritylvl(int $discussionid, int $priority): bool {
         global $DB;
 
         $issue = self::get_issue($discussionid);
+        if (!$issue) {
+            return false;
+        }
         $issue->priority = $priority;
         $issue->discussionid = $discussionid;
         $issue->timemodified = time();
@@ -1339,20 +1348,23 @@ class lib {
     /**
      * Add support user to the list of assigned users.
      *
-     * @param int $discussionid
-     * @param int $userid
-     * @return bool|int
+     * @param int $discussionid the discussion of the issue.
+     * @param int $userid the user to subscribe, 0 for the current user.
+     * @return bool true if the person is subscribed now, false if they are no member of the platform team.
      */
-    public static function subscription_add($discussionid, $userid = 0) {
+    public static function subscription_add(int $discussionid, int $userid = 0): bool {
         global $DB, $USER;
         if (empty($userid)) {
             $userid = $USER->id;
         }
         if (!self::is_second_level($userid)) {
             // Only the platform team follows tickets; first level works in the forum.
-            return;
+            return false;
         }
         $issue = self::get_issue($discussionid);
+        if (!$issue) {
+            return false;
+        }
         $subscription = $DB->get_record('local_helpdesk_subscr', ['discussionid' => $discussionid, 'userid' => $userid]);
         if (empty($subscription->id)) {
             $subscription = (object) [
@@ -1360,9 +1372,9 @@ class lib {
                 'discussionid' => $discussionid,
                 'userid' => $userid,
             ];
-            $subscription->id = $DB->insert_record('local_helpdesk_subscr', $subscription);
+            $DB->insert_record('local_helpdesk_subscr', $subscription);
         }
-        return $subscription;
+        return true;
     }
 
     /**
@@ -1370,8 +1382,9 @@ class lib {
      *
      * @param int $discussionid the discussion of the issue.
      * @param int $userid the user to unsubscribe, 0 for the current user.
+     * @return void
      */
-    public static function subscription_remove($discussionid, $userid = 0) {
+    public static function subscription_remove(int $discussionid, int $userid = 0): void {
         global $DB, $USER;
         if (empty($userid)) {
             $userid = $USER->id;
@@ -1383,9 +1396,9 @@ class lib {
      * Removes a forum as potential supportforum.
      *
      * @param int $forumid the forum.
-     * @return true.
+     * @return void
      */
-    public static function supportforum_disable($forumid) {
+    public static function supportforum_disable(int $forumid): void {
         global $DB;
         $DB->delete_records('local_helpdesk', ['forumid' => $forumid]);
         self::supportforum_managecaps($forumid, false);
@@ -1399,8 +1412,9 @@ class lib {
 
     /**
      * Removes a forum as central support-forum.
-     **/
-    public static function supportforum_disablecentral() {
+     * @return void
+     */
+    public static function supportforum_disablecentral(): void {
         if (!is_siteadmin()) {
             return;
         }
@@ -1411,13 +1425,13 @@ class lib {
      * Sets a forum as possible support-forum.
      *
      * @param int $forumid the forum.
-     * @return forum as object on success.
-     **/
-    public static function supportforum_enable($forumid) {
-        global $DB, $USER;
+     * @return stdClass|null the support forum record, null if the forum does not exist.
+     */
+    public static function supportforum_enable(int $forumid): ?stdClass {
+        global $DB;
         $forum = $DB->get_record('forum', ['id' => $forumid]);
         if (empty($forum->course)) {
-            return false;
+            return null;
         }
 
         $supportforum = $DB->get_record('local_helpdesk', ['forumid' => $forumid]);
@@ -1434,20 +1448,16 @@ class lib {
 
         self::supportforum_managecaps($forumid, true);
         self::supportforum_rolecheck($forumid);
-        if (!empty($supportforum->id)) {
-            return $supportforum;
-        } else {
-            return false;
-        }
+        return $supportforum;
     }
 
     /**
      * Sets a forum as central support-forum.
      *
      * @param int $forumid the forum.
-     * @return bool|object forum as object on success.
-     **/
-    public static function supportforum_enablecentral(int $forumid) {
+     * @return bool true if the forum is the central support forum now.
+     */
+    public static function supportforum_enablecentral(int $forumid): bool {
         global $DB;
         if (!is_siteadmin()) {
             return false;
@@ -1460,7 +1470,7 @@ class lib {
         $supportforum = $DB->get_record('local_helpdesk', ['forumid' => $forumid]);
         if (!empty($supportforum->id)) {
             set_config('centralforum', $forum->id, 'local_helpdesk');
-            return $forum;
+            return true;
         }
         return false;
     }
@@ -1481,7 +1491,7 @@ class lib {
      * @param bool $trigger true if we enable the forum, false if we disable it.
      * @return bool false if there is no forum, course or default role to work with.
      */
-    public static function supportforum_managecaps($forumid, $trigger) {
+    public static function supportforum_managecaps(int $forumid, bool $trigger): bool {
         global $CFG, $DB;
 
         $forum = $DB->get_record('forum', ['id' => $forumid]);
@@ -1521,8 +1531,9 @@ class lib {
      * Checks for a forum, if all supportteam-members have the required role.
      *
      * @param int $forumid the forum to check, 0 for all support forums.
+     * @return void
      */
-    public static function supportforum_rolecheck(int $forumid = 0) {
+    public static function supportforum_rolecheck(int $forumid = 0): void {
         global $DB;
         if (empty($forumid)) {
             // We have to re-sync all supportforums.
@@ -1583,8 +1594,9 @@ class lib {
      *
      * @param int $forumid the support forum.
      * @param int $userid the dedicated supporter, -1 for none.
-     **/
-    public static function supportforum_setdedicatedsupporter($forumid, $userid) {
+     * @return bool true if the dedicated supporter was set.
+     */
+    public static function supportforum_setdedicatedsupporter(int $forumid, int $userid): bool {
         if (!self::is_supportforum($forumid)) {
             return false;
         }
@@ -1604,10 +1616,9 @@ class lib {
      * Find a support user that has the same customfieldvalue as a user (can be enabled in settings)
      *
      * @param int $courseid the course to look for support users in.
-     * @param mixed $cfn not used, the custom field name is read from the plugin settings.
-     * @return array supportuserid|false
-     **/
-    public static function get_support_user_by_matching_customfield($courseid, $cfn) {
+     * @return stdClass[] the matching support users, keyed by user id; empty if there are none.
+     */
+    public static function get_support_user_by_matching_customfield(int $courseid): array {
         global $DB, $USER;
         $userid = $USER->id;
         $customfieldname = get_config('local_helpdesk', 'customfieldname');
@@ -1617,6 +1628,10 @@ class lib {
         WHERE uif.name = :customfieldname AND uid.userid = :userid";
         $params = ['courseid' => $courseid, 'customfieldname' => $customfieldname, 'userid' => $userid];
         $customfielddata = $DB->get_record_sql($sql, $params);
+        if (!$customfielddata) {
+            // The person has no value in the field, so nobody can match it.
+            return [];
+        }
         $role = get_config('local_helpdesk', 'rolename');
         $params = ['courseid' => $courseid, 'fieldid' => $customfielddata->id, 'customfieldvalue' => $customfielddata->data,
             'role' => $role];
@@ -1629,12 +1644,7 @@ class lib {
                         LEFT JOIN {user_info_data} uid on u.id = uid.userid
                         WHERE ic.id = :courseid AND u.id > 0 AND uid.fieldid = :fieldid
                         AND uid.data = :customfieldvalue AND r.shortname = :role";
-        $supportusers = $DB->get_records_sql($sql, $params);
-        if ($supportusers) {
-            return $supportusers;
-        } else {
-            return false;
-        }
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
@@ -1645,7 +1655,7 @@ class lib {
      *
      * @return void
      */
-    public static function set_status(int $status, int $issueid) {
+    public static function set_status(int $status, int $issueid): void {
         global $DB;
         $issue = new stdClass();
         $issue->id = $issueid;
@@ -1662,8 +1672,9 @@ class lib {
     /**
      * Helper function to send reminder mails.
      * @param int $issueid
+     * @return void
      */
-    public static function send_reminder(int $issueid) {
+    public static function send_reminder(int $issueid): void {
 
         if (self::issue_already_has_reminder($issueid)) {
             // There already are reminders in the future, so we do not create another one.
@@ -1687,8 +1698,9 @@ class lib {
     /**
      * Helper function to check if there already is a reminder to be sent in the future.
      * @param int $issueid
+     * @return bool
      */
-    public static function issue_already_has_reminder(int $issueid) {
+    public static function issue_already_has_reminder(int $issueid): bool {
         foreach (\core\task\manager::get_adhoc_tasks(task\reminder::class) as $task) {
             $data = $task->get_custom_data();
             if (!empty($data->issueid) && (int) $data->issueid === $issueid) {

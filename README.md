@@ -1,100 +1,215 @@
-# moodle-local_helpdesk
+# Helpdesk (local_helpdesk)
 
-## How to configure helpdesk?
-This plugin allows to manage a moodle based decentralized helpdesk with three support levels. It basically works with Moodle forums. After you installed the plugin, you should navigate to the Website Administration > Plugins > Local plugins > Helpdesk and set up your support site's team (only 2nd and 3rd level).
+Helpdesk turns Moodle forums into a support desk with up to three support levels. People ask for
+help from any page with a help button in the navigation bar, optionally with a screenshot. The request
+becomes a forum discussion in a support forum, where the first level support of that course answers it.
+Whatever the first level cannot solve is forwarded to the platform support team (2nd and 3rd level),
+which works on it in an issue list of its own.
 
-### Choose your support team (only 2nd and 3rd level supporters)
+It is made for platforms that host many organisations, for example many schools: every school gets its
+own support course with its own first level support, and one platform team behind all of them.
 
-![Choose support team](/doc/choosesupporters.png)
+Helpdesk is the successor of [local_edusupport](https://github.com/Wunderbyte-GmbH/moodle-local_edusupport).
+Existing sites can migrate all their data, see [Migrating from local_edusupport](#migrating-from-local_edusupport).
 
-If you enter a support level, this user will belong to the 3rd level, you can enter any label here (e.g. a special topic for that user like 'technical', 'pedagogy', ...), so that the 2nd level can decide to whom they should forward special issues. Leave the support level empty for 2nd level support users.
+## Features
 
-### Choose your support forums
+* Help button in the navigation bar on every page, optionally a menu with extra links (manual, FAQ, ...).
+* Requests are filed in a dialogue on the page where the problem occurred. The address of the page and a
+  screenshot can be sent along.
+* Requests are ordinary forum discussions: notifications, replies, attachments and permissions work as in
+  every Moodle forum. With separate groups every person gets a private group with the support team.
+* First level support per course, second and third level support for the whole platform.
+* Issue list for the platform team: own issues, subscribed issues, other and closed issues, status, priority,
+  assignment, filter and holiday mode.
+* Optional: requests without logging in (answered by e-mail), predefined subjects, a page shown before the
+  form, account managers, reminders, automatic deletion of old closed issues, spam protection.
+* Privacy API, events, report builder report of all supporters, English and German language packs.
 
-Now you need to create at least one course with one general forum and mark it as a supportforum in the course settings of each course (only site administrators can do that). You can also decide here if a forum is marked as site wide supportforum. Only 1 forum can be set as site wide supportforum. If you enable it, all users that open the "help"-modal will be automatically enrolled into that course with the student-role and a group for that user will be created. This ensures private communication in that supportforum, so it is recommended to set the groupmode to "separated groups" in that forum.
+Helpdesk is free software. It needs no licence key, no subscription and no external service.
 
-![Choose support forums](/doc/chooseforums.png)
+## Requirements
 
-### Who is the 1st level support of a course?
+* Moodle 4.5 to 5.3
+* PHP 8.1 or later
+* No other plugins. Helpdesk builds on the core forum module (mod_forum).
 
-The 1st level support of a support course is **assigned by name, per course**. Open the support course and choose **First level support** in the course menu, press **Assign first level support** and pick the people who answer the requests filed in that course.
+## Installation
 
-* Who may assign: everybody holding the capability `local/helpdesk:assignsupporters` in the course - by default managers and teachers (editingteacher).
-* Who can be assigned: people enrolled in the course who may start discussions in the forum (`mod/forum:startdiscussion`) and see hidden activities (`moodle/course:viewhiddenactivities`), which by default means the teaching staff of that course and not its students.
+Install it like any other Moodle plugin:
 
-This is what carries the decentralised model: on a platform hosting many schools, every school gets its own support course, and the staff named there are its 1st level support. Only when they cannot help is an issue escalated to the 2nd level, which is the site wide team you configured above. A support course in which nobody is assigned hands every request to the 2nd level directly.
+* **From the Moodle plugins directory:** *Site administration > Plugins > Install plugins*, search for
+  "Helpdesk", or download the ZIP file from https://moodle.org/plugins/local_helpdesk and upload it there.
+* **With git:** clone the repository into `local/helpdesk` of your Moodle installation:
 
-Two things worth knowing:
+  ```
+  git clone https://github.com/Wunderbyte-GmbH/moodle-local_helpdesk.git local/helpdesk
+  ```
 
-* On a site that used an earlier version, where the 1st level was everybody holding `moodle/course:update` in the course, the button **Fill first level support from course rights** in the plugin settings assigns exactly those people once. It first shows what it would do.
-* By default the people assigned are named to the person filing a request, in the confirmation dialogue and in an automatic post in the ticket. Turn off **Show the support contacts to the person filing a request** in the plugin settings if they should stay unnamed. People who are not logged in are never told, and mail addresses of supporters are not shown to anybody. Supporters are notified about new tickets either way.
+  Then open *Site administration > Notifications*, or run `php admin/cli/upgrade.php`.
 
-**Plugins > Local plugins > All support users** lists both levels with the courses they support.
+The installation creates the role **Helpdesk Team**, which Helpdesk assigns to the supporters in the
+support forums.
 
-You can enable separated groups, visible groups or no group mode - doesn't matter. Users will receive notifications as usual if they subscribe the forum.
+## Configuration
 
-You can set one team member of the site's support team (2nd and 3d Level) as a dedicated support user. This means, that all issues forwarded to 2nd level will be automatically assigned to the responsibility of this team member.
+All settings are in *Site administration > Plugins > Local plugins > Helpdesk*.
 
-Once a forum is activated as supportforum some capabilities in the forum module and course are set to prevent the deletion.
+### 1. Choose the platform support team (2nd and 3rd level)
 
-The members of the site's support team (2nd and 3rd level support) will not receive notifications as long as the ticket was not forwarded to the 2nd level. They need not be enrolled to the course itself and will not be able to read all discussions. They will only be granted access to those discussions that have been forwarded by the 1st level support.
+*Site administration > Plugins > Local plugins > Helpdesk > Supporters*
 
-## How to post issues?
+![Choose the platform support team](doc/choosesupporters.png)
 
-As we are using normal Moodle forums, users can go to the forum and create new discussions. But possibly not everybody finds that very user friendly, and information can get lost (error messages that appeared, the URL where the problem occurred, ...)
+Enter the user id of each member of the platform support team. Leave the support level empty for the
+2nd level. Anything you enter as support level makes the person 3rd level support with that label, for
+example "Technical" or "Pedagogy", so that the 2nd level knows to whom to forward special issues.
+Untick *Assignable automatically* for people who should not be picked when an issue is forwarded.
 
-Therefore we integrated a "help"-button (works in boost theme, not tested elsewhere) in the usermenu toolbox (near the conversations-icon).
+### 2. Choose the support forums
 
-![The help button](/doc/help-button.png)
+Create a course with a forum of the type *Standard forum for general use* for every group of people you
+support, for example one per school. As site administrator, open the course and choose *More > Choose
+forums for Helpdesk* in the course navigation.
 
-If a user presses this button a modal dialog appears and the user can describe the problem directly on the page it occurred. Optionally a screenshot of the page can be attached.
+![Choose the support forums of a course](doc/chooseforums.png)
 
-![The help modal](/doc/help-modal.png)
+* **Course support forum** turns the forum into a support forum.
+* **Central support forum** makes one forum the support forum of the whole site. Everybody who opens the
+  help dialogue is enrolled into its course as a student, and a group is created for each person. This keeps
+  requests private, so set the forum to *Separate groups*.
+* **Dedicated** names the member of the platform team who is responsible for everything forwarded from
+  this forum. Otherwise one of the assignable members is chosen at random.
 
-If the user has access to several supportforums he can choose the target, also if the forums use the group feature, the target group can be chosen. If the user has not access to any supportforum the system automatically falls back to an email mode, and the issue is sent to the mailaddress of the supportusers specified in the site administration.
+Helpdesk protects support forums from being deleted by accident. Disable a support forum here before you
+delete it.
 
-If a user has the capability `local/helpdesk:canforward2ndlevel`, which is set by default for the teacher role, it is possible to forward the issue directly to the 2nd level on creation. You can also decide to grant this capability to other roles as well.
+### 3. Assign the first level support of each course
 
+The first level support is assigned by name, per course. In the support course choose *More > First level
+support*, press *Assign first level support* and pick the people who answer the requests of that course.
 
-## Who is responsible for a ticket?
+![First level support of a course](doc/coursesupporters.png)
 
-1. The 1st level support, which means: the people assigned to the support course (see above). Everybody holding `local/helpdesk:canforward2ndlevel` in the course can forward an issue to the 2nd level. On the discussion page they will find a button "Forward this issue to 2nd level support". If a dedicated supporter was set for this forum, this user will be named to be responsible for this ticket. Otherwise a random user from the 2nd level support team will be selected. For transparency reasons a post on behalf of the 1st level support user is automatically added to the discussion. Anybody from the 1st level support can also revoke the issue from the 2nd level.
+* Who may assign: everybody with the capability `local/helpdesk:assignsupporters` in the course, by default
+  managers and teachers.
+* Who can be assigned: people enrolled in the course who may start discussions in the forum and see hidden
+  activities, which by default means the teaching staff of that course and not its students.
 
-![Forward issue to 2nd level](/doc/issue-forward.png)
+A support course without first level support hands every request to the platform team directly.
 
-2. All support members of 2nd and 3rd level will find a link "Issues" in the left panel. Under that link they have access to an overview page that shows them all issues, that currently belong to the 2nd or 3rd level support. These issues are grouped to "My issues" (I am responsible), "Subscribed" (I am not responsible, but will receive notifications), "Other issues" (I will not receive any notification, but can access and subscribe).
+*Site administration > Plugins > Local plugins > All support users* lists both levels with the courses they
+support.
 
-![Manage issues](/doc/issue-manage.png)
+![All support users](doc/supporters-overview.png)
 
-3. Members of the 2nd and 3rd level support can now assign responsibilities. Once the issue is solved, they can mark it as solved on the discussion page.
+On a site that comes from an earlier version, where the first level was everybody who could edit the course,
+*Site administration > Plugins > Local plugins > Fill first level support from course rights* assigns exactly
+those people once. It shows what it would do before it changes anything.
 
-![Issue discussion page](/doc/issue-discussion.png)
+### 4. Further settings
 
-4. When an issue is closed any subscriptions of the support team will be removed. An automated post on behalf of the closing user makes this transparent to the 1st level and end user. No access to the discussion will be possible anymore, unless the 1st level support forwards the issue again.
+| Setting | What it does |
+| --- | --- |
+| Extra links | Turns the help button into a menu with additional links, one per line: `name\|url\|icon\|target`. |
+| FAQ link, confirm FAQ | Asks people to confirm that they have read the FAQ before they file a request. |
+| Page before the support form | Shows a text, for example the most frequent questions, before the form. |
+| Predefined subjects | A list of subjects to choose from instead of a free text field. |
+| Show the support contacts | Names the first level support to the person filing a request. |
+| Guest mode | Lets people who are not logged in file requests. They are answered by e-mail. |
+| Spam protection | Limits how many requests a person or an address may file in a period. |
+| Priorities, holiday mode, user links | Options of the issue list of the platform team. |
+| Account managers | Lets people choose their account manager in the request form (button *Set account managers*). |
+| Reminders | Reminds the responsible supporter of issues nobody has worked on for a while. |
+| Notifications | Which e-mails people receive when an issue is forwarded, assigned or closed. |
+| Deletion threshold | Removes closed issues from the issue list after the given time. The forum discussions stay. |
 
-This overviewpage allows access to the discussions that represent the issue. All support team members can access only these discussions. On the overview page itself they can subscribe for notifications, if they are not responsible, they can also unsubscribe.
- They can forward the responsibility to someone else on the discussion page, or can take subscribe / unsubscribe from notifications.
+## Using Helpdesk
 
+### Filing a request
 
-1. It splits your support team into the three support levels, and each issue can be forwarded to the next level.
-    * 1st level: pedagogic issues or simple technical questions
-    * 2nd level:  
-2. The first level works on course level. You can have as much support courses for the first level as you like. In our case we have a bunch of schools in our Moodle, and each school has its own support course with the 1st level support from staff of that school.
+The help button sits in the navigation bar next to the messages. With extra links it opens a menu.
 
-This block allows users to instantly post problems to a standard forum from wherever they are on the site, including the possibility to attach a screenshot of the current page. It is recommended to use separated groups within this forum.
+![The help button](doc/help-button.png)
 
-For that purpose Helpdesk creates a group for each user to ensure a private communication channel to the support team. Users can be automatically enrolled to the course containing the support-forum when posting a problem, if this option is enabled in admin settings.
+*Contact support* opens the request form on the current page. People choose where the request goes (if they
+have access to more than one support forum), enter a subject and a description, and can attach a screenshot.
+The address of the page is sent along automatically.
+
+![The request form](doc/help-modal.png)
+
+People with access to no support forum send their request by e-mail to the support contact of the site
+instead. People with the capability `local/helpdesk:canforward2ndlevel` (by default teachers) can send a
+request to the platform team straight away.
+
+### First level: answering in the course
+
+The request is a discussion in the support forum of the course, and the first level support answers it there
+like in any forum. If they cannot help, they forward it with *Forward to the platform-support team*. An
+automatic post in the discussion makes this visible to the person who asked. The first level can take the
+issue back with the same button.
+
+![Forwarding a discussion to the platform team](doc/issue-forward.png)
+
+### Platform team: the issue list
+
+Members of the platform team find *Issues* in the navigation bar. The list groups the forwarded issues into
+*My issues* (I am responsible), *Subscribed* (I am notified), *Other issues* and *Closed issues*. From here
+they subscribe and unsubscribe, take over or assign an issue, set its priority and close it. *Holidaymode*
+stops new issues from being assigned to oneself until a date.
+
+![The issue list](doc/issue-manage.png)
+
+The platform team does not need to be enrolled in the support courses. It only gets access to the discussions
+that were forwarded to it. Opening an issue shows the discussion with the actions of the helpdesk: assign
+the issue to somebody else, change its status, reply and close it.
+
+![An issue of the platform team](doc/issue-discussion.png)
+
+When an issue is closed, the subscriptions of the platform team are removed and an automatic post tells the
+first level and the person who asked. The first level can forward it again if needed.
+
+## Capabilities
+
+| Capability | Default | Meaning |
+| --- | --- | --- |
+| `local/helpdesk:assignsupporters` | Manager, teacher | Assign the first level support of a course. |
+| `local/helpdesk:canforward2ndlevel` | Teacher | Forward a request to the platform team. |
+
+## Privacy
+
+Helpdesk implements the Moodle Privacy API. It stores who supports what, subscriptions to issues and, for
+requests filed without logging in, the e-mail address given with the request. The requests themselves are
+forum posts and are handled by the privacy provider of the forum.
 
 ## Migrating from local_edusupport
 
-Helpdesk is the successor of [local_edusupport](https://github.com/Wunderbyte-GmbH/moodle-local_edusupport) and works the same way. To move an existing site over:
+Helpdesk works the same way as local_edusupport. To move an existing site over:
 
 1. Upgrade local_edusupport to version 2.8.0 or later.
-2. Install local_helpdesk next to it. Do not configure any support forum in Helpdesk yet: the migration keeps the record ids and only runs while Helpdesk is empty.
-3. Open `Site administration > Plugins > Local plugins > Helpdesk` and press **Migrate from eduSupport**. The page first shows how many records will be taken over, nothing is changed before you confirm. On large sites you can use the command line instead:
-   `php local/helpdesk/cli/migrate_edusupport.php` (dry run) and `php local/helpdesk/cli/migrate_edusupport.php --run`.
+2. Install local_helpdesk next to it. Do not configure any support forum in Helpdesk yet: the migration keeps
+   the record ids and only runs while Helpdesk is empty.
+3. Open *Site administration > Plugins > Local plugins > Migrate from eduSupport*. The
+   page first shows how many records will be taken over, nothing is changed before you confirm. On large sites
+   you can use the command line instead: `php local/helpdesk/cli/migrate_edusupport.php` (dry run) and
+   `php local/helpdesk/cli/migrate_edusupport.php --run`.
 4. Check the issues in Helpdesk, then uninstall local_edusupport.
 
-What is taken over: support forums, issues, supporters, subscriptions, all settings, waiting reminders and mails, and the users' notification preferences. The support team role and the guest ticket user are renamed and reused, so role assignments in the support forums and the authors of forum posts stay as they are.
+What is taken over: support forums, issues, supporters, subscriptions, all settings, waiting reminders and
+mails, and the users' notification preferences. The support team role and the guest ticket user are renamed
+and reused, so role assignments in the support forums and the authors of forum posts stay as they are.
 
-After the migration local_edusupport no longer knows any support forum and therefore does nothing any more; its issues, supporters and subscriptions remain in its tables as a backup until you uninstall it. Until then its help button is still shown next to the one of Helpdesk. Log entries and notifications that were already sent keep their reference to local_edusupport.
+After the migration local_edusupport no longer knows any support forum and therefore does nothing any more;
+its issues, supporters and subscriptions remain in its tables as a backup until you uninstall it. Until then
+its help button is still shown next to the one of Helpdesk. Log entries and notifications that were already
+sent keep their reference to local_edusupport.
+
+## Support and development
+
+* Issues and feature requests: https://github.com/Wunderbyte-GmbH/moodle-local_helpdesk/issues
+* Maintained by [Wunderbyte GmbH](https://www.wunderbyte.at). Originally developed as local_edusupport by
+  Digital Education Society and the Center for Learningmanagement.
+
+## License
+
+GNU GPL v3 or later, see [LICENSE](LICENSE).

@@ -1,0 +1,66 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_helpdesk/seedfirstlevel_report
+
+    The support courses and who filling the first level support from course rights would add.
+
+    Context variables required for this template:
+    * rows The courses: courseurl, coursename (formatted HTML), assigned, eligible, toadd and names (may be empty).
+
+    Example context (json):
+    {
+        "rows": [
+            {
+                "courseurl": "https://example.com/course/view.php?id=4",
+                "coursename": "Support school A",
+                "assigned": 1,
+                "eligible": 3,
+                "toadd": 2,
+                "names": "Ann Teacher, Ben Teacher"
+            },
+            {
+                "courseurl": "https://example.com/course/view.php?id=5",
+                "coursename": "Support school B",
+                "assigned": 2,
+                "eligible": 2,
+                "toadd": 0,
+                "names": ""
+            }
+        ]
+    }
+}}
+<table class="generaltable" id="local_helpdesk_seedfirstlevel">
+    <thead>
+        <tr>
+            <th scope="col">{{#str}} course, core {{/str}}</th>
+            <th scope="col">{{#str}} seedfirstlevel:assigned, local_helpdesk {{/str}}</th>
+            <th scope="col">{{#str}} seedfirstlevel:eligible, local_helpdesk {{/str}}</th>
+            <th scope="col">{{#str}} seedfirstlevel:toadd, local_helpdesk {{/str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#rows}}
+            <tr>
+                <td><a href="{{courseurl}}">{{{coursename}}}</a></td>
+                <td>{{assigned}}</td>
+                <td>{{eligible}}</td>
+                <td>{{toadd}}{{#names}} ({{names}}){{/names}}</td>
+            </tr>
+        {{/rows}}
+    </tbody>
+</table>

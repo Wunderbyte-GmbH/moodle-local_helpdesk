@@ -60,7 +60,7 @@ class rate_limiter {
 
         $cache = \cache::make('local_helpdesk', 'spamprotect');
         $since = time() - $seconds;
-        $log = array_values(array_filter($cache->get($key) ?: [], function ($time) use ($since) {
+        $log = array_values(array_filter($cache->get($key) ?: [], function (int $time) use ($since): bool {
             return $time >= $since;
         }));
         if (count($log) >= $limit) {

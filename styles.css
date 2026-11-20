@@ -84,3 +84,26 @@
         opacity: 1;
     }
 }
+
+/* The issue page shows a forum discussion, with the actions of the helpdesk above it. */
+.local_helpdesk.issue_options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.local_helpdesk.issue_options .badge {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+#page-local-helpdesk-issue [data-content="forum-discussion"] .movediscussionoption,
+#page-local-helpdesk-issue [data-content="forum-discussion"] [data-container="discussion-tools"],
+#page-local-helpdesk-issue .discussion-settings-menu,
+#page-local-helpdesk-issue .prev-discussion,
+#page-local-helpdesk-issue .next-discussion {
+    display: none;
+}

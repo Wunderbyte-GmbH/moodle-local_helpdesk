@@ -331,15 +331,16 @@ if ($hassiteconfig) {
         if (\local_helpdesk\local\migration\edusupport_migrator::source_exists()) {
             $actions[] = (object) ['name' => 'migrate', 'href' => 'migrate.php'];
         }
-        $links = "<div class='grid-eq-3'>";
+        $links = '';
         foreach ($actions as $action) {
-            $href = $CFG->wwwroot . '/local/helpdesk/' . $action->href;
-            $links .= '<a class="btn btn-secondary mr-2 me-2 mb-3" href="' . $href . '">' .
-                            '<i class="fa fa-users"></i> ' .
-                            get_string($action->name, 'local_helpdesk') .
-                      '</a>';
+            $links .= html_writer::link(
+                new moodle_url('/local/helpdesk/' . $action->href),
+                html_writer::tag('i', '', ['class' => 'fa fa-users', 'aria-hidden' => 'true']) . ' ' .
+                    get_string($action->name, 'local_helpdesk'),
+                ['class' => 'btn btn-secondary mr-2 me-2 mb-3']
+            );
         }
-        $links .= "</div>";
+        $links = html_writer::div($links, 'grid-eq-3');
         $settings->add(new admin_setting_heading('local_helpdesk_actions', get_string('settings'), $links));
 
         // The help menu is cached as it was rendered, and most of these settings show in it.

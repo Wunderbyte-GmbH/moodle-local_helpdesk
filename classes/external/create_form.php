@@ -45,7 +45,7 @@ class create_form extends external_api {
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'url' => new external_value(PARAM_TEXT, 'subject of this issue'),
             'image' => new external_value(PARAM_RAW, 'base64 encoded image or empty'),
@@ -61,7 +61,7 @@ class create_form extends external_api {
      * @param int $forumid The forum ID the form is for
      * @return string The rendered form HTML
      */
-    public static function execute($url, $image, $forumid): string {
+    public static function execute(string $url, string $image, int $forumid): string {
         global $PAGE, $USER, $OUTPUT;
 
         $params = self::validate_parameters(
@@ -97,7 +97,7 @@ class create_form extends external_api {
      * Return definition.
      * @return external_value
      */
-    public static function execute_returns() {
+    public static function execute_returns(): external_value {
         return new external_value(PARAM_RAW, 'Returns the form as html');
     }
 }

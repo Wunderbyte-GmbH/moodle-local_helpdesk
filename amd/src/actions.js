@@ -57,6 +57,17 @@ const run = (main, action, data) => {
 };
 
 /**
+ * Switch between the page shown before the support form and the form itself.
+ *
+ * @param {HTMLElement} target the button that was used.
+ */
+const togglePrepage = (target) => {
+    const container = target.closest('[data-region="local_helpdesk-prepagecontainer"]') || document;
+    container.querySelectorAll('[data-region="local_helpdesk-prepage"], [data-region="local_helpdesk-form"]')
+        .forEach((region) => region.classList.toggle('d-none'));
+};
+
+/**
  * Handle a click, or the change of a file input.
  *
  * @param {Event} e
@@ -67,12 +78,21 @@ const handle = async(e) => {
         return;
     }
     const action = target.dataset.action.substring(PREFIX.length);
-    // A file input reports its file with "change", everything else is a button.
-    if ((action === 'uploadscreenshot') !== (e.type === 'change')) {
+    // A file input and a select report with "change", everything else is a button.
+    const onchange = ['uploadscreenshot', 'autosubmit'].includes(action);
+    if (onchange !== (e.type === 'change')) {
         return;
     }
     if (e.type === 'click') {
         e.preventDefault();
+    }
+    if (action === 'toggleprepage') {
+        togglePrepage(target);
+        return;
+    }
+    if (action === 'autosubmit') {
+        target.form?.submit();
+        return;
     }
     const main = await import('local_helpdesk/main');
     run(main, action, target.dataset);

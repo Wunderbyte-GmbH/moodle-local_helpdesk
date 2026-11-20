@@ -112,7 +112,7 @@ class supporter extends base {
             ->set_type(column::TYPE_TEXT)
             ->add_field("{$alias}.courseid", 'levelcourseid')
             ->set_is_sortable(true)
-            ->add_callback(static function ($value, stdClass $row): string {
+            ->add_callback(static function (?string $value, stdClass $row): string {
                 $options = self::get_level_options();
                 return $row->levelcourseid == lib::SYSTEM_COURSE_ID ? $options[1] : $options[0];
             });
@@ -129,7 +129,7 @@ class supporter extends base {
             ->set_type(column::TYPE_TEXT)
             ->add_field("{$alias}.courseid", 'scopecourseid')
             ->set_is_sortable(true)
-            ->add_callback(static function ($value, stdClass $row): string {
+            ->add_callback(static function (?string $value, stdClass $row): string {
                 if ($row->scopecourseid == lib::SYSTEM_COURSE_ID) {
                     return get_string('scope:platform', 'local_helpdesk');
                 }
@@ -171,7 +171,7 @@ class supporter extends base {
             ->set_type(column::TYPE_TIMESTAMP)
             ->add_field("{$alias}.holidaymode")
             ->set_is_sortable(true)
-            ->add_callback(static function ($value): string {
+            ->add_callback(static function (?int $value): string {
                 return empty($value) ? '-' : userdate($value);
             });
 

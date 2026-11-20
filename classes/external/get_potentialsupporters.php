@@ -45,7 +45,7 @@ class get_potentialsupporters extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
                 'discussionid' => new external_value(PARAM_INT, 'discussionid'),
@@ -62,9 +62,9 @@ class get_potentialsupporters extends external_api {
      * @throws dml_exception
      * @throws invalid_parameter_exception
      */
-    public static function execute(int $discussionid) {
+    public static function execute(int $discussionid): string {
         global $DB, $USER;
-        $params = self::validate_parameters(self::execute_parameters(), ['discussionid' => $discussionid]);
+        self::validate_parameters(self::execute_parameters(), ['discussionid' => $discussionid]);
         self::validate_context(context_system::instance());
         // The team is nobody's business but its own.
         if (!lib::can_view_issues()) {
@@ -102,7 +102,7 @@ class get_potentialsupporters extends external_api {
      *
      * @return external_value
      */
-    public static function execute_returns() {
+    public static function execute_returns(): external_value {
         return new external_value(PARAM_RAW, 'Returns a json encoded array containing potential supporters.');
     }
 }

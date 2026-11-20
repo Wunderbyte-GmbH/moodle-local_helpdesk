@@ -70,7 +70,7 @@ final class observer_test extends advanced_testcase {
             "User {$user->id} should exist"
         );
 
-        user_delete_user($user);
+        delete_user($user);
 
         $this->assertFalse(
             $DB->record_exists('local_helpdesk_supporters', ['userid' => $user->id]),
@@ -324,8 +324,6 @@ final class observer_test extends advanced_testcase {
      * @covers \local_helpdesk\local\guest_ticket::backfill_from_titles
      */
     public function test_backfill_only_trusts_titles_of_the_guest_account(): void {
-        global $DB;
-
         [$forged] = $this->create_issue_with_a_subscriber('[Guestticket: mitleser@example.com] Drucker');
         $guest = (new guest_supportuser())->get_support_guestuser();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_helpdesk');

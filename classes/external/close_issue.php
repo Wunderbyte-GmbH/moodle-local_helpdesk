@@ -45,7 +45,7 @@ class close_issue extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'discussionid' => new external_value(PARAM_INT, 'discussionid'),
         ]);
@@ -55,9 +55,9 @@ class close_issue extends external_api {
      * Close a support issue (discussion).
      *
      * @param int $discussionid The discussion ID to close
-     * @return mixed Result of closing the issue
+     * @return bool true if the issue was closed.
      */
-    public static function execute($discussionid) {
+    public static function execute(int $discussionid): bool {
         $params = self::validate_parameters(self::execute_parameters(), ['discussionid' => $discussionid]);
         self::validate_context(context_system::instance());
         return lib::close_issue($params['discussionid']);
@@ -68,7 +68,7 @@ class close_issue extends external_api {
      *
      * @return external_value
      */
-    public static function execute_returns() {
-        return new external_value(PARAM_RAW, 'Returns 1 if successful, or error message.');
+    public static function execute_returns(): external_value {
+        return new external_value(PARAM_BOOL, 'Whether the issue was closed.');
     }
 }

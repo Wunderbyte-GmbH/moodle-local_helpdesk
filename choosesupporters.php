@@ -77,8 +77,11 @@ if (!is_siteadmin()) {
         require_sesskey();
         $success = false;
         if (!empty($id)) {
-            $record = $DB->get_record('local_helpdesk_supporters', ['id' => $id]);
-            if (!empty($remove)) {
+            $record = $DB->get_record('local_helpdesk_supporters', ['id' => $id, 'courseid' => $courseid]);
+            if (!$record) {
+                // Not a row of the platform team: course assignments are not edited here.
+                $success = false;
+            } else if (!empty($remove)) {
                 $success = $DB->delete_records('local_helpdesk_supporters', ['id' => $id]);
                 if ($success) {
                     $event = \local_helpdesk\event\supportuser_deleted::create(
@@ -144,7 +147,7 @@ if (!is_siteadmin()) {
                     $DB->delete_records('local_helpdesk_subscr', ['userid' => $userid]);
                 }
             } else if (empty($supportlevel)) {
-                $issues = $DB->get_records('local_helpdesk_issues', ['currentsupporter' => 0]);
+                $issues = $DB->get_recordset('local_helpdesk_issues', ['currentsupporter' => 0], '', 'id, discussionid');
                 foreach ($issues as $issue) {
                     $DB->insert_record('local_helpdesk_subscr', [
                         'issueid' => $issue->id,
@@ -152,6 +155,7 @@ if (!is_siteadmin()) {
                         'userid' => $userid,
                     ]);
                 }
+                $issues->close();
             }
         }
         echo $OUTPUT->render_from_template('local_helpdesk/alert', [
@@ -160,12 +164,15 @@ if (!is_siteadmin()) {
         ]);
     }
 
-    $sql = "SELECT bes.*,u.firstname,u.lastname
-                FROM {local_helpdesk_supporters} bes, {user} u
-                WHERE u.id = bes.userid
-                AND u.deleted != 1
-                ORDER BY u.lastname ASC, u.firstname ASC, bes.supportlevel ASC";
-    $supporters = array_values($DB->get_records_sql($sql, []));
+    // Only the platform team: the first level of a course is assigned in that course, and
+    // saving one of its rows here would turn the person into platform support.
+    $sql = "SELECT bes.*, u.firstname, u.lastname
+              FROM {local_helpdesk_supporters} bes
+              JOIN {user} u ON u.id = bes.userid
+             WHERE bes.courseid = :courseid
+               AND u.deleted = 0
+          ORDER BY u.lastname ASC, u.firstname ASC, bes.supportlevel ASC";
+    $supporters = array_values($DB->get_records_sql($sql, ['courseid' => $courseid]));
     echo $OUTPUT->render_from_template(
         'local_helpdesk/choosesupporters',
         ['supporters' => $supporters, 'wwwroot' => $CFG->wwwroot, 'sesskey' => sesskey()]

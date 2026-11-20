@@ -28,6 +28,7 @@ import Ajax from 'core/ajax';
 import Notification from 'core/notification';
 import ModalSaveCancel from 'core/modal_save_cancel';
 import ModalEvents from 'core/modal_events';
+import Templates from 'core/templates';
 import Url from 'core/url';
 import {getString, getStrings} from 'core/str';
 
@@ -56,34 +57,28 @@ let spinnerSteps = 0;
 const call = (methodname, args) => Promise.resolve(Ajax.call([{methodname, args}])[0]);
 
 /**
- * Create an element with a text in it. Whatever the text is, it stays text.
+ * Render a template of this plugin into markup.
  *
- * @param {string} tag
- * @param {string} text
- * @param {object} attributes
- * @returns {HTMLElement}
+ * @param {string} name the template, without the component.
+ * @param {object} context
+ * @returns {Promise<string>}
  */
-const element = (tag, text = '', attributes = {}) => {
-    const node = document.createElement(tag);
-    node.textContent = text;
-    Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, value));
-    return node;
-};
+const render = (name, context) => Templates.render('local_helpdesk/' + name, context);
 
 /**
  * Show or hide the spinner that covers the page while the form is fetched.
  *
  * @param {number} steps 1 when something starts, -1 when it is done.
  */
-const triggerSpinner = (steps) => {
+const triggerSpinner = async(steps) => {
     spinnerSteps += steps;
     const spinner = document.getElementById('helpdesk-spinner');
     if (spinnerSteps > 0 && !spinner) {
-        const node = element('div', '', {id: 'helpdesk-spinner', 'class': 'spinner-grid show'});
-        for (let i = 0; i < 4; i++) {
-            node.append(element('div'));
+        const html = await render('spinner', {});
+        // The request may have finished while the template was rendered.
+        if (spinnerSteps > 0 && !document.getElementById('helpdesk-spinner')) {
+            Templates.appendNodeContents(document.body, html, '');
         }
-        document.body.append(node);
     } else if (spinnerSteps <= 0 && spinner) {
         spinner.remove();
     }
@@ -97,27 +92,25 @@ const triggerSpinner = (steps) => {
 export const assignSupporter = async(discussionid) => {
     try {
         const result = JSON.parse(await call('local_helpdesk_get_potentialsupporters', {discussionid}));
-        const select = element('select', '', {'class': 'form-select custom-select'});
-        Object.entries(result.supporters).forEach(([supportlevel, supporters]) => {
-            const group = element('optgroup', '', {label: supportlevel});
-            supporters.forEach((supporter) => {
-                const option = element('option', supporter.firstname + ' ' + supporter.lastname, {value: supporter.userid});
-                option.selected = !!supporter.selected;
-                group.append(option);
-            });
-            select.append(group);
-        });
+        const groups = Object.entries(result.supporters).map(([label, supporters]) => ({
+            label,
+            supporters: supporters.map((supporter) => ({
+                userid: supporter.userid,
+                fullname: supporter.firstname + ' ' + supporter.lastname,
+                selected: !!supporter.selected,
+            })),
+        }));
 
         const modal = await ModalSaveCancel.create({
             title: getString('select', 'core'),
-            body: select.outerHTML,
+            body: render('supporter_select', {groups}),
             show: true,
             removeOnClose: true,
         });
         modal.getRoot().on(ModalEvents.save, async(e) => {
             e.preventDefault();
             try {
-                const supporterid = modal.getRoot().find('.modal-body select').val();
+                const supporterid = modal.getRoot().find('[data-region="local_helpdesk-supporter"]').val();
                 await call('local_helpdesk_set_currentsupporter', {discussionid, supporterid});
                 window.top.location.reload();
             } catch (error) {
@@ -178,18 +171,15 @@ export const injectForwardButton = async(discussionid, isissue) => {
         return;
     }
     try {
-        const label = await getString(isissue ? 'issue_revoke' : 'issue_assign_nextlevel', 'local_helpdesk');
         const title = document.querySelector('#page-content div[role="main"] .discussionname');
         if (!title || !title.parentNode) {
             return;
         }
-        title.parentNode.prepend(element('a', label, {
-            href: '#',
-            'class': 'btn btn-secondary float-right float-end',
-            'data-action': 'local_helpdesk-forward',
-            'data-discussionid': discussionid,
-            'data-revoke': isissue ? 1 : 0,
-        }));
+        const html = await render('forward_button', {discussionid, revoke: !!isissue});
+        // Right after the title: the header is a flex row of title and discussion navigation.
+        const placeholder = document.createElement('span');
+        title.after(placeholder);
+        Templates.replaceNode(placeholder, html, '');
     } catch (error) {
         Notification.exception(error);
     }
@@ -218,30 +208,22 @@ export const injectTest = () => {
  */
 export const injectReplyButtons = async(discussion) => {
     try {
-        const label = await getString('reply', 'forum');
         document.querySelectorAll(
             'a[href*="issue.php?discussion=' + discussion + '&parent="],'
             + 'a[href*="issue.php?discussion=' + discussion + '&delete="],'
             + 'a[href*="post.php?prune="]'
         ).forEach((link) => link.remove());
 
-        document.querySelectorAll('.forum-post-container>.forumpost').forEach((post) => {
-            const postid = post.getAttribute('data-post-id');
+        const posts = document.querySelectorAll('.forum-post-container>.forumpost');
+        for (const post of posts) {
+            const postid = parseInt(post.getAttribute('data-post-id'), 10);
             const actions = post.querySelector('.post-actions:first-child');
             if (!actions || post.querySelector('.reply-' + postid)) {
-                return;
+                continue;
             }
-            actions.append(element('a', label, {
-                'data-region': 'post-action',
-                'class': 'btn btn-link reply-' + postid,
-                title: label,
-                'aria-label': label,
-                role: 'menuitem',
-                tabindex: -1,
-                href: Url.relativeUrl('/local/helpdesk/issue.php?discussion=' + discussion + '&replyto=' + postid
-                    + '#mformforum'),
-            }));
-        });
+            const url = Url.relativeUrl('/local/helpdesk/issue.php', {discussion, replyto: postid}) + '#mformforum';
+            Templates.appendNodeContents(actions, await render('reply_button', {postid, url}), '');
+        }
     } catch (error) {
         Notification.exception(error);
     }
@@ -288,28 +270,21 @@ const complain = async(key) => {
  * The list of people who look after the request.
  *
  * @param {Array} responsibles
- * @returns {string} markup, empty if there is nobody to name.
+ * @returns {Promise<string>} markup, empty if there is nobody to name.
  */
-const renderResponsibles = (responsibles) => {
+const renderResponsibles = async(responsibles) => {
     if (!Array.isArray(responsibles) || !responsibles.length) {
         return '';
     }
-    const list = element('ul', '', {'class': 'helpdesk_responsible'});
-    responsibles.forEach((responsible) => {
-        const item = element('li');
-        if (responsible.userid > 0) {
-            item.append(element('a', responsible.name, {
-                href: Url.fileUrl('/user', 'view.php?id=' + parseInt(responsible.userid, 10)),
-                target: '_blank',
-            }));
-        } else if (responsible.email) {
-            item.append(element('a', responsible.name, {href: 'mailto:' + responsible.email}));
-        } else {
-            item.textContent = responsible.name;
-        }
-        list.append(item);
+    return render('responsibles', {
+        responsibles: responsibles.map((responsible) => ({
+            name: responsible.name,
+            profileurl: responsible.userid > 0
+                ? Url.relativeUrl('/user/view.php', {id: parseInt(responsible.userid, 10)})
+                : '',
+            mailto: responsible.email ? 'mailto:' + responsible.email : '',
+        })),
     });
-    return list.outerHTML;
 };
 
 /**
@@ -318,7 +293,7 @@ const renderResponsibles = (responsibles) => {
  * @param {object} result the answer of local_helpdesk_create_issue.
  */
 const showResult = async(result) => {
-    const responsibles = renderResponsibles(result.responsibles);
+    const responsibles = await renderResponsibles(result.responsibles);
     const discussionid = parseInt(result.discussionid, 10);
     const strings = (keys) => getStrings(keys.map((key) => ({key, component: 'local_helpdesk'})));
 
@@ -357,7 +332,9 @@ const postBox = async(modal) => {
     const description = value('id_description') || '';
     const guestmail = value('id_guestmail');
 
-    if (!field('id_faqread')?.checked) {
+    // The checkbox is only there if the site asks people to read the FAQ first.
+    const faqread = field('id_faqread');
+    if (faqread && !faqread.checked) {
         complain('faqread');
         return;
     }
@@ -399,6 +376,47 @@ const postBox = async(modal) => {
 };
 
 /**
+ * Offer forwarding to the 2nd level only for targets that allow it.
+ *
+ * @param {HTMLSelectElement} target the select of forum and group.
+ */
+const toggleForwardOption = (target) => {
+    const forward = document.querySelector(FORM + ' #id_postto2ndlevel');
+    if (!forward) {
+        return;
+    }
+    let excluded = [];
+    try {
+        excluded = JSON.parse(target.dataset.no2ndlevel || '[]');
+    } catch (error) {
+        excluded = [];
+    }
+    forward.checked = false;
+    const row = forward.closest('.form-group, .fitem');
+    if (row) {
+        row.classList.toggle('d-none', excluded.includes(target.value));
+    }
+};
+
+/**
+ * Wire up the support form once it is in the dialogue.
+ *
+ * @param {HTMLElement} root the dialogue.
+ */
+const initForm = (root) => {
+    const target = root.querySelector('#id_forum_group');
+    if (!target) {
+        return;
+    }
+    if (target.options.length <= 1) {
+        // With one place to ask there is nothing to choose.
+        target.closest('.form-group, .fitem')?.classList.add('d-none');
+    }
+    target.addEventListener('change', () => toggleForwardOption(target));
+    toggleForwardOption(target);
+};
+
+/**
  * Show the dialogue a request is filed with.
  *
  * @param {number} forumid the forum to offer, 0 for all of them.
@@ -421,13 +439,10 @@ export const showBox = async(forumid = 0) => {
             e.preventDefault();
             postBox(modal);
         });
-        const target = modal.getRoot().find('#id_forum_group');
-        if (target.find('option').length <= 1) {
-            // With one place to ask there is nothing to choose.
-            target.parent().parent().css('display', 'none');
-        }
         requestModal = modal;
         modal.show();
+        await modal.getBodyPromise();
+        initForm(modal.getRoot()[0]);
     } catch (error) {
         Notification.exception(error);
     } finally {

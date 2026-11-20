@@ -56,7 +56,7 @@ class course_supporters_form extends dynamic_form {
      *
      * @return void
      */
-    protected function definition() {
+    protected function definition(): void {
         $mform = $this->_form;
         $courseid = $this->get_courseid();
 
@@ -109,7 +109,7 @@ class course_supporters_form extends dynamic_form {
         $this->set_data([
             'courseid' => $courseid,
             'supporters' => array_values(array_map(
-                fn($row) => $row->userid,
+                fn(\stdClass $row): int => (int) $row->userid,
                 lib::get_first_level($courseid)
             )),
         ]);

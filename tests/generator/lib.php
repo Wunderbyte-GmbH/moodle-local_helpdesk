@@ -35,13 +35,13 @@ class local_helpdesk_generator extends component_generator_base {
     /**
      * Turn an existing forum into a support forum.
      *
-     * @param array|stdClass|null $record needs a forumid, may carry a central flag.
+     * @param array $record needs a forumid, may carry a central flag.
      * @return stdClass the local_helpdesk record.
      */
-    public function create_supportforum($record = null): stdClass {
+    public function create_supportforum(array $record = []): stdClass {
         global $DB;
 
-        $record = (object) (array) $record;
+        $record = (object) $record;
         if (empty($record->forumid)) {
             throw new coding_exception('A support forum needs a forumid.');
         }
@@ -63,13 +63,13 @@ class local_helpdesk_generator extends component_generator_base {
      * Without a courseid the user joins the platform wide team, which is the second level.
      * Pass a real courseid to make somebody first level support of that course.
      *
-     * @param array|stdClass|null $record needs a userid.
+     * @param array $record needs a userid.
      * @return stdClass the local_helpdesk_supporters record.
      */
-    public function create_supporter($record = null): stdClass {
+    public function create_supporter(array $record = []): stdClass {
         global $DB;
 
-        $record = (object) (array) $record;
+        $record = (object) $record;
         if (empty($record->userid)) {
             throw new coding_exception('A supporter needs a userid.');
         }
@@ -92,14 +92,14 @@ class local_helpdesk_generator extends component_generator_base {
     /**
      * Create a support issue together with the forum discussion behind it.
      *
-     * @param array|stdClass|null $record needs a forumid, may carry userid, subject,
+     * @param array $record needs a forumid, may carry userid, subject,
      *                                    description, status, priority and currentsupporter.
      * @return stdClass the local_helpdesk_issues record, with a discussionid.
      */
-    public function create_issue($record = null): stdClass {
+    public function create_issue(array $record = []): stdClass {
         global $DB, $USER;
 
-        $record = (object) (array) $record;
+        $record = (object) $record;
         if (empty($record->forumid)) {
             throw new coding_exception('An issue needs a forumid.');
         }

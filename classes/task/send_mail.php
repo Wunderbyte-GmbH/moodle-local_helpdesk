@@ -88,7 +88,7 @@ class send_mail extends \core\task\adhoc_task {
      *
      * @return string
      */
-    public function get_name() {
+    public function get_name(): string {
         return get_string('cron:sendmail:title', 'local_helpdesk');
     }
 
@@ -97,7 +97,7 @@ class send_mail extends \core\task\adhoc_task {
      *
      * @return void
      */
-    public function execute() {
+    public function execute(): void {
         $data = $this->get_custom_data();
 
         $recipient = self::get_user($data->recipientid);

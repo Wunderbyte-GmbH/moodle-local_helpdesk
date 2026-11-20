@@ -48,8 +48,9 @@ class accountmanager {
      *
      * @param array $accountmanagers ids of the users who can be picked as account manager.
      * @param array $capstocheck capabilities that make a user an account manager.
+     * @return void
      */
-    public function form_to_config_helpdesk_accountmanager(array $accountmanagers, array $capstocheck) {
+    public function form_to_config_helpdesk_accountmanager(array $accountmanagers, array $capstocheck): void {
         $accountmanagerslist = implode(',', $accountmanagers);
         $capstocheck = implode(',', $capstocheck);
         set_config('accountmanagers', $accountmanagerslist, 'local_helpdesk');
@@ -59,9 +60,9 @@ class accountmanager {
     /**
      * returns all managers from site
      *
-     * @return array
+     * @return string[] capability names.
      */
-    public static function get_capabiltities_to_check() {
+    public static function get_capabiltities_to_check(): array {
         return [
             'moodle/course:manageactivities' => 'moodle/course:manageactivities',
             'moodle/course:viewhiddenactivities' => 'moodle/course:viewhiddenactivities',
@@ -75,7 +76,7 @@ class accountmanager {
      *
      * @return string[] user id => name, sorted by username.
      */
-    public static function get_all_category_managers_from_site() {
+    public static function get_all_category_managers_from_site(): array {
         global $DB;
         $users = [];
         $roles = get_roles_with_capability('moodle/course:create', CAP_ALLOW);
@@ -134,7 +135,7 @@ class accountmanager {
      * @param \MoodleQuickForm $mform the form to add the account manager field to.
      * @return void
      */
-    public function prepare_accountmanager_for_form(&$mform): void {
+    public function prepare_accountmanager_for_form(\MoodleQuickForm $mform): void {
         global $CFG;
         $accountmanagers = get_config('local_helpdesk', 'accountmanagers');
         if (empty($accountmanagers) || isguestuser()) {
@@ -161,7 +162,7 @@ class accountmanager {
      * @param int $userid
      * @return void
      */
-    public static function delete_account_manager(int $userid) {
+    public static function delete_account_manager(int $userid): void {
         if (!get_config('local_helpdesk', 'accountmanagers')) {
             return;
         }

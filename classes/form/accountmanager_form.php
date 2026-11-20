@@ -45,9 +45,7 @@ class accountmanager_form extends moodleform {
      *
      * @return void
      */
-    public function definition() {
-        global $CFG, $OUTPUT;
-
+    public function definition(): void {
         $mform =& $this->_form;
         $possiblemanagers = \local_helpdesk\accountmanager::get_all_category_managers_from_site();
 
@@ -84,7 +82,7 @@ class accountmanager_form extends moodleform {
      * @param array $files files uploaded with the form.
      * @return array of errors.
      */
-    public function validation($data, $files) {
+    public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         return $errors;
     }
@@ -93,14 +91,12 @@ class accountmanager_form extends moodleform {
     /**
      * Fill the form with the account managers and capabilities currently configured.
      *
-     * @param stdClass|array $defaults the data to preset the form with.
+     * @param stdClass $defaults the data to preset the form with.
      * @return void
      */
-    public function set_data($defaults) {
-        $currentaccountmanagers = explode(',', get_config('local_helpdesk', 'accountmanagers'));
-        $defaults->possiblemanagers = $currentaccountmanagers;
-        $currentcaps = explode(',', get_config('local_helpdesk', 'capstocheck'));
-        $defaults->capstocheck = $currentcaps;
-        return parent::set_data($defaults);
+    public function set_data($defaults): void {
+        $defaults->possiblemanagers = explode(',', get_config('local_helpdesk', 'accountmanagers'));
+        $defaults->capstocheck = explode(',', get_config('local_helpdesk', 'capstocheck'));
+        parent::set_data($defaults);
     }
 }

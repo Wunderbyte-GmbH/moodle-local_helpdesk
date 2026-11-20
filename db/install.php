@@ -28,15 +28,15 @@
  *
  * @return void
  */
-function xmldb_local_helpdesk_install() {
+function xmldb_local_helpdesk_install(): void {
     global $DB;
 
     $role = $DB->get_record('role', ['shortname' => 'local_helpdesk']);
     if (empty($role->id)) {
         $roleid = create_role(
-            'Helpdesk Team',
+            get_string('supportteamrole:name', 'local_helpdesk'),
             'local_helpdesk',
-            'This role was automatically created by the local_helpdesk Plugin'
+            get_string('supportteamrole:description', 'local_helpdesk')
         );
         $role = $DB->get_record('role', ['id' => $roleid], '*', MUST_EXIST);
     }

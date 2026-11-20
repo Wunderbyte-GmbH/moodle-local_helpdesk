@@ -45,7 +45,7 @@ class set_currentsupporter extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
                 'discussionid' => new external_value(PARAM_INT, 'discussionid'),
@@ -62,7 +62,7 @@ class set_currentsupporter extends external_api {
      * @return int 1 when the issue was handed over.
      * @throws \moodle_exception when the assignment is not allowed.
      */
-    public static function execute($discussionid, $supporterid) {
+    public static function execute(int $discussionid, int $supporterid): int {
         $params = self::validate_parameters(
             self::execute_parameters(),
             ['discussionid' => $discussionid, 'supporterid' => $supporterid]
@@ -82,7 +82,7 @@ class set_currentsupporter extends external_api {
      *
      * @return external_value
      */
-    public static function execute_returns() {
+    public static function execute_returns(): external_value {
         return new external_value(PARAM_RAW, 'Returns 1 if successful.');
     }
 }

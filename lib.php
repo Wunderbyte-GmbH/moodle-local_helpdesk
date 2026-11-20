@@ -26,8 +26,9 @@
  * Extend navigation.
  *
  * @param navigation_node $navigation The navigation node to extend
+ * @return void
  */
-function local_helpdesk_extend_navigation($navigation) {
+function local_helpdesk_extend_navigation(navigation_node $navigation): void {
     // This node leads to issues.php, so it follows whoever that page lets in.
     if (\local_helpdesk\lib::can_view_issues()) {
         $nodehome = $navigation->get('home');
@@ -50,7 +51,7 @@ function local_helpdesk_extend_navigation($navigation) {
  * @param context $context The context object
  * @return void
  */
-function local_helpdesk_extend_navigation_course($parentnode, $course, $context) {
+function local_helpdesk_extend_navigation_course(navigation_node $parentnode, stdClass $course, context $context): void {
     // Both nodes land in the "More" menu of the course. That is where a setting used a few
     // times a year belongs, and forcing it makes the placement deterministic rather than a
     // side effect of how many nodes happen to fit next to it.
@@ -86,16 +87,24 @@ function local_helpdesk_extend_navigation_course($parentnode, $course, $context)
  *
  * @package  local_helpdesk --> we fake downloads for mod_forum.
  * @category files
- * @param stdClass $course course object
- * @param stdClass $cm course module object
- * @param stdClass $context context object
+ * @param stdClass|null $course course object, null outside of courses
+ * @param stdClass|null $cm course module object, null outside of modules
+ * @param context $context context object
  * @param string $filearea file area
  * @param array $args extra arguments
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function local_helpdesk_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+function local_helpdesk_pluginfile(
+    ?stdClass $course,
+    ?stdClass $cm,
+    context $context,
+    string $filearea,
+    array $args,
+    bool $forcedownload,
+    array $options = []
+): bool {
     global $CFG, $DB, $USER;
     require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
     require_once($CFG->dirroot . '/mod/forum/lib.php');
@@ -154,33 +163,37 @@ function local_helpdesk_pluginfile($course, $cm, $context, $filearea, $args, $fo
  * If a course category was deleted we remove all contained support forums.
  *
  * @param stdClass $category the course category.
+ * @return void
  */
-function local_helpdesk_pre_course_category_delete($category) {
+function local_helpdesk_pre_course_category_delete(stdClass $category): void {
     global $DB;
-    $courses = $DB->get_records('course', ['category' => $category->id]);
+    $courses = $DB->get_recordset('course', ['category' => $category->id], '', 'id');
     foreach ($courses as $course) {
         local_helpdesk_pre_course_delete($course);
     }
+    $courses->close();
 }
 
 /**
  * If a course was deleted we remove all contained support forums.
  *
  * @param stdClass $course the course.
+ * @return void
  */
-function local_helpdesk_pre_course_delete($course) {
+function local_helpdesk_pre_course_delete(stdClass $course): void {
     global $DB;
-    $supportforums = $DB->get_records('local_helpdesk', ['courseid' => $course->id]);
-    foreach ($supportforums as $supportforum) {
-        \local_helpdesk\lib::supportforum_disable($supportforum->id);
+    $forumids = $DB->get_fieldset('local_helpdesk', 'forumid', ['courseid' => $course->id]);
+    foreach ($forumids as $forumid) {
+        \local_helpdesk\lib::supportforum_disable($forumid);
     }
 }
 /**
  * If a forum was deleted we remove it as support forum.
  *
  * @param stdClass $cm the course module.
+ * @return void
  */
-function local_helpdesk_pre_course_module_delete($cm) {
+function local_helpdesk_pre_course_module_delete(stdClass $cm): void {
     global $DB;
     $forumtype = $DB->get_record('modules', ['name' => 'forum']);
     if (!empty($forumtype->id) && !empty($cm->module) && $cm->module == $forumtype->id) {
@@ -194,7 +207,7 @@ function local_helpdesk_pre_course_module_delete($cm) {
  * @param renderer_base $renderer
  * @return string The HTML
  */
-function local_helpdesk_render_navbar_output(\renderer_base $renderer) {
+function local_helpdesk_render_navbar_output(renderer_base $renderer): string {
     $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
     // Early bail out conditions.
     if (!isloggedin()  && !$guestmode) {

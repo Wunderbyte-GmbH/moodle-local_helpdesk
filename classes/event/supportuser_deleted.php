@@ -44,7 +44,7 @@ class supportuser_deleted extends \core\event\base {
      *
      * @return void
      */
-    protected function init() {
+    protected function init(): void {
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_OTHER;
         $this->data['objecttable'] = 'local_helpdesk_supporters';
@@ -55,7 +55,7 @@ class supportuser_deleted extends \core\event\base {
      *
      * @return string
      */
-    public function get_description() {
+    public function get_description(): string {
         return "The user with id '$this->userid' has deleted the supportuser with id '" . $this->other['supportuserid'] .
          "'. Supportlevel: '" . $this->other['supportlevel'] . "'";
     }
@@ -65,7 +65,7 @@ class supportuser_deleted extends \core\event\base {
      *
      * @return string
      */
-    public static function get_name() {
+    public static function get_name(): string {
         return get_string('supportdeleted', 'local_helpdesk');
     }
 
@@ -77,7 +77,7 @@ class supportuser_deleted extends \core\event\base {
      * @throws \coding_exception
      * @return void
      */
-    protected function validate_data() {
+    protected function validate_data(): void {
         parent::validate_data();
 
         if (!isset($this->other['supportuserid'])) {
@@ -91,9 +91,9 @@ class supportuser_deleted extends \core\event\base {
     /**
      * Map the object id for course restores.
      *
-     * @return string
+     * @return int base::NOT_MAPPED, the supporter row is not restored.
      */
-    public static function get_objectid_mapping() {
+    public static function get_objectid_mapping(): int {
         return \core\event\base::NOT_MAPPED;
     }
 
@@ -102,7 +102,7 @@ class supportuser_deleted extends \core\event\base {
      *
      * @return array
      */
-    public static function get_other_mapping() {
+    public static function get_other_mapping(): array {
         $othermapped = [];
         $othermapped['someid'] = \core\event\base::NOT_MAPPED;
         return $othermapped;
