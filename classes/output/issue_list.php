@@ -24,10 +24,10 @@
 
 namespace local_helpdesk\output;
 
-use local_helpdesk\lib;
 use renderable;
 use renderer_base;
 use templatable;
+use local_helpdesk\local\issue\status;
 
 /**
  * Collects the issues for the template local_helpdesk/issues.
@@ -107,7 +107,7 @@ class issue_list implements renderable, templatable {
             } else {
                 $issue->currentsupportername = get_string('label:2ndlevel', 'local_helpdesk');
             }
-            $issue->state = lib::status_to_template($issue->status);
+            $issue->state = status::to_template($issue->status);
 
             $issue->prio = '';
             $issue->priolow = ($hasprio && $issue->priority <= 1) ? 'active' : '';
@@ -118,7 +118,7 @@ class issue_list implements renderable, templatable {
                 $data['current'][] = $issue;
             } else if (isset($watched[$issue->discussionid])) {
                 $data['assigned'][] = $issue;
-            } else if ($issue->status != lib::STATUS_CLOSED) {
+            } else if ($issue->status != status::CLOSED) {
                 $data['other'][] = $issue;
             } else {
                 $data['closed'][] = $issue;

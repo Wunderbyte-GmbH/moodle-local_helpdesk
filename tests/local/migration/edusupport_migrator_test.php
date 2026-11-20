@@ -28,6 +28,9 @@ namespace local_helpdesk\local\migration;
 use advanced_testcase;
 use moodle_exception;
 use xmldb_file;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\supporter\platform_team;
+use local_helpdesk\local\supportforum\registry;
 
 /**
  * Tests for the migration from local_edusupport.
@@ -115,7 +118,7 @@ final class edusupport_migrator_test extends advanced_testcase {
             ], false, false, true);
         }
         $DB->insert_record_raw('local_edusupport_supporters', (object) [
-            'id' => 61, 'courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID, 'userid' => $this->supporter->id,
+            'id' => 61, 'courseid' => platform_team::COURSE_ID, 'userid' => $this->supporter->id,
             'supportlevel' => '2nd Level', 'holidaymode' => 0, 'autoassign' => 0,
         ], false, false, true);
 
@@ -193,7 +196,7 @@ final class edusupport_migrator_test extends advanced_testcase {
         $newid = $DB->insert_record('local_helpdesk_issues', (object) ['discussionid' => 1, 'priority' => 1, 'status' => 1]);
         $this->assertGreaterThan(52, $newid);
 
-        $this->assertTrue(\local_helpdesk\lib::is_supportforum($this->forum->id));
+        $this->assertTrue(registry::is_supportforum($this->forum->id));
     }
 
     /**
@@ -234,7 +237,7 @@ final class edusupport_migrator_test extends advanced_testcase {
         $this->assertTrue($DB->record_exists('task_adhoc', [
             'component' => 'local_helpdesk', 'classname' => '\\local_helpdesk\\task\\reminder',
         ]));
-        $this->assertTrue(\local_helpdesk\lib::issue_already_has_reminder(51));
+        $this->assertTrue(issue_manager::has_scheduled_reminder(51));
 
         $this->assertSame(
             'email',

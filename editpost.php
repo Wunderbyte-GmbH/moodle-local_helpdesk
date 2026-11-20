@@ -24,6 +24,11 @@
  */
 
 require_once('../../config.php');
+require_once($CFG->dirroot . '/mod/forum/lib.php');
+
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\supporter\platform_team;
+use local_helpdesk\local\supportforum\registry;
 
 // We fake a forum discussion here.
 // This code is mainly taken from /mod/forum/discuss.php.
@@ -40,16 +45,16 @@ $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
 
-$issue = \local_helpdesk\lib::get_issue($discussionid);
+$issue = issue_manager::get($discussionid);
 $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
 $PAGE->set_title($discussion->name);
 $PAGE->set_heading($discussion->name);
 
 // Supporters may edit the posts of an issue, and of nothing else: the post has to belong to
 // this discussion, and the discussion has to be an issue in a support forum.
-$editable = \local_helpdesk\lib::is_second_level()
+$editable = platform_team::is_member()
     && !empty($issue->id)
-    && \local_helpdesk\lib::is_supportforum($discussion->forum)
+    && registry::is_supportforum($discussion->forum)
     && $DB->record_exists('forum_posts', ['id' => $edit, 'discussion' => $discussionid]);
 
 if (!$editable) {

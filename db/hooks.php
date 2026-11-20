@@ -30,4 +30,8 @@ $callbacks = [
         'hook' => \core\hook\output\before_standard_head_html_generation::class,
         'callback' => [\local_helpdesk\hook_callbacks::class, 'before_standard_head_html_generation'],
     ],
+    [
+        'hook' => \core_course\hook\before_course_deleted::class,
+        'callback' => [\local_helpdesk\hook_callbacks::class, 'before_course_deleted'],
+    ],
 ];

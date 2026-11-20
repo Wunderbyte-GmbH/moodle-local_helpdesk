@@ -10,6 +10,7 @@
 * Standards: The edusupport migrator reads the old settings with get_config() instead of querying config_plugins; recordsets for the privacy export, the cleanup task and other potentially large reads.
 * Tests: Every global function has the frankenstyle prefix (checked by a test), deleting a course.
 * Standards: Every parameter and return value has a type declaration; a return value has one type ("nothing" is null, no more false|object or bool|int). Only the parameters of moodleform overrides stay untyped, as their core parents are. A test checks this for all classes and functions. close_issue returns a boolean.
+* Refactoring: The class local_helpdesk\lib is split into classes under classes/local: issue\{issue_manager, status, closed_prefix, subscriptions}, supporter\{platform_team, course_support, deduplicator}, supportforum\registry, request\central_forum, help_menu, navigation and forum_attachments. lib.php only holds the callbacks core calls, each handing over to one of them; course deletion uses the hook before_course_deleted.
 * Cleanup: Unused variables, globals and a forum lookup through a global variable removed, as found by PHP Mess Detector.
 * Documentation: README rewritten with installation, configuration and use, new screenshots.
 * Security: Only site administrators can save the account manager settings.

@@ -24,6 +24,11 @@
  */
 
 require_once('../../config.php');
+require_once($CFG->dirroot . '/mod/forum/lib.php');
+
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\status;
+use local_helpdesk\local\supporter\platform_team;
 
 // We fake a forum discussion here.
 // This code is mainly taken from /mod/forum/discuss.php.
@@ -51,13 +56,13 @@ $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
 
-$issue = \local_helpdesk\lib::get_issue($discussionid, false);
+$issue = issue_manager::get($discussionid, false);
 $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
 $PAGE->set_title($discussion->name);
 $PAGE->set_heading($discussion->name);
 $issueslinkname = get_string('issues', 'local_helpdesk');
 
-if (!\local_helpdesk\lib::can_view_issues()) {
+if (!platform_team::can_view_issues()) {
     echo $OUTPUT->header();
     $cm = \get_coursemodule_from_instance('forum', $discussion->forum);
     $tocmurl = new moodle_url('/mod/forum/view.php', ['id' => $cm->id]);
@@ -277,7 +282,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
     $user = empty($issue->currentsupporter) ? false : \core_user::get_user($issue->currentsupporter);
     if ($user && empty($user->deleted)) {
         $supportlevel = $DB->get_field('local_helpdesk_supporters', 'supportlevel', [
-            'courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID,
+            'courseid' => platform_team::COURSE_ID,
             'userid' => $user->id,
         ]);
 
@@ -288,7 +293,7 @@ if (!\local_helpdesk\lib::can_view_issues()) {
             "href" => (new moodle_url('/user/profile.php', ['id' => $user->id]))->out(false),
         ];
     }
-    $status = \local_helpdesk\lib::status_to_template($issue->status);
+    $status = status::to_template($issue->status);
     $options[] = [
         "title" => $status['status'],
         "class" => $status['class'],

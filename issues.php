@@ -25,6 +25,10 @@
 
 require_once('../../config.php');
 
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\subscriptions;
+use local_helpdesk\local\supporter\platform_team;
+
 $context = \context_system::instance();
 $PAGE->set_context($context);
 require_login();
@@ -34,7 +38,7 @@ $title = get_string('issues', 'local_helpdesk');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
-$issupportteam = \local_helpdesk\lib::can_view_issues();
+$issupportteam = platform_team::can_view_issues();
 
 // Handle all actions before any output is sent, so we can redirect afterwards (post/redirect/get).
 // Without the redirect a reload or the back button would trigger the same action again, which for
@@ -61,23 +65,23 @@ if ($issupportteam) {
         };
 
         if ($isissue($assign)) {
-            \local_helpdesk\lib::subscription_add($assign);
+            subscriptions::add($assign);
         }
         if ($isissue($unassign)) {
-            \local_helpdesk\lib::subscription_remove($unassign);
+            subscriptions::remove($unassign);
         }
         if ($isissue($take)) {
-            \local_helpdesk\lib::set_current_supporter($take, $USER->id);
-            \local_helpdesk\lib::subscription_add($take);
+            issue_manager::set_current_supporter($take, $USER->id);
+            subscriptions::add($take);
         }
         if ($isissue($reopen)) {
-            \local_helpdesk\lib::reopen_issue($reopen);
+            issue_manager::reopen($reopen);
         }
         if ($isissue($close)) {
-            \local_helpdesk\lib::close_issue($close);
+            issue_manager::close($close);
         }
         if (!empty($lvl) && $isissue($prio)) {
-            \local_helpdesk\lib::set_prioritylvl($prio, $lvl);
+            issue_manager::set_priority($prio, $lvl);
         }
 
         redirect($PAGE->url);
@@ -90,7 +94,7 @@ if ($issupportteam) {
         // unique key that row is unambiguous.
         $supporterconditions = [
             'userid' => $USER->id,
-            'courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID,
+            'courseid' => platform_team::COURSE_ID,
         ];
         $supporter = $DB->get_record('local_helpdesk_supporters', $supporterconditions);
         if (!empty($supporter->id)) {

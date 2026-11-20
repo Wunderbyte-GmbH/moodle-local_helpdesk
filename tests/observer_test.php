@@ -19,6 +19,7 @@ namespace local_helpdesk;
 use advanced_testcase;
 use core\task\manager;
 use local_helpdesk\task\send_mail;
+use local_helpdesk\local\supporter\platform_team;
 
 /**
  * Test unit class of local_helpdesk.
@@ -100,7 +101,7 @@ final class observer_test extends advanced_testcase {
         set_config('accountmanagers', $leaving->id . ',' . $staying->id, 'local_helpdesk');
 
         $DB->insert_record('local_helpdesk_supporters', (object) [
-            'courseid' => lib::SYSTEM_COURSE_ID,
+            'courseid' => platform_team::COURSE_ID,
             'userid' => $leaving->id,
             'supportlevel' => '',
             'holidaymode' => 0,
@@ -110,7 +111,7 @@ final class observer_test extends advanced_testcase {
         // A row belonging to somebody else, whose own id equals the leaving user's id.
         $DB->import_record('local_helpdesk_supporters', (object) [
             'id' => $leaving->id,
-            'courseid' => lib::SYSTEM_COURSE_ID,
+            'courseid' => platform_team::COURSE_ID,
             'userid' => $staying->id,
             'supportlevel' => '',
             'holidaymode' => 0,

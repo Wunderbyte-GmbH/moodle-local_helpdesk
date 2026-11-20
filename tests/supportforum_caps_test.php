@@ -29,6 +29,7 @@ use advanced_testcase;
 use context_course;
 use context_module;
 use stdClass;
+use local_helpdesk\local\supportforum\registry;
 
 /**
  * Tests for the protection a support forum and its course get.
@@ -37,7 +38,7 @@ use stdClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::supportforum_managecaps
+ * @covers     \local_helpdesk\local\supportforum\registry::set_protection
  */
 final class supportforum_caps_test extends advanced_testcase {
     /** @var string[] each protected capability with where it is prohibited. */
@@ -111,7 +112,7 @@ final class supportforum_caps_test extends advanced_testcase {
     public function test_protection_goes_to_the_default_user_role(): void {
         global $CFG;
 
-        $this->assertTrue(lib::supportforum_managecaps($this->forum->id, true));
+        $this->assertTrue(registry::set_protection($this->forum->id, true));
 
         $this->assertSame(self::PROTECTED, $this->prohibited($CFG->defaultuserroleid));
     }
@@ -126,7 +127,7 @@ final class supportforum_caps_test extends advanced_testcase {
         $everyone = $this->getDataGenerator()->create_role(['shortname' => 'everyone']);
         set_config('defaultuserroleid', $everyone);
 
-        lib::supportforum_managecaps($this->forum->id, true);
+        registry::set_protection($this->forum->id, true);
 
         $this->assertSame(self::PROTECTED, $this->prohibited($everyone));
         $this->assertSame([], $this->prohibited($previous));
@@ -138,8 +139,8 @@ final class supportforum_caps_test extends advanced_testcase {
     public function test_disabling_lifts_the_protection(): void {
         global $CFG;
 
-        lib::supportforum_managecaps($this->forum->id, true);
-        lib::supportforum_managecaps($this->forum->id, false);
+        registry::set_protection($this->forum->id, true);
+        registry::set_protection($this->forum->id, false);
 
         $this->assertSame([], $this->prohibited($CFG->defaultuserroleid));
     }
@@ -152,7 +153,7 @@ final class supportforum_caps_test extends advanced_testcase {
 
         set_config('defaultuserroleid', 0);
 
-        $this->assertFalse(lib::supportforum_managecaps($this->forum->id, true));
+        $this->assertFalse(registry::set_protection($this->forum->id, true));
         $this->assertFalse($DB->record_exists_select(
             'role_capabilities',
             'contextid IN (:module, :course)',

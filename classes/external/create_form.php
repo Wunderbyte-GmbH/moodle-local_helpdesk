@@ -30,7 +30,7 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
 use local_helpdesk\form\issue_create_form;
-use local_helpdesk\lib;
+use local_helpdesk\local\request\central_forum;
 
 /**
  * Web service to get the form a support request is filed with.
@@ -76,7 +76,7 @@ class create_form extends external_api {
             $PAGE->set_context(context_system::instance());
         }
 
-        lib::before_popup();
+        central_forum::prepare_for_request();
 
         $params['contactphone'] = $USER->phone1;
         $form = new issue_create_form(null, null, 'post', '_self', ['id' => 'local_helpdesk_create_form'], true);

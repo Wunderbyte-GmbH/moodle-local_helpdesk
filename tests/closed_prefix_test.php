@@ -26,6 +26,7 @@
 namespace local_helpdesk;
 
 use advanced_testcase;
+use local_helpdesk\local\issue\closed_prefix;
 
 /**
  * Tests for the marker that flags a discussion as a closed issue.
@@ -34,9 +35,9 @@ use advanced_testcase;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::add_closed_prefix
- * @covers     \local_helpdesk\lib::strip_closed_prefix
- * @covers     \local_helpdesk\lib::migrate_legacy_closed_prefixes
+ * @covers     \local_helpdesk\local\issue\closed_prefix::add
+ * @covers     \local_helpdesk\local\issue\closed_prefix::strip
+ * @covers     \local_helpdesk\local\issue\closed_prefix::migrate_legacy
  */
 final class closed_prefix_test extends advanced_testcase {
     /**
@@ -44,8 +45,8 @@ final class closed_prefix_test extends advanced_testcase {
      */
     public function test_add_marks_a_plain_name(): void {
         $this->assertSame(
-            lib::CLOSED_PREFIX . 'Allgemeine Anfrage',
-            lib::add_closed_prefix('Allgemeine Anfrage')
+            closed_prefix::PREFIX . 'Allgemeine Anfrage',
+            closed_prefix::add('Allgemeine Anfrage')
         );
     }
 
@@ -54,8 +55,8 @@ final class closed_prefix_test extends advanced_testcase {
      */
     public function test_add_replaces_a_legacy_marker(): void {
         $this->assertSame(
-            lib::CLOSED_PREFIX . 'Allgemeine Anfrage',
-            lib::add_closed_prefix('[Closed] Allgemeine Anfrage')
+            closed_prefix::PREFIX . 'Allgemeine Anfrage',
+            closed_prefix::add('[Closed] Allgemeine Anfrage')
         );
     }
 
@@ -65,9 +66,9 @@ final class closed_prefix_test extends advanced_testcase {
     public function test_add_is_idempotent(): void {
         $name = 'Allgemeine Anfrage';
         for ($i = 0; $i < 3; $i++) {
-            $name = lib::add_closed_prefix($name);
+            $name = closed_prefix::add($name);
         }
-        $this->assertSame(lib::CLOSED_PREFIX . 'Allgemeine Anfrage', $name);
+        $this->assertSame(closed_prefix::PREFIX . 'Allgemeine Anfrage', $name);
     }
 
     /**
@@ -76,13 +77,13 @@ final class closed_prefix_test extends advanced_testcase {
     public function test_strip_removes_both_markers(): void {
         $this->assertSame(
             'Allgemeine Anfrage',
-            lib::strip_closed_prefix(lib::CLOSED_PREFIX . 'Allgemeine Anfrage')
+            closed_prefix::strip(closed_prefix::PREFIX . 'Allgemeine Anfrage')
         );
         $this->assertSame(
             'Allgemeine Anfrage',
-            lib::strip_closed_prefix('[Closed] Allgemeine Anfrage')
+            closed_prefix::strip('[Closed] Allgemeine Anfrage')
         );
-        $this->assertSame('Allgemeine Anfrage', lib::strip_closed_prefix('Allgemeine Anfrage'));
+        $this->assertSame('Allgemeine Anfrage', closed_prefix::strip('Allgemeine Anfrage'));
     }
 
     /**
@@ -90,8 +91,8 @@ final class closed_prefix_test extends advanced_testcase {
      */
     public function test_a_marker_inside_the_name_is_left_alone(): void {
         $name = 'Was bedeutet [Closed] im Betreff?';
-        $this->assertSame($name, lib::strip_closed_prefix($name));
-        $this->assertSame(lib::CLOSED_PREFIX . $name, lib::add_closed_prefix($name));
+        $this->assertSame($name, closed_prefix::strip($name));
+        $this->assertSame(closed_prefix::PREFIX . $name, closed_prefix::add($name));
     }
 
     /**
@@ -120,10 +121,10 @@ final class closed_prefix_test extends advanced_testcase {
             'name' => '[Closed] Kein Ticket',
         ]);
 
-        $this->assertSame(1, lib::migrate_legacy_closed_prefixes());
+        $this->assertSame(1, closed_prefix::migrate_legacy());
 
         $this->assertSame(
-            lib::CLOSED_PREFIX . 'Altes Ticket',
+            closed_prefix::PREFIX . 'Altes Ticket',
             $DB->get_field('forum_discussions', 'name', ['id' => $legacy->discussionid])
         );
         $this->assertSame(
@@ -140,6 +141,6 @@ final class closed_prefix_test extends advanced_testcase {
         );
 
         // Running it again changes nothing.
-        $this->assertSame(0, lib::migrate_legacy_closed_prefixes());
+        $this->assertSame(0, closed_prefix::migrate_legacy());
     }
 }

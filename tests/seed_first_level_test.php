@@ -27,6 +27,7 @@ namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
+use local_helpdesk\local\supporter\course_support;
 
 /**
  * Tests for filling the first level of support courses from the eligibility rule.
@@ -35,7 +36,7 @@ use stdClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::seed_first_level_from_capabilities
+ * @covers     \local_helpdesk\local\supporter\course_support::seed_from_capabilities
  */
 final class seed_first_level_test extends advanced_testcase {
     /** @var stdClass a course holding a support forum. */
@@ -77,7 +78,7 @@ final class seed_first_level_test extends advanced_testcase {
         $teacher = $this->user_with_role('editingteacher');
         $this->user_with_role('student');
 
-        $report = lib::seed_first_level_from_capabilities(true);
+        $report = course_support::seed_from_capabilities(true);
 
         $this->assertArrayHasKey($this->course->id, $report);
         $this->assertSame(1, $report[$this->course->id]['eligible']);
@@ -85,7 +86,7 @@ final class seed_first_level_test extends advanced_testcase {
         $this->assertSame(1, $report[$this->course->id]['toadd']);
         $this->assertSame([fullname($teacher)], $report[$this->course->id]['names']);
 
-        $this->assertSame([], lib::get_first_level($this->course->id));
+        $this->assertSame([], course_support::get_members($this->course->id));
     }
 
     /**
@@ -96,9 +97,9 @@ final class seed_first_level_test extends advanced_testcase {
         $assistant = $this->user_with_role('teacher');
         $student = $this->user_with_role('student');
 
-        lib::seed_first_level_from_capabilities(false);
+        course_support::seed_from_capabilities(false);
 
-        $assigned = array_column(lib::get_first_level($this->course->id), 'userid');
+        $assigned = array_column(course_support::get_members($this->course->id), 'userid');
         sort($assigned);
         $expected = [$teacher->id, $assistant->id];
         sort($expected);
@@ -113,14 +114,14 @@ final class seed_first_level_test extends advanced_testcase {
     public function test_running_twice_changes_nothing(): void {
         $this->user_with_role('editingteacher');
 
-        lib::seed_first_level_from_capabilities(false);
-        $before = lib::get_first_level($this->course->id);
+        course_support::seed_from_capabilities(false);
+        $before = course_support::get_members($this->course->id);
 
-        $report = lib::seed_first_level_from_capabilities(true);
+        $report = course_support::seed_from_capabilities(true);
         $this->assertSame(0, $report[$this->course->id]['toadd']);
 
-        lib::seed_first_level_from_capabilities(false);
-        $this->assertEquals(array_keys($before), array_keys(lib::get_first_level($this->course->id)));
+        course_support::seed_from_capabilities(false);
+        $this->assertEquals(array_keys($before), array_keys(course_support::get_members($this->course->id)));
     }
 
     /**
@@ -133,17 +134,17 @@ final class seed_first_level_test extends advanced_testcase {
         global $DB;
 
         $chosen = $this->user_with_role('editingteacher');
-        lib::assign_first_level($this->course->id, [$chosen->id]);
+        course_support::assign($this->course->id, [$chosen->id]);
 
         // Take the rights away, so the eligibility rule would no longer find this person.
         $context = \context_course::instance($this->course->id);
         $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher'], MUST_EXIST);
         role_change_permission($roleid, $context, 'moodle/course:viewhiddenactivities', CAP_PROHIBIT);
-        $this->assertArrayNotHasKey($chosen->id, lib::get_assignable_users($this->course->id));
+        $this->assertArrayNotHasKey($chosen->id, course_support::get_assignable_users($this->course->id));
 
-        lib::seed_first_level_from_capabilities(false);
+        course_support::seed_from_capabilities(false);
 
-        $assigned = array_column(lib::get_first_level($this->course->id), 'userid');
+        $assigned = array_column(course_support::get_members($this->course->id), 'userid');
         $this->assertEquals([$chosen->id], $assigned);
     }
 
@@ -155,7 +156,7 @@ final class seed_first_level_test extends advanced_testcase {
         $teacher = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($teacher->id, $other->id, 'editingteacher');
 
-        $report = lib::seed_first_level_from_capabilities(true);
+        $report = course_support::seed_from_capabilities(true);
 
         $this->assertArrayNotHasKey($other->id, $report);
     }

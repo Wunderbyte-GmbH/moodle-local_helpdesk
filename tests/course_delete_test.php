@@ -34,7 +34,7 @@ use advanced_testcase;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     ::local_helpdesk_pre_course_delete
+ * @covers     \local_helpdesk\hook_callbacks::before_course_deleted
  */
 final class course_delete_test extends advanced_testcase {
     /**

@@ -27,6 +27,10 @@ namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
+use local_helpdesk\local\issue\closed_prefix;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\status;
+use local_helpdesk\local\issue\subscriptions;
 
 /**
  * Tests for closing and reopening a support issue.
@@ -35,8 +39,8 @@ use stdClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::close_issue
- * @covers     \local_helpdesk\lib::reopen_issue
+ * @covers     \local_helpdesk\local\issue\issue_manager::close
+ * @covers     \local_helpdesk\local\issue\issue_manager::reopen
  */
 final class close_issue_test extends advanced_testcase {
     /** @var stdClass the course holding the support forum. */
@@ -94,15 +98,15 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->supporter);
-        $this->assertTrue(lib::close_issue($issue->discussionid));
+        $this->assertTrue(issue_manager::close($issue->discussionid));
 
         $this->assertSame(
-            lib::CLOSED_PREFIX . 'Drucker geht nicht',
+            closed_prefix::PREFIX . 'Drucker geht nicht',
             $DB->get_field('forum_discussions', 'name', ['id' => $issue->discussionid])
         );
 
         $closed = $DB->get_record('local_helpdesk_issues', ['discussionid' => $issue->discussionid]);
-        $this->assertEquals(\local_helpdesk\lib::STATUS_CLOSED, $closed->status);
+        $this->assertEquals(status::CLOSED, $closed->status);
         $this->assertEquals(0, $closed->priority);
     }
 
@@ -118,10 +122,10 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->supporter);
-        lib::subscription_add($issue->discussionid, $this->supporter->id);
+        subscriptions::add($issue->discussionid, $this->supporter->id);
         $this->assertTrue($DB->record_exists('local_helpdesk_subscr', ['discussionid' => $issue->discussionid]));
 
-        lib::close_issue($issue->discussionid);
+        issue_manager::close($issue->discussionid);
 
         $this->assertFalse($DB->record_exists('local_helpdesk_subscr', ['discussionid' => $issue->discussionid]));
     }
@@ -139,7 +143,7 @@ final class close_issue_test extends advanced_testcase {
         $before = $DB->count_records('forum_posts', ['discussion' => $issue->discussionid]);
 
         $this->setUser($this->supporter);
-        lib::close_issue($issue->discussionid);
+        issue_manager::close($issue->discussionid);
 
         $this->assertSame(
             $before + 1,
@@ -160,11 +164,11 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->supporter);
-        lib::close_issue($issue->discussionid);
-        lib::close_issue($issue->discussionid);
+        issue_manager::close($issue->discussionid);
+        issue_manager::close($issue->discussionid);
 
         $this->assertSame(
-            lib::CLOSED_PREFIX . 'Drucker geht nicht',
+            closed_prefix::PREFIX . 'Drucker geht nicht',
             $DB->get_field('forum_discussions', 'name', ['id' => $issue->discussionid])
         );
     }
@@ -182,7 +186,7 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->student);
-        $this->assertFalse(lib::close_issue($issue->discussionid));
+        $this->assertFalse(issue_manager::close($issue->discussionid));
 
         $this->assertSame(
             'Drucker geht nicht',
@@ -203,7 +207,7 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->supporter);
-        $this->assertFalse(lib::close_issue($discussion->id));
+        $this->assertFalse(issue_manager::close($discussion->id));
     }
 
     /**
@@ -219,8 +223,8 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->supporter);
-        lib::close_issue($issue->discussionid);
-        $this->assertTrue(lib::reopen_issue($issue->discussionid));
+        issue_manager::close($issue->discussionid);
+        $this->assertTrue(issue_manager::reopen($issue->discussionid));
 
         $this->assertSame(
             'Drucker geht nicht',
@@ -228,7 +232,7 @@ final class close_issue_test extends advanced_testcase {
         );
 
         $reopened = $DB->get_record('local_helpdesk_issues', ['discussionid' => $issue->discussionid]);
-        $this->assertEquals(\local_helpdesk\lib::STATUS_AWAITING_SUPPORT_ACTION, $reopened->status);
+        $this->assertEquals(status::AWAITING_SUPPORT_ACTION, $reopened->status);
         $this->assertEquals(1, $reopened->priority);
     }
 
@@ -245,7 +249,7 @@ final class close_issue_test extends advanced_testcase {
         ]);
 
         $this->setUser($this->supporter);
-        lib::reopen_issue($issue->discussionid);
+        issue_manager::reopen($issue->discussionid);
 
         $this->assertSame(
             'Altes Ticket',

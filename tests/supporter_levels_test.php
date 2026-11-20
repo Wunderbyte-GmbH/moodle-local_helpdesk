@@ -27,6 +27,11 @@ namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\subscriptions;
+use local_helpdesk\local\supporter\course_support;
+use local_helpdesk\local\supporter\platform_team;
+use local_helpdesk\local\supportforum\registry;
 
 /**
  * Tests for the separation of first and second level support.
@@ -35,19 +40,19 @@ use stdClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::get_first_level
- * @covers     \local_helpdesk\lib::get_second_level
- * @covers     \local_helpdesk\lib::is_first_level
- * @covers     \local_helpdesk\lib::is_second_level
- * @covers     \local_helpdesk\lib::get_assignable_users
- * @covers     \local_helpdesk\lib::get_course_supporters
- * @covers     \local_helpdesk\lib::can_assign_first_level
- * @covers     \local_helpdesk\lib::assign_first_level
+ * @covers     \local_helpdesk\local\supporter\course_support::get_members
+ * @covers     \local_helpdesk\local\supporter\platform_team::get_members
+ * @covers     \local_helpdesk\local\supporter\course_support::is_member
+ * @covers     \local_helpdesk\local\supporter\platform_team::is_member
+ * @covers     \local_helpdesk\local\supporter\course_support::get_assignable_users
+ * @covers     \local_helpdesk\local\supporter\course_support::get_users_of_forum
+ * @covers     \local_helpdesk\local\supporter\course_support::can_assign
+ * @covers     \local_helpdesk\local\supporter\course_support::assign
  * @covers     \local_helpdesk\event\supportuser_deleted
- * @covers     \local_helpdesk\lib::supportforum_rolecheck
- * @covers     \local_helpdesk\lib::set_2nd_level
- * @covers     \local_helpdesk\lib::subscription_add
- * @covers     \local_helpdesk\lib::validate_supporter_assignment
+ * @covers     \local_helpdesk\local\supportforum\registry::sync_roles
+ * @covers     \local_helpdesk\local\issue\issue_manager::forward_to_second_level
+ * @covers     \local_helpdesk\local\issue\subscriptions::add
+ * @covers     \local_helpdesk\local\issue\issue_manager::validate_supporter_assignment
  */
 final class supporter_levels_test extends advanced_testcase {
     /** @var stdClass a course with a support forum. */
@@ -87,8 +92,8 @@ final class supporter_levels_test extends advanced_testcase {
         $platform = $this->getDataGenerator()->create_user();
         $this->generator->create_supporter(['userid' => $platform->id]);
 
-        $this->assertSame([], lib::get_first_level($this->course->id));
-        $this->assertCount(1, lib::get_second_level());
+        $this->assertSame([], course_support::get_members($this->course->id));
+        $this->assertCount(1, platform_team::get_members());
     }
 
     /**
@@ -98,8 +103,8 @@ final class supporter_levels_test extends advanced_testcase {
         $local = $this->user_with_role('editingteacher');
         $this->generator->create_supporter(['userid' => $local->id, 'courseid' => $this->course->id]);
 
-        $this->assertSame([], lib::get_second_level());
-        $this->assertCount(1, lib::get_first_level($this->course->id));
+        $this->assertSame([], platform_team::get_members());
+        $this->assertCount(1, course_support::get_members($this->course->id));
     }
 
     /**
@@ -109,8 +114,8 @@ final class supporter_levels_test extends advanced_testcase {
         $platform = $this->getDataGenerator()->create_user();
         $this->generator->create_supporter(['userid' => $platform->id]);
 
-        $this->assertSame([], lib::get_first_level(lib::SYSTEM_COURSE_ID));
-        $this->assertFalse(lib::is_first_level($platform->id, lib::SYSTEM_COURSE_ID));
+        $this->assertSame([], course_support::get_members(platform_team::COURSE_ID));
+        $this->assertFalse(course_support::is_member($platform->id, platform_team::COURSE_ID));
     }
 
     /**
@@ -122,11 +127,11 @@ final class supporter_levels_test extends advanced_testcase {
         $this->generator->create_supporter(['userid' => $platform->id]);
         $this->generator->create_supporter(['userid' => $local->id, 'courseid' => $this->course->id]);
 
-        $this->assertTrue(lib::is_second_level($platform->id));
-        $this->assertFalse(lib::is_first_level($platform->id, $this->course->id));
+        $this->assertTrue(platform_team::is_member($platform->id));
+        $this->assertFalse(course_support::is_member($platform->id, $this->course->id));
 
-        $this->assertTrue(lib::is_first_level($local->id, $this->course->id));
-        $this->assertFalse(lib::is_second_level($local->id));
+        $this->assertTrue(course_support::is_member($local->id, $this->course->id));
+        $this->assertFalse(platform_team::is_member($local->id));
     }
 
     /**
@@ -138,9 +143,9 @@ final class supporter_levels_test extends advanced_testcase {
         $this->generator->create_supporter(['userid' => $available->id]);
         $this->generator->create_supporter(['userid' => $away->id, 'holidaymode' => time() + DAYSECS]);
 
-        $this->assertCount(2, lib::get_second_level());
+        $this->assertCount(2, platform_team::get_members());
 
-        $onduty = lib::get_second_level(false, true);
+        $onduty = platform_team::get_members(false, true);
         $this->assertCount(1, $onduty);
         $this->assertEquals($available->id, reset($onduty)->userid);
     }
@@ -157,7 +162,7 @@ final class supporter_levels_test extends advanced_testcase {
         $teacher = $this->user_with_role('teacher');
         $student = $this->user_with_role('student');
 
-        $assignable = lib::get_assignable_users($this->course->id);
+        $assignable = course_support::get_assignable_users($this->course->id);
 
         $this->assertArrayHasKey($editingteacher->id, $assignable);
         $this->assertArrayHasKey($teacher->id, $assignable);
@@ -175,7 +180,7 @@ final class supporter_levels_test extends advanced_testcase {
         $roleid = $DB->get_field('role', 'id', ['shortname' => 'teacher'], MUST_EXIST);
         role_change_permission($roleid, $context, 'mod/forum:startdiscussion', CAP_PROHIBIT);
 
-        $this->assertArrayNotHasKey($reader->id, lib::get_assignable_users($this->course->id));
+        $this->assertArrayNotHasKey($reader->id, course_support::get_assignable_users($this->course->id));
     }
 
     /**
@@ -191,7 +196,7 @@ final class supporter_levels_test extends advanced_testcase {
         $roleid = $DB->get_field('role', 'id', ['shortname' => 'manager'], MUST_EXIST);
         role_assign($roleid, $manager->id, \context_system::instance()->id);
 
-        $this->assertArrayNotHasKey($manager->id, lib::get_assignable_users($this->course->id));
+        $this->assertArrayNotHasKey($manager->id, course_support::get_assignable_users($this->course->id));
     }
 
     /**
@@ -204,7 +209,7 @@ final class supporter_levels_test extends advanced_testcase {
             $this->getDataGenerator()->enrol_user($user->id, $this->course->id, 'editingteacher');
         }
 
-        $result = lib::get_assignable_users($this->course->id, 'Zimmer');
+        $result = course_support::get_assignable_users($this->course->id, 'Zimmer');
 
         $this->assertArrayHasKey($found->id, $result);
         $this->assertArrayNotHasKey($other->id, $result);
@@ -230,9 +235,9 @@ final class supporter_levels_test extends advanced_testcase {
             'supportlevel' => 'anything at all',
         ]);
 
-        $this->assertCount(2, lib::get_second_level());
+        $this->assertCount(2, platform_team::get_members());
 
-        $offered = lib::get_second_level(true);
+        $offered = platform_team::get_members(true);
         $this->assertCount(1, $offered);
         $this->assertEquals($assignable->id, reset($offered)->userid);
     }
@@ -244,8 +249,8 @@ final class supporter_levels_test extends advanced_testcase {
         $labelled = $this->getDataGenerator()->create_user();
         $this->generator->create_supporter(['userid' => $labelled->id, 'supportlevel' => '1st level']);
 
-        $this->assertTrue(lib::is_second_level($labelled->id));
-        $this->assertCount(1, lib::get_second_level(true));
+        $this->assertTrue(platform_team::is_member($labelled->id));
+        $this->assertCount(1, platform_team::get_members(true));
     }
 
     /**
@@ -262,10 +267,10 @@ final class supporter_levels_test extends advanced_testcase {
         $issue = $this->generator->create_issue(['forumid' => $forum->id]);
 
         $this->setUser($platform);
-        $this->assertNull(lib::validate_supporter_assignment($issue->discussionid, $platform->id));
+        $this->assertNull(issue_manager::validate_supporter_assignment($issue->discussionid, $platform->id));
         $this->assertSame(
             'error:targetnotasupporter',
-            lib::validate_supporter_assignment($issue->discussionid, $local->id)
+            issue_manager::validate_supporter_assignment($issue->discussionid, $local->id)
         );
     }
 
@@ -282,7 +287,7 @@ final class supporter_levels_test extends advanced_testcase {
         $this->generator->create_supportforum(['forumid' => $forum->id]);
         $issue = $this->generator->create_issue(['forumid' => $forum->id]);
 
-        lib::subscription_add($issue->discussionid, $local->id);
+        subscriptions::add($issue->discussionid, $local->id);
 
         $this->assertFalse($DB->record_exists('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
@@ -306,7 +311,7 @@ final class supporter_levels_test extends advanced_testcase {
         $issue = $this->generator->create_issue(['forumid' => $forum->id]);
 
         $this->setUser($platform);
-        lib::set_2nd_level($issue->discussionid);
+        issue_manager::forward_to_second_level($issue->discussionid);
 
         $this->assertEquals(
             $platform->id,
@@ -347,7 +352,7 @@ final class supporter_levels_test extends advanced_testcase {
         }
 
         // A second run must not take away what the first one handed out.
-        lib::supportforum_rolecheck($forum->id);
+        registry::sync_roles($forum->id);
         foreach ([$platform->id, $local->id] as $userid) {
             $this->assertTrue($DB->record_exists('role_assignments', [
                 'roleid' => $roleid,
@@ -366,16 +371,16 @@ final class supporter_levels_test extends advanced_testcase {
         $dropped = $this->user_with_role('editingteacher');
         $student = $this->user_with_role('student');
 
-        lib::assign_first_level($this->course->id, [$keep->id, $dropped->id]);
-        $this->assertCount(2, lib::get_first_level($this->course->id));
+        course_support::assign($this->course->id, [$keep->id, $dropped->id]);
+        $this->assertCount(2, course_support::get_members($this->course->id));
 
-        $result = lib::assign_first_level($this->course->id, [$keep->id, $added->id, $student->id]);
+        $result = course_support::assign($this->course->id, [$keep->id, $added->id, $student->id]);
 
         $this->assertEquals([$added->id], $result['added']);
         $this->assertEquals([$dropped->id], $result['removed']);
         $this->assertEquals([$student->id], $result['refused']);
 
-        $assigned = array_column(lib::get_first_level($this->course->id), 'userid');
+        $assigned = array_column(course_support::get_members($this->course->id), 'userid');
         sort($assigned);
         $expected = [$keep->id, $added->id];
         sort($expected);
@@ -389,10 +394,10 @@ final class supporter_levels_test extends advanced_testcase {
      */
     public function test_removing_a_supporter_is_logged_as_a_deletion(): void {
         $supporter = $this->user_with_role('editingteacher');
-        lib::assign_first_level($this->course->id, [$supporter->id]);
+        course_support::assign($this->course->id, [$supporter->id]);
 
         $sink = $this->redirectEvents();
-        lib::assign_first_level($this->course->id, []);
+        course_support::assign($this->course->id, []);
         $events = array_values(array_filter(
             $sink->get_events(),
             fn($event) => $event instanceof event\supportuser_deleted
@@ -410,10 +415,10 @@ final class supporter_levels_test extends advanced_testcase {
     public function test_assign_first_level_refuses_the_sentinel(): void {
         $user = $this->getDataGenerator()->create_user();
 
-        $result = lib::assign_first_level(lib::SYSTEM_COURSE_ID, [$user->id]);
+        $result = course_support::assign(platform_team::COURSE_ID, [$user->id]);
 
         $this->assertSame([], $result['added']);
-        $this->assertFalse(lib::is_second_level($user->id));
+        $this->assertFalse(platform_team::is_member($user->id));
     }
 
     /**
@@ -425,9 +430,9 @@ final class supporter_levels_test extends advanced_testcase {
 
         $forum = $this->getDataGenerator()->create_module('forum', ['course' => $this->course->id]);
         $this->generator->create_supportforum(['forumid' => $forum->id]);
-        lib::assign_first_level($this->course->id, [$assigned->id]);
+        course_support::assign($this->course->id, [$assigned->id]);
 
-        $supporters = lib::get_course_supporters($forum);
+        $supporters = course_support::get_users_of_forum($forum);
 
         $this->assertArrayHasKey($assigned->id, $supporters);
         $this->assertArrayNotHasKey($unassigned->id, $supporters);
@@ -441,7 +446,7 @@ final class supporter_levels_test extends advanced_testcase {
         $forum = $this->getDataGenerator()->create_module('forum', ['course' => $this->course->id]);
         $this->generator->create_supportforum(['forumid' => $forum->id]);
 
-        $this->assertSame([], lib::get_course_supporters($forum));
+        $this->assertSame([], course_support::get_users_of_forum($forum));
     }
 
     /**
@@ -454,7 +459,7 @@ final class supporter_levels_test extends advanced_testcase {
         $forum = $this->getDataGenerator()->create_module('forum', ['course' => $this->course->id]);
         $this->generator->create_supportforum(['forumid' => $forum->id]);
 
-        lib::assign_first_level($this->course->id, [$supporter->id]);
+        course_support::assign($this->course->id, [$supporter->id]);
 
         $cm = get_coursemodule_from_instance('forum', $forum->id);
         $context = \context_module::instance($cm->id);
@@ -464,7 +469,7 @@ final class supporter_levels_test extends advanced_testcase {
         $this->assertTrue($DB->record_exists('role_assignments', $conditions));
 
         // Taking the assignment away takes the role with it.
-        lib::assign_first_level($this->course->id, []);
+        course_support::assign($this->course->id, []);
         $this->assertFalse($DB->record_exists('role_assignments', $conditions));
     }
 
@@ -476,8 +481,8 @@ final class supporter_levels_test extends advanced_testcase {
         $teacher = $this->user_with_role('teacher');
         $student = $this->user_with_role('student');
 
-        $this->assertTrue(lib::can_assign_first_level($this->course->id, $editingteacher->id));
-        $this->assertFalse(lib::can_assign_first_level($this->course->id, $teacher->id));
-        $this->assertFalse(lib::can_assign_first_level($this->course->id, $student->id));
+        $this->assertTrue(course_support::can_assign($this->course->id, $editingteacher->id));
+        $this->assertFalse(course_support::can_assign($this->course->id, $teacher->id));
+        $this->assertFalse(course_support::can_assign($this->course->id, $student->id));
     }
 }

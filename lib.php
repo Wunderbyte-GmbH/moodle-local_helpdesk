@@ -15,32 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library for the helpdesk plugin.
+ * Callbacks that Moodle core calls in lib.php. Each one hands over to a class of the plugin.
  *
  * @package    local_helpdesk
  * @copyright  2020 Center for Learningmanagement (www.lernmanagement.at)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_helpdesk\local\forum_attachments;
+use local_helpdesk\local\help_menu;
+use local_helpdesk\local\navigation;
+use local_helpdesk\local\supportforum\registry;
+
 /**
- * Extend navigation.
+ * Extend the global navigation.
  *
  * @param navigation_node $navigation The navigation node to extend
  * @return void
  */
 function local_helpdesk_extend_navigation(navigation_node $navigation): void {
-    // This node leads to issues.php, so it follows whoever that page lets in.
-    if (\local_helpdesk\lib::can_view_issues()) {
-        $nodehome = $navigation->get('home');
-        if (empty($nodehome)) {
-            $nodehome = $navigation;
-        }
-        $label = get_string('issues', 'local_helpdesk');
-        $link = new moodle_url('/local/helpdesk/issues.php', []);
-        $icon = new pix_icon('docs', '', '');
-        $nodecreatecourse = $nodehome->add($label, $link, navigation_node::NODETYPE_LEAF, $label, 'helpdeskissues', $icon);
-        $nodecreatecourse->showinflatnavigation = true;
-    }
+    navigation::extend_global($navigation);
 }
 
 /**
@@ -52,41 +46,12 @@ function local_helpdesk_extend_navigation(navigation_node $navigation): void {
  * @return void
  */
 function local_helpdesk_extend_navigation_course(navigation_node $parentnode, stdClass $course, context $context): void {
-    // Both nodes land in the "More" menu of the course. That is where a setting used a few
-    // times a year belongs, and forcing it makes the placement deterministic rather than a
-    // side effect of how many nodes happen to fit next to it.
-    if (\local_helpdesk\lib::can_assign_first_level($course->id)) {
-        $node = navigation_node::create(
-            get_string('coursesupporters', 'local_helpdesk'),
-            new moodle_url('/local/helpdesk/coursesupporters.php', ['courseid' => $course->id]),
-            navigation_node::TYPE_SETTING,
-            null,
-            'local_helpdesk_coursesupporters',
-            new pix_icon('i/users', '')
-        );
-        $node->set_force_into_more_menu(true);
-        $parentnode->add_node($node);
-    }
-
-    if (is_siteadmin()) {
-        $node = navigation_node::create(
-            get_string('supportforum:choose', 'local_helpdesk'),
-            new moodle_url('/local/helpdesk/chooseforum.php', ['courseid' => $course->id]),
-            navigation_node::TYPE_SETTING,
-            null,
-            'local_helpdesk_chooseforum',
-            new pix_icon('i/marker', '')
-        );
-        $node->set_force_into_more_menu(true);
-        $parentnode->add_node($node);
-    }
+    navigation::extend_course($parentnode, $course);
 }
 
 /**
- * Serves the forum attachments. Implements needed access control ;-)
+ * Serve the attachments of support forum posts to the support team.
  *
- * @package  local_helpdesk --> we fake downloads for mod_forum.
- * @category files
  * @param stdClass|null $course course object, null outside of courses
  * @param stdClass|null $cm course module object, null outside of modules
  * @param context $context context object
@@ -94,7 +59,7 @@ function local_helpdesk_extend_navigation_course(navigation_node $parentnode, st
  * @param array $args extra arguments
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
- * @return bool false if file not found, does not return if found - justsend the file
+ * @return bool false if file not found, does not return if found - just send the file
  */
 function local_helpdesk_pluginfile(
     ?stdClass $course,
@@ -105,119 +70,38 @@ function local_helpdesk_pluginfile(
     bool $forcedownload,
     array $options = []
 ): bool {
-    global $CFG, $DB, $USER;
-    require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
-    require_once($CFG->dirroot . '/mod/forum/lib.php');
-
-    if ($context->contextlevel != CONTEXT_MODULE) {
+    if ($course === null || $cm === null) {
         return false;
     }
-
-    // Instead of requiring course login we check if the current user is support user of this discussion!
-    if (
-        !\local_helpdesk\lib::is_second_level($USER->id)
-        && !\local_helpdesk\lib::is_first_level($USER->id, $course->id)
-    ) {
-        return false;
-    }
-
-    $postid = (int)array_shift($args);
-    if (!$post = $DB->get_record('forum_posts', ['id' => $postid])) {
-        return false;
-    }
-
-    $areas = \forum_get_file_areas($course, $cm, $context);
-
-    // Filearea must contain a real area.
-    if (!isset($areas[$filearea])) {
-        return false;
-    }
-
-    if (!$discussion = $DB->get_record('forum_discussions', ['id' => $post->discussion])) {
-        return false;
-    }
-
-    if (!\local_helpdesk\lib::is_supportforum($discussion->forum)) {
-        return false;
-    }
-
-    $fs = \get_file_storage();
-    $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_forum/$filearea/$postid/$relativepath";
-    if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory()) {
-        return false;
-    }
-
-    // We skip this check, we already checked, that we belong to the supportteam and have access.
-    // Make sure groups allow this user to see this file.
-
-    // We skip this check, we already checked, that we belong to the supportteam and have access.
-    // Make sure we're allowed to see it...
-
-    // Finally send the file.
-    send_stored_file($file, 0, 0, true, $options); // Download MUST be forced - security!
-    return true;
+    return forum_attachments::serve($course, $cm, $context, $filearea, $args, $options);
 }
 
 /**
- * If a course category was deleted we remove all contained support forums.
+ * Unregister the support forums of a course category that is about to be deleted.
  *
  * @param stdClass $category the course category.
  * @return void
  */
 function local_helpdesk_pre_course_category_delete(stdClass $category): void {
-    global $DB;
-    $courses = $DB->get_recordset('course', ['category' => $category->id], '', 'id');
-    foreach ($courses as $course) {
-        local_helpdesk_pre_course_delete($course);
-    }
-    $courses->close();
+    registry::disable_in_category($category->id);
 }
 
 /**
- * If a course was deleted we remove all contained support forums.
- *
- * @param stdClass $course the course.
- * @return void
- */
-function local_helpdesk_pre_course_delete(stdClass $course): void {
-    global $DB;
-    $forumids = $DB->get_fieldset('local_helpdesk', 'forumid', ['courseid' => $course->id]);
-    foreach ($forumids as $forumid) {
-        \local_helpdesk\lib::supportforum_disable($forumid);
-    }
-}
-/**
- * If a forum was deleted we remove it as support forum.
+ * Unregister a forum that is about to be deleted.
  *
  * @param stdClass $cm the course module.
  * @return void
  */
 function local_helpdesk_pre_course_module_delete(stdClass $cm): void {
-    global $DB;
-    $forumtype = $DB->get_record('modules', ['name' => 'forum']);
-    if (!empty($forumtype->id) && !empty($cm->module) && $cm->module == $forumtype->id) {
-        \local_helpdesk\lib::supportforum_disable($cm->instance);
-    }
+    registry::disable_for_course_module($cm);
 }
 
 /**
- * Renders the popup.
+ * Render the help button in the navigation bar.
  *
  * @param renderer_base $renderer
  * @return string The HTML
  */
 function local_helpdesk_render_navbar_output(renderer_base $renderer): string {
-    $guestmode = get_config('local_helpdesk', 'guestmodeenabled');
-    // Early bail out conditions.
-    if (!isloggedin()  && !$guestmode) {
-        return '';
-    }
-    if (isguestuser() && !$guestmode) {
-        return '';
-    }
-    // The menu comes from a cache as markup, so its buttons are wired up here.
-    global $PAGE;
-    $PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
-    return  \local_helpdesk\lib::get_supportmenu();
+    return help_menu::render_for_navbar();
 }

@@ -29,7 +29,7 @@ use context_system;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
-use local_helpdesk\lib;
+use local_helpdesk\local\supporter\platform_team;
 
 /**
  * Web service listing the people an issue can be handed over to.
@@ -67,7 +67,7 @@ class get_potentialsupporters extends external_api {
         self::validate_parameters(self::execute_parameters(), ['discussionid' => $discussionid]);
         self::validate_context(context_system::instance());
         // The team is nobody's business but its own.
-        if (!lib::can_view_issues()) {
+        if (!platform_team::can_view_issues()) {
             throw new \moodle_exception('missing_permission', 'local_helpdesk');
         }
         $reply = ['supporters' => []];
@@ -79,7 +79,7 @@ class get_potentialsupporters extends external_api {
                     WHERE s.courseid = :courseid
                         AND u.deleted = 0
                     ORDER BY u.lastname ASC, u.firstname ASC";
-        $supporters = $DB->get_records_sql($sql, ['courseid' => lib::SYSTEM_COURSE_ID]);
+        $supporters = $DB->get_records_sql($sql, ['courseid' => platform_team::COURSE_ID]);
         foreach ($supporters as $supporter) {
             if (empty($supporter->supportlevel)) {
                 $supporter->supportlevel = get_string('label:2ndlevel', 'local_helpdesk');

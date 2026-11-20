@@ -29,7 +29,9 @@ use context_system;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
-use local_helpdesk\lib;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\status;
+use local_helpdesk\local\supporter\platform_team;
 
 /**
  * Web service to set the status of an issue.
@@ -68,14 +70,14 @@ class set_status extends external_api {
         $params = self::validate_parameters(self::execute_parameters(), ['status' => $status, 'issueid' => $issueid]);
         self::validate_context(context_system::instance());
         $known = [
-            lib::STATUS_NOTSTARTED,
-            lib::STATUS_AWAITING_USER_REPLY,
-            lib::STATUS_ONGOING,
-            lib::STATUS_AWAITING_SUPPORT_ACTION,
-            lib::STATUS_CLOSED,
+            status::NOT_STARTED,
+            status::AWAITING_USER_REPLY,
+            status::ONGOING,
+            status::AWAITING_SUPPORT_ACTION,
+            status::CLOSED,
         ];
-        if (lib::can_view_issues($USER->id) && in_array($params['status'], $known)) {
-            lib::set_status($params['status'], $params['issueid']);
+        if (platform_team::can_view_issues($USER->id) && in_array($params['status'], $known)) {
+            issue_manager::set_status($params['status'], $params['issueid']);
             return 1;
         }
         return 0;

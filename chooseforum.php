@@ -24,6 +24,9 @@
  */
 
 require_once('../../config.php');
+
+use local_helpdesk\local\supporter\platform_team;
+use local_helpdesk\local\supportforum\registry;
 require_once($CFG->libdir . '/adminlib.php');
 
 $courseid = required_param('courseid', PARAM_INT);
@@ -51,7 +54,7 @@ if ($isadmin && !empty($forumid)) {
 
     $dedicatedsupporter = optional_param('dedicatedsupporter', 0, PARAM_INT);
     if (!empty($dedicatedsupporter)) {
-        if (\local_helpdesk\lib::supportforum_setdedicatedsupporter($forumid, $dedicatedsupporter)) {
+        if (registry::set_dedicated_supporter($forumid, $dedicatedsupporter)) {
             redirect(
                 $PAGE->url,
                 get_string('dedicatedsupporter:successfully_set', 'local_helpdesk'),
@@ -69,18 +72,18 @@ if ($isadmin && !empty($forumid)) {
 
     switch ($state) {
         case 1:
-            \local_helpdesk\lib::supportforum_enable($forumid);
+            registry::enable($forumid);
             break;
         case -1:
-            \local_helpdesk\lib::supportforum_disable($forumid);
+            registry::disable($forumid);
             break;
     }
     switch ($central) {
         case 1:
-            \local_helpdesk\lib::supportforum_enablecentral($forumid);
+            registry::enable_central($forumid);
             break;
         case -1:
-            \local_helpdesk\lib::supportforum_disablecentral($forumid);
+            registry::disable_central($forumid);
             break;
     }
 
@@ -102,7 +105,7 @@ if (!$isadmin) {
                 FROM {local_helpdesk_supporters}
                 WHERE courseid = :courseid
                 ORDER BY supportlevel ASC";
-    $supporters = array_values($DB->get_records_sql($sql, ['courseid' => \local_helpdesk\lib::SYSTEM_COURSE_ID]));
+    $supporters = array_values($DB->get_records_sql($sql, ['courseid' => platform_team::COURSE_ID]));
     foreach ($supporters as &$supporter) {
         $u = $DB->get_record('user', ['id' => $supporter->userid]);
         $supporter->userfullname = fullname($u);

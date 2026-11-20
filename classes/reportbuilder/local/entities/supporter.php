@@ -32,8 +32,8 @@ use core_reportbuilder\local\helpers\format;
 use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
 use lang_string;
-use local_helpdesk\lib;
 use stdClass;
+use local_helpdesk\local\supporter\platform_team;
 
 /**
  * Report builder entity for the supporter registry.
@@ -114,7 +114,7 @@ class supporter extends base {
             ->set_is_sortable(true)
             ->add_callback(static function (?string $value, stdClass $row): string {
                 $options = self::get_level_options();
-                return $row->levelcourseid == lib::SYSTEM_COURSE_ID ? $options[1] : $options[0];
+                return $row->levelcourseid == platform_team::COURSE_ID ? $options[1] : $options[0];
             });
 
         // Where the person supports. The course cannot simply be linked here: the id standing
@@ -130,7 +130,7 @@ class supporter extends base {
             ->add_field("{$alias}.courseid", 'scopecourseid')
             ->set_is_sortable(true)
             ->add_callback(static function (?string $value, stdClass $row): string {
-                if ($row->scopecourseid == lib::SYSTEM_COURSE_ID) {
+                if ($row->scopecourseid == platform_team::COURSE_ID) {
                     return get_string('scope:platform', 'local_helpdesk');
                 }
                 $course = get_course($row->scopecourseid);
@@ -192,7 +192,7 @@ class supporter extends base {
             'level',
             new lang_string('level', 'local_helpdesk'),
             $this->get_entity_name(),
-            "CASE WHEN {$alias}.courseid = " . lib::SYSTEM_COURSE_ID . " THEN 1 ELSE 0 END"
+            "CASE WHEN {$alias}.courseid = " . platform_team::COURSE_ID . " THEN 1 ELSE 0 END"
         ))
             ->add_joins($this->get_joins())
             ->set_options_callback(static function (): array {

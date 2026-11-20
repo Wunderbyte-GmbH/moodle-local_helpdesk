@@ -25,6 +25,8 @@
 
 namespace local_helpdesk;
 
+use local_helpdesk\local\supportforum\registry;
+
 /**
  * Class before_standard_head_html_generation
  *
@@ -55,7 +57,7 @@ class hook_callbacks {
 
             if (
                 has_capability('local/helpdesk:canforward2ndlevel', $coursecontext)
-                && \local_helpdesk\lib::is_supportforum($discussion->forum)
+                && registry::is_supportforum($discussion->forum)
             ) {
                 $hassubscribers = $DB->record_exists('local_helpdesk_subscr', ['discussionid' => $discussion->id]);
 
@@ -66,7 +68,7 @@ class hook_callbacks {
                 );
                 $PAGE->requires->js_call_amd('local_helpdesk/actions', 'init');
             }
-            if (\local_helpdesk\lib::is_supportforum($discussion->forum)) {
+            if (registry::is_supportforum($discussion->forum)) {
                 $PAGE->requires->js_call_amd('local_helpdesk/main', 'injectTest');
             }
         }
@@ -111,5 +113,15 @@ class hook_callbacks {
                 }
             }
         }
+    }
+
+    /**
+     * Unregister the support forums of a course that is about to be deleted.
+     *
+     * @param \core_course\hook\before_course_deleted $hook
+     * @return void
+     */
+    public static function before_course_deleted(\core_course\hook\before_course_deleted $hook): void {
+        registry::disable_in_course((int) $hook->course->id);
     }
 }

@@ -34,7 +34,7 @@ use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use local_helpdesk\accountmanager;
-use local_helpdesk\lib;
+use local_helpdesk\local\supporter\platform_team;
 
 /**
  * Privacy provider for local_helpdesk.
@@ -182,7 +182,7 @@ class provider implements
         $supporter = [];
         $rows = $DB->get_recordset('local_helpdesk_supporters', ['userid' => $userid], 'id');
         foreach ($rows as $row) {
-            $level = $row->courseid == lib::SYSTEM_COURSE_ID ? 'level:second' : 'level:first';
+            $level = $row->courseid == platform_team::COURSE_ID ? 'level:second' : 'level:first';
             $supporter[] = [
                 'courseid' => $row->courseid,
                 'level' => get_string($level, 'local_helpdesk'),

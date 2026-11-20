@@ -26,6 +26,8 @@
 namespace local_helpdesk;
 
 use moodle_url;
+use local_helpdesk\local\supporter\platform_team;
+use local_helpdesk\local\supportforum\registry;
 
 require_once('../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
@@ -38,7 +40,7 @@ $remove = optional_param('remove', 0, PARAM_BOOL);
 
 // This page maintains the platform wide team only. First level support of a single course is
 // assigned in that course, see /local/helpdesk/coursesupporters.php.
-$courseid = \local_helpdesk\lib::SYSTEM_COURSE_ID;
+$courseid = platform_team::COURSE_ID;
 
 $context = \context_system::instance();
 $PAGE->set_context($context);
@@ -139,7 +141,7 @@ if (!is_siteadmin()) {
             }
         }
         if ($success) {
-            \local_helpdesk\lib::supportforum_rolecheck();
+            registry::sync_roles();
             if (!empty($remove)) {
                 $chk = $DB->get_record('local_helpdesk_supporters', ['userid' => $userid]);
                 if (empty($chk->id)) {

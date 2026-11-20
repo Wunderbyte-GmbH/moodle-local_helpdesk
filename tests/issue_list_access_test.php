@@ -26,6 +26,9 @@
 namespace local_helpdesk;
 
 use advanced_testcase;
+use local_helpdesk\local\help_menu;
+use local_helpdesk\local\supporter\course_support;
+use local_helpdesk\local\supporter\platform_team;
 
 /**
  * Tests for who is let into the list of support issues.
@@ -38,7 +41,7 @@ use advanced_testcase;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::can_view_issues
+ * @covers     \local_helpdesk\local\supporter\platform_team::can_view_issues
  */
 final class issue_list_access_test extends advanced_testcase {
     /**
@@ -58,10 +61,10 @@ final class issue_list_access_test extends advanced_testcase {
         $this->setAdminUser();
 
         $this->assertFalse(
-            $DB->record_exists('local_helpdesk_supporters', ['courseid' => lib::SYSTEM_COURSE_ID]),
+            $DB->record_exists('local_helpdesk_supporters', ['courseid' => platform_team::COURSE_ID]),
             'The point of this test is an admin who is not on the support team.'
         );
-        $this->assertTrue(lib::can_view_issues());
+        $this->assertTrue(platform_team::can_view_issues());
     }
 
     /**
@@ -72,7 +75,7 @@ final class issue_list_access_test extends advanced_testcase {
         $this->getDataGenerator()->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $supporter->id]);
 
-        $this->assertTrue(lib::can_view_issues($supporter->id));
+        $this->assertTrue(platform_team::can_view_issues($supporter->id));
     }
 
     /**
@@ -84,10 +87,10 @@ final class issue_list_access_test extends advanced_testcase {
         $course = $generator->create_course();
         $coursesupporter = $generator->create_user();
         $generator->enrol_user($coursesupporter->id, $course->id, 'editingteacher');
-        lib::assign_first_level($course->id, [$coursesupporter->id]);
+        course_support::assign($course->id, [$coursesupporter->id]);
 
-        $this->assertTrue(lib::is_first_level($coursesupporter->id, $course->id));
-        $this->assertFalse(lib::can_view_issues($coursesupporter->id));
+        $this->assertTrue(course_support::is_member($coursesupporter->id, $course->id));
+        $this->assertFalse(platform_team::can_view_issues($coursesupporter->id));
     }
 
     /**
@@ -96,7 +99,7 @@ final class issue_list_access_test extends advanced_testcase {
     public function test_an_ordinary_user_may_not_view_the_issue_list(): void {
         $user = $this->getDataGenerator()->create_user();
 
-        $this->assertFalse(lib::can_view_issues($user->id));
+        $this->assertFalse(platform_team::can_view_issues($user->id));
     }
 
     /**
@@ -117,9 +120,9 @@ final class issue_list_access_test extends advanced_testcase {
             // The menu is cached per user, and the cache outlives setUser().
             \cache_helper::purge_by_event('local_helpdesk_setbacksupportmenu');
 
-            $offered = strpos(lib::get_supportmenu(), '/local/helpdesk/issues.php') !== false;
+            $offered = strpos(help_menu::get_html(), '/local/helpdesk/issues.php') !== false;
             $this->assertSame(
-                lib::can_view_issues($user->id),
+                platform_team::can_view_issues($user->id),
                 $offered,
                 'The button and the page disagree about user ' . $user->id
             );

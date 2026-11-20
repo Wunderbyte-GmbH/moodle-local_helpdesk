@@ -25,6 +25,8 @@
 
 namespace local_helpdesk\task;
 
+use local_helpdesk\local\issue\status;
+
 /**
  * Ad hoc task that reminds supporters of issues waiting for them.
  *
@@ -58,7 +60,7 @@ class reminder extends \core\task\adhoc_task {
 
         $issue = $DB->get_record('local_helpdesk_issues', [
             'id' => $taskdata->issueid,
-            'status' => \local_helpdesk\lib::STATUS_AWAITING_SUPPORT_ACTION,
+            'status' => status::AWAITING_SUPPORT_ACTION,
         ]);
         if (!$issue || $issue->priority <= 0 || empty($issue->currentsupporter)) {
             return;

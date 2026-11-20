@@ -27,9 +27,9 @@ namespace local_helpdesk\form;
 use context;
 use context_course;
 use core_form\dynamic_form;
-use local_helpdesk\lib;
 use local_helpdesk\output\course_supporters;
 use moodle_url;
+use local_helpdesk\local\supporter\course_support;
 
 /**
  * Form to assign the first level support of a course.
@@ -67,7 +67,7 @@ class course_supporters_form extends dynamic_form {
         // ship with the form. That saves a search web service and keeps the capability filter
         // where it cannot be argued with, on the server.
         $options = [];
-        foreach (lib::get_assignable_users($courseid) as $user) {
+        foreach (course_support::get_assignable_users($courseid) as $user) {
             $options[$user->id] = fullname($user);
         }
 
@@ -110,7 +110,7 @@ class course_supporters_form extends dynamic_form {
             'courseid' => $courseid,
             'supporters' => array_values(array_map(
                 fn(\stdClass $row): int => (int) $row->userid,
-                lib::get_first_level($courseid)
+                course_support::get_members($courseid)
             )),
         ]);
     }
@@ -126,7 +126,7 @@ class course_supporters_form extends dynamic_form {
         $data = $this->get_data();
         $courseid = (int) $data->courseid;
 
-        lib::assign_first_level($courseid, $data->supporters ?? []);
+        course_support::assign($courseid, $data->supporters ?? []);
 
         $output = $PAGE->get_renderer('core');
 

@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_helpdesk\local\supportforum\registry;
+
 /**
  * Take back the prohibitions that protect the support forums, the support team role and the guest ticket user.
  *
@@ -34,7 +36,7 @@ function xmldb_local_helpdesk_uninstall(): bool {
 
     // Without this nobody but an administrator could ever delete or hide these courses again.
     foreach ($DB->get_records('local_helpdesk') as $supportforum) {
-        \local_helpdesk\lib::supportforum_managecaps($supportforum->forumid, false);
+        registry::set_protection($supportforum->forumid, false);
     }
 
     $roleid = (int) get_config('local_helpdesk', 'supportteamrole');

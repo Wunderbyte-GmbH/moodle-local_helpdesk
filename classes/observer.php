@@ -30,6 +30,8 @@ use local_helpdesk\event\supportuser_added;
 use local_helpdesk\event\supportuser_changed;
 use local_helpdesk\event\supportuser_deleted;
 use local_helpdesk\task\send_mail;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\status;
 
 /**
  * Event observers of the Helpdesk plugin.
@@ -91,7 +93,7 @@ class observer {
         if ($entry->eventname == '\mod_forum\event\discussion_deleted') {
             $discussionid = $entry->objectid;
             \local_helpdesk\local\guest_ticket::delete($discussionid);
-            \local_helpdesk\lib::delete_issue($discussionid);
+            issue_manager::delete($discussionid);
             return;
         } else {
             if (substr($entry->eventname, 0, strlen("\\mod_forum\\event\\post_")) == "\\mod_forum\\event\\post_") {
@@ -108,7 +110,7 @@ class observer {
             if (empty($issue->id)) {
                 return;
             }
-            \local_helpdesk\lib::reopen_issue($discussion->id);
+            issue_manager::reopen($discussion->id);
             $author = $DB->get_record('user', ['id' => $post->userid]);
 
             // Having more than one user in the discussion means that someone has already answered.
@@ -121,13 +123,13 @@ class observer {
             if ($morethanoneuser->count > 1) {
                 if ($post->userid == $discussion->userid) {
                     // If the user posted, we are waiting for a support action.
-                    \local_helpdesk\lib::set_status(\local_helpdesk\lib::STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+                    issue_manager::set_status(status::AWAITING_SUPPORT_ACTION, $issue->id);
                 } else {
                     // If the supporter posted, we are waiting for a user reply.
-                    \local_helpdesk\lib::set_status(\local_helpdesk\lib::STATUS_AWAITING_USER_REPLY, $issue->id);
+                    issue_manager::set_status(status::AWAITING_USER_REPLY, $issue->id);
                 }
             } else {
-                \local_helpdesk\lib::set_status(\local_helpdesk\lib::STATUS_AWAITING_SUPPORT_ACTION, $issue->id);
+                issue_manager::set_status(status::AWAITING_SUPPORT_ACTION, $issue->id);
             }
             // Enhance post data.
             $post->wwwroot = $CFG->wwwroot;

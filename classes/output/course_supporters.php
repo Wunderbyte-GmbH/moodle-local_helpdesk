@@ -24,10 +24,10 @@
 
 namespace local_helpdesk\output;
 
-use local_helpdesk\lib;
 use renderable;
 use renderer_base;
 use templatable;
+use local_helpdesk\local\supporter\course_support;
 
 /**
  * The people who support a single course.
@@ -61,7 +61,7 @@ class course_supporters implements renderable, templatable {
     public function export_for_template(renderer_base $output): array {
         global $DB;
 
-        $rows = lib::get_first_level($this->courseid);
+        $rows = course_support::get_members($this->courseid);
         $supporters = [];
         if (!empty($rows)) {
             $userids = array_column($rows, 'userid');

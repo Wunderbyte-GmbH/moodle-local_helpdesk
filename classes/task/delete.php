@@ -25,6 +25,8 @@
 
 namespace local_helpdesk\task;
 
+use local_helpdesk\local\issue\issue_manager;
+
 /**
  * Scheduled task that removes issues closed long enough ago.
  *
@@ -49,8 +51,8 @@ class delete extends \core\task\scheduled_task {
      * @return void
      */
     public function execute(): void {
-        foreach (\local_helpdesk\lib::get_expired_discussionids() as $discussionid) {
-            \local_helpdesk\lib::delete_issue($discussionid);
+        foreach (issue_manager::get_expired_discussionids() as $discussionid) {
+            issue_manager::delete($discussionid);
         }
     }
 }

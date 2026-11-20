@@ -36,11 +36,13 @@ use core_external\external_single_structure;
 use core_external\external_value;
 use core_user;
 use local_helpdesk\guest_supportuser;
-use local_helpdesk\lib;
 use local_helpdesk\task\send_mail;
 use moodle_exception;
 use moodle_url;
 use stdClass;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\supporter\course_support;
+use local_helpdesk\local\supportforum\registry;
 
 /**
  * Web service to file a support request.
@@ -201,8 +203,8 @@ class create_issue extends external_api {
             $reply['discussionid'] = -999;
             return $reply;
         } else {
-            $potentialtargets = lib::get_potentialtargets();
-            if (lib::is_supportforum($forumid) && !empty($potentialtargets[$forumid]->id)) {
+            $potentialtargets = registry::get_potential_targets();
+            if (registry::is_supportforum($forumid) && !empty($potentialtargets[$forumid]->id)) {
                 $canpostto2ndlevel = $potentialtargets[$forumid]->postto2ndlevel;
                 // Mainly copied from mod/forum/externallib.php > add_discussion().
 
@@ -211,7 +213,7 @@ class create_issue extends external_api {
                 [$course, $cm] = get_course_and_cm_from_instance($forum, 'forum');
 
                 if ($showresponsibles) {
-                    foreach (lib::get_course_supporters($forum) as $coursesupporter) {
+                    foreach (course_support::get_users_of_forum($forum) as $coursesupporter) {
                         $reply['responsibles'][] = [
                                 'userid' => $coursesupporter->id,
                                 'name' => \fullname($coursesupporter),
@@ -253,7 +255,7 @@ class create_issue extends external_api {
                     }
                     if (!empty($group->id)) {
                         // Find support users.
-                        $groupusers = lib::get_support_user_by_matching_customfield($forum->course);
+                        $groupusers = course_support::find_by_custom_field($forum->course);
                         groups_add_member($group->id, $user);
                         if ($groupusers) {
                             $responsibles = [];
@@ -409,17 +411,17 @@ class create_issue extends external_api {
                         $keyvaluepair->value = $params['accountmanager'];
                     }
                     if ($postto2ndlevel && get_config('local_helpdesk', 'firstlvlgroupmode')) {
-                        lib::set_2nd_level($discussion->id, $keyvaluepair);
+                        issue_manager::forward_to_second_level($discussion->id, $keyvaluepair);
                     } else if ($canpostto2ndlevel && !empty($postto2ndlevel)) {
-                        lib::set_2nd_level($discussion->id, $keyvaluepair);
+                        issue_manager::forward_to_second_level($discussion->id, $keyvaluepair);
                     } else if (get_config('local_helpdesk', 'auto2ndlvl')) {
-                        lib::set_2nd_level($discussion->id, $keyvaluepair);
-                    } else if (empty(lib::get_first_level($forum->course))) {
+                        issue_manager::forward_to_second_level($discussion->id, $keyvaluepair);
+                    } else if (empty(course_support::get_members($forum->course))) {
                         // Nobody supports this course, which is how a small organisation
                         // without sub units is set up. The platform team takes it directly.
-                        lib::set_2nd_level($discussion->id, $keyvaluepair);
+                        issue_manager::forward_to_second_level($discussion->id, $keyvaluepair);
                     } else {
-                        $supporters = array_values(lib::get_course_supporters($forum));
+                        $supporters = array_values(course_support::get_users_of_forum($forum));
 
                         // Post answer containing the reponsibles, unless that was turned off.
                         if ($showresponsibles) {
@@ -447,7 +449,7 @@ class create_issue extends external_api {
                             );
 
                             // Post assignment message to forum.
-                            lib::create_post(
+                            issue_manager::create_post(
                                 $discussion->id,
                                 $messagebody,
                                 $subject,

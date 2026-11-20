@@ -26,6 +26,7 @@
 namespace local_helpdesk;
 
 use advanced_testcase;
+use local_helpdesk\local\request\central_forum;
 
 /**
  * Tests for requests filed without logging in.
@@ -57,7 +58,7 @@ final class guest_ticket_test extends advanced_testcase {
 
         // Nobody is logged in. Opening the form is what lets the guest account into the support course.
         $this->setUser(null);
-        lib::before_popup();
+        central_forum::prepare_for_request();
         $reply = external\create_issue::execute(
             'Anmeldung klappt nicht',
             'Ich komme nicht hinein.',

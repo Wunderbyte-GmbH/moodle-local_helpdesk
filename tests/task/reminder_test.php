@@ -26,7 +26,8 @@
 namespace local_helpdesk\task;
 
 use advanced_testcase;
-use local_helpdesk\lib;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\status;
 
 /**
  * Tests for the reminder sent to the supporter of a waiting issue.
@@ -64,7 +65,7 @@ final class reminder_test extends advanced_testcase {
             'subject' => 'Drucker geht nicht',
             'currentsupporter' => $supporter->id,
         ]);
-        $DB->set_field('local_helpdesk_issues', 'status', lib::STATUS_AWAITING_SUPPORT_ACTION, ['id' => $issue->id]);
+        $DB->set_field('local_helpdesk_issues', 'status', status::AWAITING_SUPPORT_ACTION, ['id' => $issue->id]);
         return $issue;
     }
 
@@ -104,10 +105,10 @@ final class reminder_test extends advanced_testcase {
         global $DB;
         $issue = $this->create_waiting_issue();
 
-        $DB->set_field('local_helpdesk_issues', 'status', lib::STATUS_CLOSED, ['id' => $issue->id]);
+        $DB->set_field('local_helpdesk_issues', 'status', status::CLOSED, ['id' => $issue->id]);
         $this->assertCount(0, $this->remind($issue->id));
 
-        $DB->set_field('local_helpdesk_issues', 'status', lib::STATUS_AWAITING_SUPPORT_ACTION, ['id' => $issue->id]);
+        $DB->set_field('local_helpdesk_issues', 'status', status::AWAITING_SUPPORT_ACTION, ['id' => $issue->id]);
         set_config('sendreminders', 0, 'local_helpdesk');
         $this->assertCount(0, $this->remind($issue->id));
 
@@ -124,12 +125,12 @@ final class reminder_test extends advanced_testcase {
             \core\task\manager::adhoc_task_complete($task);
         }
 
-        $this->assertFalse(lib::issue_already_has_reminder($issue->id));
-        lib::send_reminder($issue->id);
-        lib::send_reminder($issue->id);
+        $this->assertFalse(issue_manager::has_scheduled_reminder($issue->id));
+        issue_manager::schedule_reminder($issue->id);
+        issue_manager::schedule_reminder($issue->id);
 
-        $this->assertTrue(lib::issue_already_has_reminder($issue->id));
-        $this->assertFalse(lib::issue_already_has_reminder($issue->id + 1));
+        $this->assertTrue(issue_manager::has_scheduled_reminder($issue->id));
+        $this->assertFalse(issue_manager::has_scheduled_reminder($issue->id + 1));
         $this->assertCount(1, \core\task\manager::get_adhoc_tasks(reminder::class));
     }
 }

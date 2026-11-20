@@ -26,6 +26,8 @@
 // This file forwards a forum discussion to the 2nd level support.
 
 require_once('../../config.php');
+
+use local_helpdesk\local\issue\issue_manager;
 require_once($CFG->libdir . '/adminlib.php');
 
 
@@ -55,7 +57,7 @@ if (!has_capability('local/helpdesk:canforward2ndlevel', $context)) {
 } else {
     require_sesskey();
     if (empty($revoke)) {
-        if (\local_helpdesk\lib::set_2nd_level($d)) {
+        if (issue_manager::forward_to_second_level($d)) {
             redirect($todiscussion);
         } else {
             echo $OUTPUT->header();
@@ -66,7 +68,7 @@ if (!has_capability('local/helpdesk:canforward2ndlevel', $context)) {
             ]);
         }
     } else {
-        if (\local_helpdesk\lib::revoke_issue($d)) {
+        if (issue_manager::revoke($d)) {
             redirect($todiscussion);
         } else {
             echo $OUTPUT->header();

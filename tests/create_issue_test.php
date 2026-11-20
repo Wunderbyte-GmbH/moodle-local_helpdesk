@@ -27,10 +27,10 @@ namespace local_helpdesk;
 
 use advanced_testcase;
 use local_helpdesk\external\create_issue;
-use local_helpdesk\lib;
 use local_helpdesk\task\send_mail;
 use moodle_exception;
 use stdClass;
+use local_helpdesk\local\supporter\course_support;
 
 /**
  * Tests for creating a support issue through the external function.
@@ -80,7 +80,7 @@ final class create_issue_test extends advanced_testcase {
         // the platform team and none of the first level paths below would be taken.
         $this->supporter = $datagenerator->create_user();
         $datagenerator->enrol_user($this->supporter->id, $this->course->id, 'editingteacher');
-        lib::assign_first_level($this->course->id, [$this->supporter->id]);
+        course_support::assign($this->course->id, [$this->supporter->id]);
     }
 
     /**
@@ -114,7 +114,7 @@ final class create_issue_test extends advanced_testcase {
      * A ticket ends up as a discussion in the support forum.
      *
      * It does not yet become a tracked issue: local_helpdesk_issues is only written by
-     * set_2nd_level(), so with first level support alone the ticket lives in the forum only
+     * issue_manager::forward_to_second_level(), so with first level support alone the ticket lives in the forum only
      * and does not appear on issues.php. See the escalation test below.
      */
     public function test_create_issue_creates_a_discussion(): void {
@@ -221,7 +221,7 @@ final class create_issue_test extends advanced_testcase {
         $platform = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->get_plugin_generator('local_helpdesk')
             ->create_supporter(['userid' => $platform->id]);
-        lib::assign_first_level($this->course->id, []);
+        course_support::assign($this->course->id, []);
 
         $this->setUser($this->student);
         $reply = $this->create_issue('Drucker geht nicht');

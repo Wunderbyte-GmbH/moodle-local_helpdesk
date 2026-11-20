@@ -23,6 +23,8 @@
  */
 
 require_once('../../config.php');
+
+use local_helpdesk\local\supporter\course_support;
 require_once($CFG->libdir . '/adminlib.php');
 
 $apply = optional_param('apply', 0, PARAM_BOOL);
@@ -33,7 +35,7 @@ $url = new moodle_url('/local/helpdesk/seedfirstlevel.php');
 
 if ($apply) {
     require_sesskey();
-    $applied = \local_helpdesk\lib::seed_first_level_from_capabilities(false);
+    $applied = course_support::seed_from_capabilities(false);
     $added = array_sum(array_column($applied, 'toadd'));
     redirect(
         $url,
@@ -43,7 +45,7 @@ if ($apply) {
     );
 }
 
-$report = \local_helpdesk\lib::seed_first_level_from_capabilities(true);
+$report = course_support::seed_from_capabilities(true);
 $pending = array_sum(array_column($report, 'toadd'));
 
 echo $OUTPUT->header();

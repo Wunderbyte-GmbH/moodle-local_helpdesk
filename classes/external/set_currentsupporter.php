@@ -29,7 +29,7 @@ use context_system;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
-use local_helpdesk\lib;
+use local_helpdesk\local\issue\issue_manager;
 
 /**
  * Web service to hand an issue over to a supporter.
@@ -69,11 +69,11 @@ class set_currentsupporter extends external_api {
         );
         self::validate_context(context_system::instance());
         // Report a refusal as an exception, so the caller gets the reason instead of a bare failure.
-        $error = lib::validate_supporter_assignment($params['discussionid'], $params['supporterid']);
+        $error = issue_manager::validate_supporter_assignment($params['discussionid'], $params['supporterid']);
         if ($error !== null) {
             throw new \moodle_exception($error, 'local_helpdesk');
         }
-        lib::set_current_supporter($params['discussionid'], $params['supporterid']);
+        issue_manager::set_current_supporter($params['discussionid'], $params['supporterid']);
         return 1;
     }
 

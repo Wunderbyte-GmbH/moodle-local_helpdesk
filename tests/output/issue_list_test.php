@@ -26,7 +26,7 @@
 namespace local_helpdesk\output;
 
 use advanced_testcase;
-use local_helpdesk\lib;
+use local_helpdesk\local\issue\status;
 
 /**
  * Tests for the list of issues.
@@ -69,7 +69,7 @@ final class issue_list_test extends advanced_testcase {
         ]);
         $issue('Other', ['currentsupporter' => $colleague->id]);
         $closed = $issue('Closed', ['currentsupporter' => $colleague->id]);
-        $DB->set_field('local_helpdesk_issues', 'status', lib::STATUS_CLOSED, ['id' => $closed->id]);
+        $DB->set_field('local_helpdesk_issues', 'status', status::CLOSED, ['id' => $closed->id]);
         $orphan = $issue('Orphan');
         $DB->delete_records('forum_discussions', ['id' => $orphan->discussionid]);
 

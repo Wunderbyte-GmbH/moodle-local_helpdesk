@@ -29,7 +29,7 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use context_system;
 use core_external\external_value;
-use local_helpdesk\lib;
+use local_helpdesk\local\issue\issue_manager;
 
 /**
  * Web service to close an issue.
@@ -60,7 +60,7 @@ class close_issue extends external_api {
     public static function execute(int $discussionid): bool {
         $params = self::validate_parameters(self::execute_parameters(), ['discussionid' => $discussionid]);
         self::validate_context(context_system::instance());
-        return lib::close_issue($params['discussionid']);
+        return issue_manager::close($params['discussionid']);
     }
 
     /**

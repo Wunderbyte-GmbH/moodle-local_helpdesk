@@ -34,6 +34,7 @@ require_once($CFG->libdir . "/formslib.php");
 
 use local_helpdesk\accountmanager;
 use moodleform;
+use local_helpdesk\local\supportforum\registry;
 
 /**
  * Form used to file a support request.
@@ -92,7 +93,7 @@ class issue_create_form extends moodleform {
 
         require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
 
-        $potentialtargets = \local_helpdesk\lib::get_potentialtargets();
+        $potentialtargets = registry::get_potential_targets();
 
         $hideifs = ['mail'];
 

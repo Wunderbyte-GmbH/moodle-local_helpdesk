@@ -23,6 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\status;
+use local_helpdesk\local\supporter\platform_team;
+use local_helpdesk\local\supportforum\registry;
+
 /**
  * Data generator for local_helpdesk.
  *
@@ -46,7 +51,7 @@ class local_helpdesk_generator extends component_generator_base {
             throw new coding_exception('A support forum needs a forumid.');
         }
 
-        $supportforum = \local_helpdesk\lib::supportforum_enable($record->forumid);
+        $supportforum = registry::enable($record->forumid);
         if (empty($supportforum->id)) {
             throw new coding_exception('Forum ' . $record->forumid . ' could not be made a support forum.');
         }
@@ -75,7 +80,7 @@ class local_helpdesk_generator extends component_generator_base {
         }
 
         $supporter = (object) [
-            'courseid' => $record->courseid ?? \local_helpdesk\lib::SYSTEM_COURSE_ID,
+            'courseid' => $record->courseid ?? platform_team::COURSE_ID,
             'userid' => $record->userid,
             'supportlevel' => $record->supportlevel ?? '',
             'holidaymode' => $record->holidaymode ?? 0,
@@ -84,7 +89,7 @@ class local_helpdesk_generator extends component_generator_base {
         $supporter->id = $DB->insert_record('local_helpdesk_supporters', $supporter);
 
         // Supporters hold a role in every support forum, so bring those assignments up to date.
-        \local_helpdesk\lib::supportforum_rolecheck();
+        registry::sync_roles();
 
         return $supporter;
     }
@@ -113,10 +118,10 @@ class local_helpdesk_generator extends component_generator_base {
             'message' => $record->description ?? 'Test issue description',
         ]);
 
-        $issue = \local_helpdesk\lib::get_issue($discussion->id, true);
+        $issue = issue_manager::get($discussion->id, true);
         $issue->currentsupporter = $record->currentsupporter ?? 0;
         $issue->priority = $record->priority ?? 1;
-        $issue->status = $record->status ?? \local_helpdesk\lib::STATUS_NOTSTARTED;
+        $issue->status = $record->status ?? status::NOT_STARTED;
         $issue->timemodified = time();
         $DB->update_record('local_helpdesk_issues', $issue);
 

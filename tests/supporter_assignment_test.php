@@ -27,6 +27,8 @@ namespace local_helpdesk;
 
 use advanced_testcase;
 use stdClass;
+use local_helpdesk\local\issue\issue_manager;
+use local_helpdesk\local\issue\subscriptions;
 
 /**
  * Tests for reacting to a support issue: assignment, subscription and priority.
@@ -35,12 +37,12 @@ use stdClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_helpdesk\lib::set_current_supporter
- * @covers     \local_helpdesk\lib::set_prioritylvl
- * @covers     \local_helpdesk\lib::set_2nd_level
- * @covers     \local_helpdesk\lib::subscription_add
- * @covers     \local_helpdesk\lib::subscription_remove
- * @covers     \local_helpdesk\lib::validate_supporter_assignment
+ * @covers     \local_helpdesk\local\issue\issue_manager::set_current_supporter
+ * @covers     \local_helpdesk\local\issue\issue_manager::set_priority
+ * @covers     \local_helpdesk\local\issue\issue_manager::forward_to_second_level
+ * @covers     \local_helpdesk\local\issue\subscriptions::add
+ * @covers     \local_helpdesk\local\issue\subscriptions::remove
+ * @covers     \local_helpdesk\local\issue\issue_manager::validate_supporter_assignment
  */
 final class supporter_assignment_test extends advanced_testcase {
     /** @var stdClass the course holding the support forum. */
@@ -108,7 +110,7 @@ final class supporter_assignment_test extends advanced_testcase {
         $issue = $this->create_issue();
 
         $this->setUser($this->supporter);
-        $this->assertTrue(lib::set_current_supporter($issue->discussionid, $this->supporter->id));
+        $this->assertTrue(issue_manager::set_current_supporter($issue->discussionid, $this->supporter->id));
 
         $this->assertEquals(
             $this->supporter->id,
@@ -131,7 +133,7 @@ final class supporter_assignment_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($outsider->id, $this->course->id, 'student');
 
         $this->setUser($this->supporter);
-        $this->assertFalse(lib::set_current_supporter($issue->discussionid, $outsider->id));
+        $this->assertFalse(issue_manager::set_current_supporter($issue->discussionid, $outsider->id));
 
         $this->assertEquals(
             0,
@@ -152,14 +154,14 @@ final class supporter_assignment_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($outsider->id, $this->course->id, 'student');
 
         $this->setUser($this->supporter);
-        $this->assertNull(lib::validate_supporter_assignment($issue->discussionid, $this->supporter->id));
+        $this->assertNull(issue_manager::validate_supporter_assignment($issue->discussionid, $this->supporter->id));
         $this->assertSame(
             'error:targetnotasupporter',
-            lib::validate_supporter_assignment($issue->discussionid, $outsider->id)
+            issue_manager::validate_supporter_assignment($issue->discussionid, $outsider->id)
         );
         $this->assertSame(
             'error:unknowndiscussion',
-            lib::validate_supporter_assignment(0, $this->supporter->id)
+            issue_manager::validate_supporter_assignment(0, $this->supporter->id)
         );
 
         $plainforum = $this->getDataGenerator()->create_module('forum', ['course' => $this->course->id]);
@@ -171,14 +173,14 @@ final class supporter_assignment_test extends advanced_testcase {
         ]);
         $this->assertSame(
             'error:notasupportforum',
-            lib::validate_supporter_assignment($plaindiscussion->id, $this->supporter->id)
+            issue_manager::validate_supporter_assignment($plaindiscussion->id, $this->supporter->id)
         );
 
         // Someone outside the support team may not hand over anything at all.
         $this->setUser($this->student);
         $this->assertSame(
             'error:notasupporter',
-            lib::validate_supporter_assignment($issue->discussionid, $this->supporter->id)
+            issue_manager::validate_supporter_assignment($issue->discussionid, $this->supporter->id)
         );
     }
 
@@ -211,13 +213,13 @@ final class supporter_assignment_test extends advanced_testcase {
         $issue = $this->create_issue();
 
         $this->setUser($this->supporter);
-        $this->assertTrue(lib::set_prioritylvl($issue->discussionid, 3));
+        $this->assertTrue(issue_manager::set_priority($issue->discussionid, 3));
         $this->assertEquals(
             3,
             $DB->get_field('local_helpdesk_issues', 'priority', ['discussionid' => $issue->discussionid])
         );
 
-        lib::set_prioritylvl($issue->discussionid, 1);
+        issue_manager::set_priority($issue->discussionid, 1);
         $this->assertEquals(
             1,
             $DB->get_field('local_helpdesk_issues', 'priority', ['discussionid' => $issue->discussionid])
@@ -233,15 +235,15 @@ final class supporter_assignment_test extends advanced_testcase {
         $issue = $this->create_issue();
 
         $this->setUser($this->supporter);
-        lib::subscription_add($issue->discussionid, $this->supporter->id);
-        lib::subscription_add($issue->discussionid, $this->supporter->id);
+        subscriptions::add($issue->discussionid, $this->supporter->id);
+        subscriptions::add($issue->discussionid, $this->supporter->id);
 
         $this->assertSame(1, $DB->count_records('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
             'userid' => $this->supporter->id,
         ]));
 
-        lib::subscription_remove($issue->discussionid, $this->supporter->id);
+        subscriptions::remove($issue->discussionid, $this->supporter->id);
 
         $this->assertSame(0, $DB->count_records('local_helpdesk_subscr', [
             'discussionid' => $issue->discussionid,
@@ -258,7 +260,7 @@ final class supporter_assignment_test extends advanced_testcase {
         $issue = $this->create_issue();
 
         $this->setUser($this->supporter);
-        $this->assertTrue(lib::set_2nd_level($issue->discussionid));
+        $this->assertTrue(issue_manager::forward_to_second_level($issue->discussionid));
 
         $this->assertEquals(
             $this->supporter->id,
@@ -285,7 +287,7 @@ final class supporter_assignment_test extends advanced_testcase {
         $issue = $this->create_issue();
 
         $this->setUser($this->supporter);
-        lib::set_2nd_level($issue->discussionid);
+        issue_manager::forward_to_second_level($issue->discussionid);
 
         $this->assertEquals(
             $this->supporter->id,
@@ -307,7 +309,7 @@ final class supporter_assignment_test extends advanced_testcase {
         $issue = $this->create_issue();
 
         $this->setUser($this->supporter);
-        lib::set_2nd_level($issue->discussionid);
+        issue_manager::forward_to_second_level($issue->discussionid);
 
         $this->assertEquals(
             $this->supporter->id,
