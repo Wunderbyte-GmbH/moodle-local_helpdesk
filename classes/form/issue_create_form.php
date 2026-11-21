@@ -62,7 +62,7 @@ class issue_create_form extends moodleform {
      * @return void
      */
     public function definition(): void {
-        global $CFG, $COURSE, $SITE, $OUTPUT;
+        global $COURSE, $SITE, $OUTPUT;
 
         $faqread = get_config('local_helpdesk', 'faqread');
         $faqlink = get_config('local_helpdesk', 'faqlink');
@@ -90,8 +90,6 @@ class issue_create_form extends moodleform {
             $mform->setType('faqread', PARAM_BOOL);
             $mform->addRule('faqread', get_string('subject_missing', 'local_helpdesk'), 'required', true, 'server');
         }
-
-        require_once($CFG->dirroot . '/local/helpdesk/classes/lib.php');
 
         $potentialtargets = registry::get_potential_targets();
 
